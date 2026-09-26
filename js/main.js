@@ -1,0 +1,281 @@
+/* =========================================================
+   Démarrage, boucle de jeu, entrées souris / clavier
+   ========================================================= */
+(function (C) {
+  'use strict';
+
+  var U = C.util;
+  function $(id) { return document.getElementById(id); }
+  function G() { return C.Game; }
+
+  var Main = C.Main = { mode: 'menu', speed: 0, lastSpeed: 1, settings: null };
+  var lastT = 0, workTimer = 0, workToggle = false, visitorSeen = false;
+
+  Main.init = function () {
+    Main.settings = C.Save.loadSettings();
+    C.Render.init($('game'));
+    // Textures photo : le décor se redessine dès qu'elles sont prêtes
+    C.Tex.load(function () { C.Render.dirty = true; if (C.ItemArt) C.ItemArt.cache = {}; });
+    C.Props.load(function () { C.Render.dirty = true; if (C.ItemArt) C.ItemArt.cache = {}; });
+    C.UI.init();
+    bindInput();
+    C.Menus.openMain();
+    requestAnimationFrame(loop);
+  };
+
+  Main.applySettings = function () {
+    var S = Main.settings;
+    C.Audio.vol.master = S.master; C.Audio.vol.music = S.music; C.Audio.vol.sfx = S.sfx; C.Audio.vol.ambience = S.ambience;
+    C.Audio.applyVolumes();
+    C.Render.grainOn = S.grain;
+    if (C.Audio.ready && G().st) C.Audio.setWeather(G().st.weather.type);
+  };
+
+  Main.setSpeed = function (n) {
+    if (n > 0) Main.lastSpeed = n;
+    Main.speed = n;
+  };
+
+  Main.startNew = function (ids) {
+    C.Menus.close();
+    G().newGame(ids);
+    enterGame();
+    Main.setSpeed(0);
+    C.Menus.intro();
+  };
+
+  Main.loadState = function (state) {
+    C.Menus.close();
+    G().load(state);
+    C.Actions.rebuildUsers();
+    enterGame();
+    var st = G().st;
+    if (st.phase === 'over') { C.UI.showEnding(); return; }
+    if (st.phase === 'night' || st.phase === 'dusk') { st.phase = 'night'; C.UI.openNight(); return; }
+    Main.setSpeed(0);
+    C.UI.toast('Partie chargée — jour ' + st.day + '. Appuyez sur Espace pour reprendre.', 'done');
+  };
+
+  function enterGame() {
+    Main.mode = 'game';
+    C.UI.show(true);
+    C.UI.selected = null;
+    C.UI.buildCards();
+    C.UI.refreshPending();
+    C.UI.refreshDoor();
+    C.UI.stopPlacing();
+    Main.showDuskButton(false);
+    C.Render.particles = [];
+    C.Render.dirty = true;
+    visitorSeen = !!G().st.visitor;
+    if (C.Audio.ready) C.Audio.setWeather(G().st.weather.type);
+  }
+
+  // Fondu au noir de la nuit
+  Main.nightFade = function (on, text) {
+    var f = $('fader');
+    var old = document.querySelector('.night-title');
+    if (old) old.remove();
+    if (on) {
+      f.classList.add('on');
+      var t = U.el('div', 'night-title', C.Icon('moon') + '<h1>Nuit ' + G().st.day + '</h1><p>' + U.esc(text || '') + '</p>');
+      document.getElementById('app').appendChild(t);
+    } else {
+      f.classList.remove('on');
+    }
+  };
+
+  // Crépuscule : temps figé à 20 h pour nourrir / soigner avant la nuit
+  Main.showDuskButton = function (on) {
+    var b = $('dusk-btn');
+    if (!b) {
+      b = U.el('button', 'btn', 'Passer à la nuit →');
+      b.id = 'dusk-btn';
+      b.style.cssText = 'position:absolute;right:12px;bottom:22px;z-index:11;';
+      b.addEventListener('click', function () {
+        var st = G().st;
+        st.survivors.forEach(function (s) { if (s.alive) { C.Actions.cancel(s); s.path = []; } });
+        st.phase = 'night';
+        Main.showDuskButton(false);
+        C.UI.openNight();
+      });
+      $('hud').appendChild(b);
+    }
+    b.classList.toggle('hidden', !on);
+  };
+
+  // ------------------------------------------------------------ boucle
+  function loop(ts) {
+    var t = ts / 1000;
+    var dt = Math.min(0.1, lastT ? t - lastT : 0.016);
+    lastT = t;
+    var st = G().st;
+
+    if (Main.mode === 'game' && st) {
+      var env = { temp: C.World.shelterTemp(st), empath: G().present().some(function (s) { return G().hasTrait(s, 'empathique') && s.moral >= 55; }) };
+      if (st.phase === 'day' && !C.UI.modalOpen && Main.speed > 0) {
+        var gm = dt * Main.speed;
+        var steps = Math.ceil(gm / 0.5);
+        for (var i = 0; i < steps && st.phase === 'day'; i++) {
+          var sgm = gm / steps;
+          C.World.update(st, sgm);
+          if (st.phase !== 'day') break;
+          st.survivors.forEach(function (s) { C.Surv.update(s, sgm, env); });
+        }
+        workSounds(dt);
+        C.Mood.ambient(dt, env);
+      } else if (st.phase === 'explore') {
+        if (!C.UI.modalOpen) { C.Explore.update(dt); workSounds(dt); }
+      } else if (st.phase === 'dusk' && !C.UI.modalOpen) {
+        st.survivors.forEach(function (s) { C.Surv.update(s, dt * 2, env); });
+      }
+      // Pause automatique quand on frappe
+      if (st.visitor && !visitorSeen) {
+        visitorSeen = true;
+        if (Main.settings.autoPauseVisitor && st.phase === 'day') Main.setSpeed(0);
+      }
+      if (!st.visitor) visitorSeen = false;
+      C.UI.tick(dt);
+    } else if (Main.mode === 'menu' && st) {
+      st.survivors.forEach(function (s) { s.anim += dt; });
+    }
+
+    var inGame = Main.mode === 'game' && st;
+    C.Audio.update(dt, {
+      fire: inGame && st.objects.some(function (o) { return o.kind === 'heater' && o.fuel > 0; }),
+      radio: inGame && st.survivors.some(function (s) { return s.alive && s.act && (s.act.kind === 'news' || s.act.kind === 'music') && s.act.phase === 'work'; }),
+      war: true, onShell: function () { if (Math.random() < 0.6) C.Render.shake(2 + Math.random() * 4); } });
+    C.Render.frame(dt, t);
+    requestAnimationFrame(loop);
+  }
+
+  var WORK_SOUND = { clear: 'dig', dismantle: 'saw', cut: 'saw', board: 'hammer', doorup: 'hammer', search: 'search', unlock: 'search', cook: 'cook', read: 'page' };
+  function workSounds(dt) {
+    if (!C.Audio.ready) return;
+    workTimer -= dt;
+    if (workTimer > 0) return;
+    workTimer = 0.6;
+    workToggle = !workToggle;
+    var played = 0;
+    G().present().forEach(function (s) {
+      if (played >= 2 || !s.act || s.act.phase !== 'work') return;
+      var k = s.act.kind, snd = WORK_SOUND[k];
+      if (k === 'craft' || k === 'upgrade') snd = workToggle ? 'hammer' : 'saw';
+      if (snd && C.Audio.sfx[snd] && Math.random() < 0.75) { C.Audio.sfx[snd](k === 'cut'); played++; }
+    });
+  }
+
+  // ------------------------------------------------------------ entrées
+  function bindInput() {
+    var cv = $('game');
+
+    function firstGesture() { C.Audio.init(); Main.applySettings(); }
+    window.addEventListener('mousedown', firstGesture, { once: true });
+    window.addEventListener('keydown', firstGesture, { once: true });
+
+    cv.addEventListener('mousemove', function (e) {
+      if (Main.mode !== 'game') return;
+      var w = C.Render.toWorld(e.clientX, e.clientY);
+      if (C.Render.placing) {
+        var slot = slotAt(w);
+        C.Render.hoverSlot = slot ? slot.id : null;
+        return;
+      }
+      var hit = C.Render.pick(w.x, w.y);
+      C.Render.hoverObj = hit && hit.obj ? hit.obj : null;
+      C.Render.hoverSurv = hit && hit.surv ? hit.surv : null;
+      cv.classList.toggle('pointer', !!hit);
+    });
+    cv.addEventListener('mouseleave', function () { C.Render.hoverObj = null; C.Render.hoverSurv = null; });
+
+    cv.addEventListener('mousedown', function (e) {
+      if (Main.mode !== 'game' || e.button !== 0) return;
+      var st = G().st;
+      if (st.phase !== 'day' && st.phase !== 'dusk') return;
+      var w = C.Render.toWorld(e.clientX, e.clientY);
+      if (C.Render.placing) {
+        var slot = slotAt(w);
+        if (slot) C.UI.placeAt(slot);
+        return;
+      }
+      var wasOpen = C.UI.contextOpen();
+      C.UI.closeContext();
+      var hit = C.Render.pick(w.x, w.y);
+      if (hit && hit.surv) {
+        var cur = C.UI.selectedSurv();
+        if (cur && cur.id !== hit.surv.id) { C.UI.openSurvMenu(cur, hit.surv, e.clientX, e.clientY); return; }
+        C.UI.select(hit.surv.id);
+        if (C.Audio.ready) C.Audio.sfx.click();
+        return;
+      }
+      if (hit && hit.obj) {
+        if (st.phase === 'dusk' && hit.obj.kind !== 'stock') {
+          var who = C.UI.selectedSurv();
+          if (who) C.Render.pop(who, [], 'Trop tard, il fait nuit.', 'warn');
+          else C.UI.toast('Il fait nuit : seules les actions personnelles sont possibles.', 'info');
+          return;
+        }
+        C.UI.openContext(hit.obj, e.clientX, e.clientY);
+        return;
+      }
+      if (wasOpen) return;
+      var s = C.UI.selectedSurv();
+      var f = C.Render.floorAt(w.x, w.y);
+      if (s && f != null && st.phase === 'day') {
+        C.Actions.moveTo(s, f, U.clamp(w.x, C.WORLD.walkMin, C.WORLD.walkMax));
+      }
+    });
+
+    cv.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      if (C.Render.placing) { C.UI.stopPlacing(); return; }
+      C.UI.closeContext();
+    });
+
+    window.addEventListener('keydown', function (e) {
+      if (Main.mode !== 'game') {
+        if (e.key === 'Escape' && C.UI.topModal()) closeTopIfAllowed();
+        return;
+      }
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+      var st = G().st;
+      switch (e.key) {
+        case 'Escape':
+          if (C.Render.placing) { C.UI.stopPlacing(); break; }
+          if (C.UI.contextOpen()) { C.UI.closeContext(); break; }
+          if (C.UI.topModal()) { closeTopIfAllowed(); break; }
+          C.UI.openPause();
+          break;
+        case ' ':
+          e.preventDefault();
+          if (C.UI.modalOpen || st.phase !== 'day') break;
+          Main.setSpeed(Main.speed > 0 ? 0 : Main.lastSpeed);
+          break;
+        case '1': if (!C.UI.modalOpen) Main.setSpeed(1); break;
+        case '2': if (!C.UI.modalOpen) Main.setSpeed(2); break;
+        case '3': if (!C.UI.modalOpen) Main.setSpeed(4); break;
+        case 'Tab': e.preventDefault(); if (!C.UI.modalOpen) C.UI.cycle(e.shiftKey ? -1 : 1); break;
+        case 'i': case 'I': if (!C.UI.modalOpen) C.UI.openStock(); break;
+        case 'j': case 'J': if (!C.UI.modalOpen) C.UI.openLog(); break;
+      }
+    });
+  }
+
+  function closeTopIfAllowed() {
+    var top = C.UI.topModal();
+    if (top && top.el.querySelector('.panel-head .x-btn')) C.UI.closeModal();
+  }
+
+  function slotAt(w) {
+    var type = C.Render.placing;
+    var b = C.BUILDINGS[type];
+    var list = C.UI.freeSlots(type);
+    for (var i = 0; i < list.length; i++) {
+      var sl = list[i], fy = C.FLOORS[sl.f].y;
+      if (Math.abs(w.x - sl.x) <= sl.w / 2 && w.y >= fy - b.h - 14 && w.y <= fy + 4) return sl;
+    }
+    return null;
+  }
+
+  window.addEventListener('load', Main.init);
+})(window.CQR);

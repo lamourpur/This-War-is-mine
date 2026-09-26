@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Test 1600x900</title>
+<style>html,body{margin:0;background:#000;overflow:hidden;height:100%}iframe{border:0;width:1600px;height:900px;transform-origin:0 0;position:absolute;left:0;top:0}</style>
+</head><body>
+<iframe id="f" src="/"></iframe>
+<script>
+  // Outil de test : affiche l'écran 1600×900 du jeu, entier (fit) ou une zone à l'échelle voulue
+  var F = document.getElementById('f');
+  window.view = function (x, y, s) {
+    if (x == null) { s = Math.min(innerWidth / 1600, innerHeight / 900); x = 0; y = 0; }
+    F.style.transform = 'scale(' + s + ') translate(' + (-x) + 'px,' + (-y) + 'px)';
+  };
+  window.G = function () { return F.contentWindow; };
+  view();
+</script>
+</body></html>

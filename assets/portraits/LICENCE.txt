@@ -1,0 +1,20 @@
+Portraits des survivants
+
+Visages générés par intelligence artificielle (thispersondoesnotexist.com,
+modèle StyleGAN) : ces personnes n'existent pas. Les images générées ne
+sont pas protégeables par le droit d'auteur ; le modèle utilisé par le site
+est diffusé sous licence non commerciale, ce qui convient à ce jeu personnel.
+
+Chaque visage a été recadré en buste puis retravaillé « au fusain »
+(gris chaud, traits de crayon, fond charbonneux, grain) pour rejoindre le
+style des portraits du jeu. Fichier = identifiant interne du personnage :
+
+vera.jpg  Rachel Donovan      tomas.jpg  Frank Doyle
+ilija.jpg Tyler Brooks        nada.jpg   Martha Jenkins
+goran.jpg Vince Carver        lena.jpg   Emily Parker
+emir.jpg  Marcus Reed         mira.jpg   Eleanor Hayes
+
+En jeu (js/render/portrait.js), l'état du personnage s'ajoute par-dessus :
+fatigue (cernes), moral en berne (image refroidie), maladie (teint verdâtre,
+sueur), blessure (bandage taché de sang, coupure). Sans ces fichiers, le
+portrait dessiné d'origine est utilisé.

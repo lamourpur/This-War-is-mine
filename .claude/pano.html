@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Pano</title>
+<style>body{margin:0;background:#222;color:#ddd;font:11px sans-serif}canvas{display:block}.c{display:inline-block;margin:2px}</style>
+</head><body>
+<div id="out"></div>
+<script>
+// Outil de test : extrait une vue rectilinéaire d'un panorama équirectangulaire
+var imgs = {};
+function load(id) {
+  return new Promise(function (res) {
+    if (imgs[id]) return res(imgs[id]);
+    var im = new Image();
+    im.onload = function () {
+      var c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+      var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+      imgs[id] = { w: im.width, h: im.height, d: x.getImageData(0, 0, im.width, im.height).data };
+      res(imgs[id]);
+    };
+    im.src = 'pano/' + id + '.png';
+  });
+}
+// yaw, pitch en degrés ; fov horizontal en degrés
+async function view(id, yaw, pitch, fov, W, H) {
+  var p = await load(id);
+  W = W || 320; H = H || 180;
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var x = c.getContext('2d'), out = x.createImageData(W, H), o = out.data;
+  var f = (W / 2) / Math.tan(fov * Math.PI / 360);
+  var cy = Math.cos(yaw * Math.PI / 180), sy = Math.sin(yaw * Math.PI / 180);
+  var cp = Math.cos(pitch * Math.PI / 180), sp = Math.sin(pitch * Math.PI / 180);
+  for (var v = 0; v < H; v++) for (var u = 0; u < W; u++) {
+    var dx = (u - W / 2) / f, dy = (v - H / 2) / f, dz = 1;
+    // tangage (axe x) puis lacet (axe y)
+    var y1 = dy * cp - dz * sp, z1 = dy * sp + dz * cp;
+    var x2 = dx * cy + z1 * sy, z2 = -dx * sy + z1 * cy;
+    var lon = Math.atan2(x2, z2), lat = Math.atan2(y1, Math.sqrt(x2 * x2 + z2 * z2));
+    var sx = (lon / (2 * Math.PI) + 0.5) * (p.w - 1), syy = (lat / Math.PI + 0.5) * (p.h - 1);
+    var x0 = Math.floor(sx), y0 = Math.floor(syy), fx = sx - x0, fy = syy - y0;
+    var x1 = (x0 + 1) % p.w, y1b = Math.min(p.h - 1, y0 + 1);
+    var i00 = (y0 * p.w + x0) * 4, i10 = (y0 * p.w + x1) * 4, i01 = (y1b * p.w + x0) * 4, i11 = (y1b * p.w + x1) * 4;
+    var k = (v * W + u) * 4;
+    for (var ch = 0; ch < 3; ch++) {
+      o[k + ch] = (p.d[i00 + ch] * (1 - fx) + p.d[i10 + ch] * fx) * (1 - fy) + (p.d[i01 + ch] * (1 - fx) + p.d[i11 + ch] * fx) * fy;
+    }
+    o[k + 3] = 255;
+  }
+  x.putImageData(out, 0, 0);
+  return c;
+}
+async function sheet(id, yaws, pitch, fov) {
+  var div = document.createElement('div');
+  div.innerHTML = '<b>' + id + '</b><br>';
+  for (var y of yaws) {
+    var c = await view(id, y, pitch || 0, fov || 80, 200, 112);
+    var s = document.createElement('span'); s.className = 'c';
+    s.appendChild(c); s.appendChild(document.createTextNode(y));
+    div.appendChild(s);
+  }
+  document.getElementById('out').appendChild(div);
+}
+// Étalonnage « photo d'archive de guerre » : désaturé, sombre, vignette, grain
+function grade(src) {
+  var W = src.width, H = src.height;
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var x = c.getContext('2d');
+  x.filter = 'grayscale(0.78) sepia(0.28) contrast(1.18) brightness(0.72)';
+  x.drawImage(src, 0, 0);
+  x.filter = 'none';
+  var g = x.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, W * 0.62);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,8,6,0.7)');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  var d = x.getImageData(0, 0, W, H), p = d.data;
+  for (var i = 0; i < p.length; i += 4) { var n = (Math.random() - 0.5) * 22; p[i] += n; p[i + 1] += n; p[i + 2] += n; }
+  x.putImageData(d, 0, 0);
+  return c;
+}
+async function save(id, name, yaw, pitch, fov) {
+  var c = grade(await view(id, yaw, pitch, fov, 640, 360));
+  var url = c.toDataURL('image/jpeg', 0.8);
+  var r = await fetch('/__shot?name=' + name, { method: 'POST', body: url });
+  return await r.text();
+}
+</script>
+</body></html>

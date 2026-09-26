@@ -1,0 +1,19 @@
+Textures photographiques — Poly Haven (https://polyhaven.com)
+Licence : CC0 1.0 (domaine public). Aucune attribution requise.
+
+broken_brick_wall.jpg           https://polyhaven.com/a/broken_brick_wall
+concrete_debris.jpg             https://polyhaven.com/a/concrete_debris
+damaged_plaster.jpg             https://polyhaven.com/a/damaged_plaster
+decrepit_wallpaper.jpg          https://polyhaven.com/a/decrepit_wallpaper
+old_wooden_floor_02.jpg         https://polyhaven.com/a/old_wooden_floor_02
+peeling_painted_wall.jpg        https://polyhaven.com/a/peeling_painted_wall
+red_brick_plaster_patch_02.jpg  https://polyhaven.com/a/red_brick_plaster_patch_02
+rubble.jpg                      https://polyhaven.com/a/rubble
+rusty_metal_sheet.jpg           https://polyhaven.com/a/rusty_metal_sheet
+weathered_planks.jpg            https://polyhaven.com/a/weathered_planks
+wood_cabinet_worn_long.jpg      https://polyhaven.com/a/wood_cabinet_worn_long
+worn_cracked_plaster.jpg        https://polyhaven.com/a/worn_cracked_plaster
+worn_planks.jpg                 https://polyhaven.com/a/worn_planks
+
+Les images sont désaturées au chargement (js/render/textures.js) et peintes
+à l'intérieur des contours dessinés, pour rester dans le style crayonné du jeu.

@@ -1,0 +1,27 @@
+Sons enregistrés — Freesound (https://freesound.org), licence CC0 1.0
+(domaine public, aucune attribution requise). Fichiers = aperçus MP3 128 kb/s.
+Page d'origine : https://freesound.org/s/<numéro>/
+
+wind.mp3          210220  Rolling Wind - looping
+wind_cold.mp3     638434  Cold Howling Wind/Breeze (Loopable)
+rain_inside.mp3   161705  Rain from inside
+fire.mp3          650574  fire crackling loop
+static.mp3        17804   Static
+boom1.mp3         142598  Distant Boom
+boom2.mp3         149966  Muffled Distant Explosion
+boom3.mp3         372086  Distant Explosion
+firefight.mp3     404334  Firefight
+burst.mp3         337242  Distant Three Round Burst
+shot.mp3          384715  Distant Gunshot 3
+smg.mp3           417690  Rapid Fire Sub Machine Gun distant
+knock.mp3         268500  door_knock
+hammer.mp3        17012   hammering 2
+saw_metal.mp3     204947  Metal_Saw_Hand
+saw_wood.mp3      383725  Hand Saw Sawing Wood
+rubble.mp3        184383  Gathering Stone Resources
+rummage.mp3       190462  Look in a drawer
+sizzle.mp3        201936  sizzling_frypan
+page.mp3          136778  Page Turn
+
+Lecture : js/core/audio.js (Web Audio en http, balises <audio> en file://).
+Si un fichier manque, le son synthétisé d'origine est utilisé.

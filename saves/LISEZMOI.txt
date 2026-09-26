@@ -1,0 +1,11 @@
+CEUX QUI RESTENT — Dossier de sauvegardes
+==========================================
+
+Le jeu enregistre automatiquement vos parties dans le navigateur :
+  - 1 sauvegarde automatique (chaque matin, à l'aube)
+  - 3 emplacements manuels (Menu > Sauvegarder)
+
+Pour garder une copie dans ce dossier, ou transférer une partie sur un autre ordinateur :
+  1. En jeu : Échap > Sauvegarder > « Exporter en fichier .sav »
+  2. Rangez le fichier .sav téléchargé ici.
+  3. Pour la reprendre : Menu principal > Charger > « Importer un fichier .sav »

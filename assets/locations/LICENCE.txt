@@ -1,0 +1,21 @@
+Photos des lieux — tirées des panoramas de Poly Haven (https://polyhaven.com),
+licence CC0 1.0 (domaine public, aucune attribution requise).
+Une vue plate a été extraite de chaque panorama, puis étalonnée
+(désaturée, sépia sombre, vignette, grain).
+
+maison_abandonnee.jpg  old_room
+chantier.jpg           abandoned_construction
+ecole.jpg              abandoned_games_room_02
+supermarche.jpg        abandoned_factory_canteen_01
+vieux_couple.jpg       lythwood_room
+immeuble.jpg           old_apartments_walkway
+boulangerie.jpg        abandoned_bakery
+garage.jpg             abandoned_garage
+hopital.jpg            abandoned_tiled_room
+eglise.jpg             abandoned_church
+entrepot.jpg           burnt_warehouse
+villa.jpg              roofless_ruins
+carrefour.jpg          derelict_underpass
+avant_poste.jpg        abandoned_tank_farm_01
+
+Page d'origine : https://polyhaven.com/a/<nom>

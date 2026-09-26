@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ceux Qui Restent</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <!-- Interface de jeu -->
+  <div id="hud" class="hidden">
+    <!-- Bandeau d'état (rempli par ui.js) -->
+    <div id="topbar">
+      <div class="tb-day"><span class="tb-k">Jour</span><span id="tb-day">1</span></div>
+      <div class="tb-clock">
+        <div class="tb-time"><span id="tb-clock">06:00</span><span id="tb-phase" class="tb-k">Matin</span></div>
+        <div id="tb-track"><div id="tb-fill"></div><div id="tb-sun"></div></div>
+      </div>
+      <div class="tb-speed" id="tb-speed"></div>
+      <div class="tb-weather"><span id="tb-wico"></span><div><span id="tb-weather">—</span><span id="tb-season" class="tb-k">—</span></div></div>
+      <div class="tb-temps">
+        <div class="tb-temp" title="Température extérieure"><span class="tb-k">Dehors</span><span id="tb-out">—</span></div>
+        <div class="tb-temp" title="Température dans le refuge"><span class="tb-k">Refuge</span><span id="tb-in">—</span></div>
+      </div>
+    </div>
+
+    <div id="cards"></div>
+
+    <div id="rightbar">
+      <button id="btn-stock" class="rb" data-key="I"><span class="rb-ico"></span><span class="rb-l">Réserve</span></button>
+      <button id="btn-log" class="rb" data-key="J"><span class="rb-ico"></span><span class="rb-l">Journal</span></button>
+      <button id="btn-menu" class="rb" data-key="Échap"><span class="rb-ico"></span><span class="rb-l">Menu</span></button>
+      <button id="btn-place" class="rb hidden"><span class="rb-ico"></span><span class="rb-l">À installer <b id="place-count">0</b></span></button>
+    </div>
+
+    <div id="door-alert" class="hidden"></div>
+    <div id="placing-hint" class="hidden"></div>
+    <div id="toasts"></div>
+    <div id="ctxmenu" class="hidden"></div>
+    <div id="tooltip" class="hidden"></div>
+  </div>
+  <!-- Fenêtres modales -->
+  <div id="modal-layer" class="hidden"></div>
+
+  <!-- Menu principal -->
+  <div id="menu-screen" class="hidden"></div>
+
+  <!-- Transition / fondu -->
+  <div id="fader"></div>
+</div>
+
+<!-- Noyau -->
+<script src="js/core/util.js"></script>
+<!-- Données -->
+<script src="js/data/items.js"></script>
+<script src="js/data/buildings.js"></script>
+<script src="js/data/survivors.js"></script>
+<script src="js/data/locations.js"></script>
+<script src="js/data/events.js"></script>
+<script src="js/data/shelter.js"></script>
+<script src="js/data/thoughts.js"></script>
+<script src="js/data/dayevents.js"></script>
+<script src="js/data/maps.js"></script>
+<!-- Systèmes -->
+<script src="js/core/audio.js"></script>
+<script src="js/core/save.js"></script>
+<!-- Logique de jeu -->
+<script src="js/game/state.js"></script>
+<script src="js/game/nav.js"></script>
+<script src="js/game/actions.js"></script>
+<script src="js/game/survivors.js"></script>
+<script src="js/game/mood.js"></script>
+<script src="js/game/world.js"></script>
+<script src="js/game/night.js"></script>
+<script src="js/game/explore.js"></script>
+<!-- Rendu -->
+<script src="js/render/sketch.js"></script>
+<script src="js/render/textures.js"></script>
+<script src="js/render/props.js"></script>
+<script src="js/render/objects.js"></script>
+<script src="js/render/figure.js"></script>
+<script src="js/render/itemart.js"></script>
+<script src="js/render/portrait.js"></script>
+<script src="js/render/renderer.js"></script>
+<!-- Interface -->
+<script src="js/ui/icons.js"></script>
+<script src="js/ui/ui.js"></script>
+<script src="js/ui/panels.js"></script>
+<script src="js/ui/trade.js"></script>
+<script src="js/ui/loot.js"></script>
+<script src="js/ui/nightui.js"></script>
+<script src="js/ui/menus.js"></script>
+<!-- Démarrage -->
+<script src="js/main.js"></script>
+</body>
+</html>

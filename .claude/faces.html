@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Faces</title>
+<style>body{margin:0;background:#222;color:#fff;font:bold 13px sans-serif}.g{display:flex;flex-wrap:wrap;gap:4px}.g div{position:relative}.g img,.g canvas{display:block}.g span{position:absolute;left:2px;top:2px;background:#000c;padding:1px 3px}</style>
+</head><body><div class="g" id="g"></div>
+<script>
+// Outil de test (hors jeu) : transforme un visage en portrait « crayonné » façon This War of Mine
+function loadImg(src) { return new Promise(function (r) { var i = new Image(); i.onload = function () { r(i); }; i.src = src; }); }
+
+// o : { zoom, dx, dy, warm, dark }
+async function portrait(i, o) {
+  o = o || {};
+  var im = await loadImg('faces/f' + i + '.jpg');
+  var W = 360, H = 420, S = im.width;
+  // Recadrage buste (visages StyleGAN alignés : yeux vers 45 % de la hauteur)
+  var z = o.zoom || 1;
+  var cw = S * 0.86 / z, ch = cw * H / W;
+  var cx = S * (0.5 + (o.dx || 0)) - cw / 2, cy = S * (0.56 + (o.dy || 0)) - ch * 0.5;
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var x = c.getContext('2d');
+  // 1. Base : gris chaud, contrasté, légèrement adoucie (moins « photo »)
+  x.filter = 'grayscale(1) contrast(1.35) brightness(' + (o.bright || 0.92) + ') blur(0.6px)';
+  x.drawImage(im, cx, cy, cw, ch, 0, 0, W, H);
+  x.filter = 'none';
+  var base = x.getImageData(0, 0, W, H);
+  // 2. Contours (Sobel) → traits de crayon
+  var g = new Float32Array(W * H), d = base.data;
+  for (var k = 0; k < W * H; k++) g[k] = d[k * 4];
+  var ed = new Float32Array(W * H);
+  for (var yy = 1; yy < H - 1; yy++) for (var xx = 1; xx < W - 1; xx++) {
+    var p = yy * W + xx;
+    var gx = -g[p - W - 1] - 2 * g[p - 1] - g[p + W - 1] + g[p - W + 1] + 2 * g[p + 1] + g[p + W + 1];
+    var gy = -g[p - W - 1] - 2 * g[p - W] - g[p - W + 1] + g[p + W - 1] + 2 * g[p + W] + g[p + W + 1];
+    ed[p] = Math.min(1, Math.sqrt(gx * gx + gy * gy) / 260);
+  }
+  // 3. Fond : masque elliptique tête + épaules, le reste plonge dans le charbon
+  var out = x.createImageData(W, H), q = out.data;
+  var warm = o.warm != null ? o.warm : 1;
+  for (yy = 0; yy < H; yy++) for (xx = 0; xx < W; xx++) {
+    p = yy * W + xx;
+    var v = g[p];
+    // courbe « fusain » : ombres écrasées, hautes lumières douces
+    v = 255 * Math.pow(v / 255, 1.1);
+    v = v * (1 - ed[p] * 0.75);                      // traits
+    // masque : ellipse du visage + épaules
+    var nx = (xx - W / 2) / (W * 0.4), ny = (yy - H * 0.42) / (H * 0.42);
+    var m1 = 1 - (Math.sqrt(nx * nx + ny * ny) - 0.85) / 0.4;
+    // buste : trapèze qui s'élargit vers le bas, bords doux
+    var half = W * (0.26 + Math.max(0, yy / H - 0.62) * 1.1);
+    var m2 = yy / H > 0.6 ? 1 - (Math.abs(xx - W / 2) - half) / (W * 0.12) : 0;
+    var m = Math.max(0, Math.min(1, Math.max(m1, m2)));
+    m = m * m * (3 - 2 * m);
+    var bg = 26 + 10 * Math.sin(xx * 0.05 + yy * 0.02);
+    v = v * m + bg * (1 - m);
+    v *= (o.dark || 1);
+    var n = (Math.random() - 0.5) * 16;              // grain
+    q[p * 4] = Math.max(0, Math.min(255, v * (1 + 0.06 * warm) + n));
+    q[p * 4 + 1] = Math.max(0, Math.min(255, v * (1 + 0.02 * warm) + n));
+    q[p * 4 + 2] = Math.max(0, Math.min(255, v * (1 - 0.05 * warm) + n));
+    q[p * 4 + 3] = 255;
+  }
+  x.putImageData(out, 0, 0);
+  // 4. Hachures de fond au crayon + vignette
+  x.save();
+  x.globalAlpha = 0.18; x.strokeStyle = '#000'; x.lineWidth = 1;
+  for (var h = -H; h < W + H; h += 6) {
+    if (Math.random() < 0.25) continue;
+    x.beginPath(); x.moveTo(h, 0); x.lineTo(h - H * 0.6, H); x.stroke();
+  }
+  x.restore();
+  // on repeint le visage par-dessus les hachures (masque doux)
+  var face = document.createElement('canvas'); face.width = W; face.height = H;
+  var fx = face.getContext('2d'); fx.putImageData(out, 0, 0);
+  var rg = fx.createRadialGradient(W / 2, H * 0.47, W * 0.3, W / 2, H * 0.52, W * 0.62);
+  rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+  fx.globalCompositeOperation = 'destination-in'; fx.fillStyle = rg; fx.fillRect(0, 0, W, H);
+  x.drawImage(face, 0, 0);
+  var vg = x.createRadialGradient(W / 2, H * 0.45, H * 0.3, W / 2, H * 0.5, H * 0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.6)');
+  x.fillStyle = vg; x.fillRect(0, 0, W, H);
+  return c;
+}
+async function show(list) {
+  var g = document.getElementById('g'); g.innerHTML = '';
+  for (var it of list) {
+    var c = await portrait(it[0], it[1]);
+    var d = document.createElement('div'); c.style.width = '180px'; d.appendChild(c);
+    var s = document.createElement('span'); s.textContent = it[2] || it[0]; d.appendChild(s); g.appendChild(d);
+  }
+}
+async function save(i, name, o) {
+  var c = await portrait(i, o);
+  var r = await fetch('/__shot?name=' + name, { method: 'POST', body: c.toDataURL('image/jpeg', 0.86) });
+  return r.text();
+}
+// Retouche d'un portrait déjà traité : lissage bilatéral (efface le marbrage),
+// bande noire du bas comblée, coin bas-droit (signature) assombri, grain remis
+async function retouch(id, o) {
+  o = o || {};
+  var im = await loadImg('../assets/portraits/' + id + '.jpg?' + Math.random());
+  var W = im.width, H = im.height;
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+  var d = x.getImageData(0, 0, W, H), p = d.data;
+  var L = new Float32Array(W * H);
+  for (var k = 0; k < W * H; k++) L[k] = (p[k * 4] + p[k * 4 + 1] + p[k * 4 + 2]) / 3;
+  // bas de l'image : dernière ligne « pleine » trouvée en remontant
+  var last = H - 1;
+  while (last > H * 0.8) {
+    var s = 0; for (var xx = 0; xx < W; xx++) s += L[last * W + xx];
+    if (s / W > 6) break; last--;
+  }
+  for (var yy = last + 1; yy < H; yy++) for (xx = 0; xx < W; xx++) L[yy * W + xx] = L[last * W + xx] * Math.max(0.25, 1 - (yy - last) / 30);
+  var R = o.r || 4, ss = o.ss || 3, sr = o.sr || 16;
+  var out = new Float32Array(W * H);
+  for (yy = 0; yy < H; yy++) for (xx = 0; xx < W; xx++) {
+    var c0 = L[yy * W + xx], acc = 0, wsum = 0;
+    for (var dy = -R; dy <= R; dy++) { var y2 = yy + dy; if (y2 < 0 || y2 >= H) continue;
+      for (var dx = -R; dx <= R; dx++) { var x2 = xx + dx; if (x2 < 0 || x2 >= W) continue;
+        var v = L[y2 * W + x2], dv = v - c0;
+        var w = Math.exp(-(dx * dx + dy * dy) / (2 * ss * ss) - dv * dv / (2 * sr * sr));
+        acc += v * w; wsum += w; } }
+    out[yy * W + xx] = acc / wsum;
+  }
+  for (k = 0; k < W * H; k++) {
+    var v2 = out[k], n = (Math.random() - 0.5) * 12;
+    var px = k % W, py = (k / W) | 0;
+    // coin bas-droit (signature du site) plongé dans l'ombre
+    var cd = Math.hypot(W - px, H - py);
+    if (cd < 90) v2 *= 0.25 + 0.75 * cd / 90;
+    p[k * 4] = v2 * 1.06 + n; p[k * 4 + 1] = v2 * 1.02 + n; p[k * 4 + 2] = v2 * 0.95 + n;
+  }
+  x.putImageData(d, 0, 0);
+  return c;
+}
+async function saveRetouch(id, o) {
+  var c = await retouch(id, o);
+  var r = await fetch('/__shot?name=por_' + id, { method: 'POST', body: c.toDataURL('image/jpeg', 0.88) });
+  return r.text();
+}
+var PICKS =[[41, {}, 'vera'], [47, {}, 'tomas'], [4, {}, 'ilija'], [19, {}, 'nada'], [48, {}, 'goran'], [16, {}, 'lena'], [57, {}, 'emir'], [62, {}, 'mira']];
+</script></body></html>
