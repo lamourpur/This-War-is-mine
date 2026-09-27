@@ -81,7 +81,7 @@
       cands = [o.x - off, o.x + off];
     } else if (o.kind === 'frontdoor') {
       cands = [o.x + 34];
-    } else if (o.kind === 'npc') {
+    } else if (o.kind === 'npc' || o.kind === 'guard') {
       // On se place à côté de la personne, pas sur elle
       var half = (o.w || 40) / 2 + 22;
       cands = [o.x - half, o.x + half];

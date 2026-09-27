@@ -128,7 +128,7 @@
   C.START_ITEMS ={ eau: 4, conserve: 3, legumes: 2, bois: 5, composants: 4, pieces_meca: 1, bandage: 1 };
 
   C.CACHE_NAMES = {
-    caisse: 'Caisse', etagere: 'Étagère', armoire: 'Armoire', coffre: 'Coffre', valise: 'Valise', tas: 'Tas de débris', pharmacie: 'Armoire à pharmacie'
+    caisse: 'Caisse', etagere: 'Étagère', armoire: 'Armoire', coffre: 'Coffre', valise: 'Valise', tas: 'Tas de débris', pharmacie: 'Armoire à pharmacie', corps: 'Corps'
   };
   C.FURNITURE_NAMES = {
     commode: 'Vieille commode', armoire: 'Armoire vermoulue', bibliotheque: 'Bibliothèque'

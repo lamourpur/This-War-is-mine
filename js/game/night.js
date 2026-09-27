@@ -147,7 +147,13 @@
       (plan.scav.equip || []).forEach(function (id) { reserved[id] = (reserved[id] || 0) + 1; });
       if (plan.scav.ammo) reserved.munitions = plan.scav.ammo;
     }
-    if (scav && plan.scav && plan.scav.loc && plan.scav.explored) {
+    if (!scav && plan.scav && plan.scav.explored && plan.scav.explored.dead) {
+      // Le pilleur n'est pas revenu de l'exploration
+      add('scav', C.locationDef(plan.scav.loc).name + ' :', 'info');
+      plan.scav.explored.notes.forEach(function (nt) { add('scav', nt.t, nt.k); });
+      st.lastScavLoc = plan.scav.loc;
+      reserved = {};
+    } else if (scav && plan.scav && plan.scav.loc && plan.scav.explored) {
       // Exploration jouée : le sac revient tel quel (l'équipement est déjà parti avec)
       var ex = plan.scav.explored, ldef = C.locationDef(plan.scav.loc);
       add('scav', first(scav) + ' est allé(e) explorer : ' + ldef.name + '.', 'info');

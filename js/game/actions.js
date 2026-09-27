@@ -116,6 +116,29 @@
       label: 'Parle', dur: function () { return 2; },
       done: function (s, o, p) { C.Explore[p.what](s, o); return null; }
     },
+    // --- Exploration : soldats, cachettes, combat (voir combat.js)
+    gtalk: {
+      label: 'Parle', dur: function () { return 2; },
+      done: function (s, o, p) { C.Combat[p.what](s, o); return null; }
+    },
+    spare: {
+      label: 'Épargne', dur: function () { return 1; },
+      done: function (s, o) { C.Combat.spare(s, o); return null; }
+    },
+    attack: { label: 'Se bat', inPlace: true, dur: function () { return 0; } },
+    shoot: {
+      label: 'Tire', inPlace: true, dur: function () { return 0; },
+      check: function (s, o, p) {
+        var gd = C.Combat.GUNS[p.weapon];
+        if (!gd) return 'Pas d\'arme à feu.';
+        if (G().count('munitions') < 1) return 'Plus de munitions.';
+        if (o.f !== s.f || Math.abs(o.x - s.x) > gd.range || !C.Nav.clear(s.f, s.x, o.x)) return 'Pas de ligne de mire.';
+      }
+    },
+    hide: {
+      label: 'Caché(e)', loop: true, dur: function () { return 0; },
+      tick: function () { return false; }
+    },
     leave: {
       label: 'Rentre au refuge', dur: function () { return 0; },
       done: function () { setTimeout(function () { C.Explore.finish('exit'); }, 0); return null; }
@@ -575,6 +598,7 @@
   Actions.tick = function (s, gm) {
     var a = s.act;
     if (!a) return;
+    if (a.kind === 'attack' || a.kind === 'shoot') { C.Combat.tickSurv(s, a, gm); return; }
     var def = ACT[a.kind];
     var o = a.uid ? G().obj(a.uid) : null;
     if (a.uid && !o) { Actions.cancel(s); return; }
@@ -714,6 +738,12 @@
     // Décor d'un lieu exploré : rien à faire
     if (o.deco) { m.desc = C.Explore && C.Explore.active ? 'Ça ne vous servira à rien ici.' : ''; return m; }
     if (o.kind === 'npc' || o.kind === 'exit') return exploreMenu(s, o, m);
+    if (o.kind === 'guard') return C.Combat.menu(s, o, m);
+    if (o.kind === 'hide') {
+      m.desc = 'Un recoin plongé dans l\'ombre. Caché ici, on échappe aux regards — tant qu\'on ne bouge pas.';
+      m.entries.push(E('Se cacher', 'rester immobile dans l\'ombre', null, go('hide')));
+      return m;
+    }
     if (o.broken) {
       m.title += ' — en panne';
       m.desc = 'Hors d\'usage. Il faut la réparer avant de pouvoir s\'en servir.';

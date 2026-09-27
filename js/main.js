@@ -191,7 +191,7 @@
     cv.addEventListener('mousedown', function (e) {
       if (Main.mode !== 'game' || e.button !== 0) return;
       var st = G().st;
-      if (st.phase !== 'day' && st.phase !== 'dusk') return;
+      if (st.phase !== 'day' && st.phase !== 'dusk' && st.phase !== 'explore') return;
       var w = C.Render.toWorld(e.clientX, e.clientY);
       if (C.Render.placing) {
         var slot = slotAt(w);
@@ -221,8 +221,10 @@
       if (wasOpen) return;
       var s = C.UI.selectedSurv();
       var f = C.Render.floorAt(w.x, w.y);
-      if (s && f != null && st.phase === 'day') {
+      if (s && f != null && (st.phase === 'day' || st.phase === 'explore')) {
         C.Actions.moveTo(s, f, U.clamp(w.x, C.WORLD.walkMin, C.WORLD.walkMax));
+        // Exploration : double-clic = courir (plus vite, mais bruyant)
+        if (st.phase === 'explore') s.run = e.detail >= 2;
       }
     });
 
@@ -248,7 +250,7 @@
           break;
         case ' ':
           e.preventDefault();
-          if (C.UI.modalOpen || st.phase !== 'day') break;
+          if (C.UI.modalOpen || (st.phase !== 'day' && st.phase !== 'explore')) break;
           Main.setSpeed(Main.speed > 0 ? 0 : Main.lastSpeed);
           break;
         case '1': if (!C.UI.modalOpen) Main.setSpeed(1); break;

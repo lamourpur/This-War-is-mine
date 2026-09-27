@@ -63,8 +63,8 @@
       loot: { bois: 6, livres: 4, eau: 2, herbes: 3, engrais: 2, legumes: 4 },
       residentsLoot: { conserve: 3, eau: 4, bijoux: 2, alcool: 1 } },
 
-    { id: 'entrepot', name: 'Entrepôt du port', danger: 2, residents: 'bandits', unlock: 8, dist: 3,
-      desc: 'Des conteneurs éventrés, des hangars pleins. Une milice de quartier contrôle les lieux.',
+    { id: 'entrepot', name: 'Entrepôt du port', danger: 2, residents: 'militaires', unlock: 8, dist: 3,
+      desc: 'L\'armée a réquisitionné les hangars. Les soldats laissent les civils fouiller ce qui traîne, mais malheur à qui s\'approche de leur dépôt.',
       loot: { composants: 12, pieces_meca: 6, pieces_elec: 4, bois: 8, carburant: 3, tabac: 3, sucre: 3, conserve: 4, legumes: 3 },
       stash: { tool: ['scie'], loot: { fusil: 1, munitions: 8, gilet: 1 } } },
 
@@ -78,7 +78,7 @@
       loot: { conserve: 6, medicaments: 3, pieces_meca: 5, pieces_elec: 3, munitions: 8, carburant: 3, cafe: 2 } },
 
     { id: 'avant_poste', name: 'Avant-poste militaire', danger: 3, residents: 'militaires', unlock: 15, dist: 3,
-      desc: 'Des soldats tiennent un bâtiment fortifié. Ils ont de tout. Ils tirent à vue.',
+      desc: 'Des soldats tiennent un bâtiment fortifié. Ils ont de tout : vivres, médicaments, armes. Ils tirent à vue.',
       loot: { conserve: 8, medicaments: 3, munitions: 12, bandage: 4, cafe: 3, pieces_elec: 3 },
       stash: { tool: ['passe_partout', 'pied_de_biche'], loot: { fusil: 1, gilet: 1, munitions: 10 } } }
   ];

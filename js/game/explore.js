@@ -45,6 +45,8 @@
     E.active = true;
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
     E.notes = []; E.effects = []; E.stolen = {}; E.helped = [];
+    E.kills = []; E.spared = []; E.provoked = {};
+    C.Combat.noises = []; C.Combat.shots = [];
     E.bellRung = false;
     E.homePos = { x: s.x, y: s.y, f: s.f, facing: s.facing };
     E.saved = { STAIRS: C.STAIRS, WALLS: C.WALLS, WINDOWS: C.WINDOWS, SLOTS: C.SLOTS, DECOR: C.DECOR, THEME: C.THEME, NAV_START: C.NAV_START };
@@ -73,10 +75,12 @@
     });
     // Tas de débris laissés lors d'une visite précédente
     (ls.extra || []).forEach(function (d) { G().spawnObject(U.copy(d)); });
+    // Soldats : ronde, vigilance, hostilité mémorisée
+    est.objects.forEach(function (o) { if (o.kind === 'guard') C.Combat.init(o, ls); });
 
     ls.visits++;
     home.stats.scavenged++;
-    s.x = 230; s.f = 1; s.y = C.FLOORS[1].y; s.facing = 1; s.path = []; s.act = null;
+    s.x = 230; s.f = 1; s.y = C.FLOORS[1].y; s.facing = 1; s.path = []; s.act = null; s.run = false; s.hidden = false;
 
     C.Render.dirty = true;
     C.Render.particles = [];
@@ -104,7 +108,7 @@
     st.minute += gm;
     s.anim += gm;
     if (s.path.length) {
-      var step = C.Surv.speed(s) * gm;
+      var step = C.Surv.speed(s) * gm * (s.run ? 1.75 : 1);
       while (step > 0 && s.path.length) {
         var wp = s.path[0];
         var dx = wp.x - s.x, dy = wp.y - s.y, d = Math.sqrt(dx * dx + dy * dy);
@@ -114,6 +118,9 @@
       }
     }
     C.Actions.tick(s, gm);
+    if (!E.active) return;
+    C.Combat.update(dt * (C.Main.speed || 0), gm);
+    if (!E.active) return;
     if (!E.bellRung && st.minute >= BELL) {
       E.bellRung = true;
       if (C.Audio.ready) { C.Audio.sfx.alert(); }
@@ -133,7 +140,7 @@
     C.Actions.cancel(s, true);
     s.path = []; s.act = null;
     // Mémorise l'état de chaque objet du lieu
-    var keep = ['searched', 'loot', 'locked', 'open', 'broken'];
+    var keep = ['searched', 'loot', 'locked', 'open', 'broken', 'hp'];
     var present = {}, mapKeys = {};
     C.MAPS[E.loc].objects.forEach(function (d) { mapKeys[d.key] = true; });
     ls.extra = [];
@@ -152,7 +159,15 @@
     });
     C.MAPS[E.loc].objects.forEach(function (d) { if (!present[d.key]) ls.map[d.key] = 'gone'; });
 
-    var bag = est.inventory;
+    var bag = reason === 'dead' ? {} : est.inventory;
+    // Mila : libérée, ou laissée au soldat ivre
+    var mila = ls.npc.mila;
+    if (mila && !mila.rescued && mila.talk && !mila.abandoned && !C.Combat.freed('brute')) {
+      mila.abandoned = true;
+      E.notes.push({ t: first(s) + ' a laissé la jeune femme avec le soldat ivre. Personne n\'en parle.', k: 'bad' });
+      E.effects.push(function () { G().moralAll(-6, { bad: true, key: 'abandoned' }); });
+    }
+    C.Combat.consequences(s, E.notes, E.effects);
     // Restaure le refuge
     C.STAIRS = E.saved.STAIRS; C.WALLS = E.saved.WALLS; C.WINDOWS = E.saved.WINDOWS; C.SLOTS = E.saved.SLOTS;
     C.DECOR = E.saved.DECOR; C.THEME = E.saved.THEME; C.NAV_START = E.saved.NAV_START;
@@ -165,10 +180,12 @@
     // Conséquences morales, appliquées au groupe une fois rentré
     var owners = Object.keys(E.stolen);
     if (owners.length) {
-      home.stats.stole++;
-      ls.angry = true;
       owners.forEach(function (ow) {
         var od = C.OWNERS[ow] || { text: ' a volé ceux qui s\'abritaient là.', moral: -9, key: 'stole' };
+        // Prendre à l'armée n'est pas voler des gens dans le besoin
+        if (!od.moral) { E.notes.push({ t: first(s) + od.text, k: 'info' }); return; }
+        home.stats.stole++;
+        ls.angry = true;
         E.notes.push({ t: first(s) + od.text, k: 'bad' });
         G().moralAll(od.moral, { bad: true, key: od.key });
         if (od.horvat) home.flags.horvat = home.day + 3;
@@ -180,11 +197,16 @@
       });
     }
     E.effects.forEach(function (fn) { fn(); });
+    if (reason === 'dead') {
+      E.notes.unshift({ t: first(s) + ' a été abattu(e) sur place. Son corps et son sac sont restés là-bas.', k: 'bad' });
+      C.Surv.kill(s, 'pillage');
+    }
     if (reason === 'time') E.notes.unshift({ t: 'Le jour se levait : ' + first(s) + ' a dû rentrer en hâte.', k: 'info' });
 
     C.Render.dirty = true; C.Render.pops = []; C.Render.npcSay = {}; C.Render.bubbles = {};
     var plan = E.plan;
-    plan.scav.explored = { items: bag, notes: E.notes };
+    plan.scav.explored = { items: bag, notes: E.notes, dead: reason === 'dead' };
+    C.Combat.noises = []; C.Combat.shots = [];
     C.Main.setSpeed(0);
     if (E.onDone) E.onDone(plan);
   };
@@ -204,6 +226,21 @@
 
   E.talk = function (s, o) {
     var d = E.npcDef(o), ns = E.npcState(o), ls = locState(E.home, E.loc);
+    // Retenue par un soldat : libre quand il n'est plus là
+    if (d.rescued) {
+      ns.talk = (ns.talk || 0) + 1;
+      if (!C.Combat.freed('brute')) { E.say(o, d.greet[(ns.talk - 1) % d.greet.length], 5); return; }
+      if (!ns.rescued) {
+        ns.rescued = true; ns.helped = true;
+        G().addItems(d.reward);
+        if (C.Render.pop) C.Render.pop(s, Object.keys(d.reward).map(function (k) { return { item: k, n: d.reward[k] }; }));
+        E.home.stats.helped++;
+        E.notes.push({ t: first(s) + ' a libéré ' + d.name + ' du soldat qui la retenait.', k: 'good' });
+        E.effects.push(function () { G().moralAll(10, { good: true, key: 'helped' }); });
+      }
+      E.say(o, d.rescued[(ns.talk - 1) % d.rescued.length], 6);
+      return;
+    }
     var pool = ls.angry && d.afterSteal ? d.afterSteal : ns.helped && d.after ? d.after : d.greet;
     ns.talk = (ns.talk || 0) + 1;
     E.say(o, pool[(ns.talk - 1) % pool.length]);
@@ -266,6 +303,8 @@
     var any = false; for (var k in items) if (items[k] > 0) any = true;
     if (!any) return;
     E.stolen[o.owner] = true;
+    // Matériel de l'armée : grave seulement si un soldat voit faire
+    if (o.owner === 'armee') { C.Combat.witnessTheft(E.s, o.owner); return; }
     // Les habitants réagissent sur le moment
     var npc = G().st.objects.filter(function (x) { return x.kind === 'npc' && C.NPCS[x.npc] && C.NPCS[x.npc].afterSteal; })[0];
     if (npc) E.say(npc, C.NPCS[npc.npc].afterSteal[0], 6);

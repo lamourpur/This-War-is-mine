@@ -123,6 +123,9 @@
         case 'pew': return 'Banc d\'église';
         case 'altar': return 'Autel';
         case 'blackboard': return 'Tableau noir';
+        case 'guard': return C.GUARD_TYPES[o.type] ? C.GUARD_TYPES[o.type].name : 'Soldat';
+        case 'hide': return 'Recoin sombre';
+        case 'sandbags': return 'Sacs de sable';
         case 'desk': return 'Pupitre';
       }
       return o.kind;

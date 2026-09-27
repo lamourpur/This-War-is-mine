@@ -194,6 +194,18 @@
       ctx.fillStyle = 'rgba(132,38,32,0.85)';
       ctx.fillRect(fx + 38, fy - 18, 14, 38); ctx.fillRect(fx + 26, fy - 6, 38, 14);
       SK.stain(ctx, fx + 70, fy + 12, 16, 0.2);
+    } else if (TH.military) {
+      // Poste militaire : mât et drapeau en lambeaux, barbelés, sacs de sable
+      var mx = W / 2 - 320;
+      SK.line(ctx, r, mx, eave - 4, mx, roofTop - 40, { w: 2.4 });
+      var fl2 = [[mx, roofTop - 40], [mx + 70, roofTop - 34], [mx + 58, roofTop - 22], [mx + 72, roofTop - 10], [mx, roofTop - 4]];
+      SK.fill(ctx, r, fl2, '#5a5c48', 0.8); SK.poly(ctx, r, fl2, true, { w: 1.1 });
+      for (var bw2 = 0; bw2 < 7; bw2++) {
+        var bx2 = W / 2 - 250 + bw2 * 26;
+        ctx.strokeStyle = SK.INK; ctx.lineWidth = 0.9;
+        ctx.beginPath(); ctx.arc(bx2, eave - 14, 9, 0, Math.PI * 2); ctx.stroke();
+      }
+      SK.line(ctx, r, W / 2 - 262, eave - 14, W / 2 - 250 + 7 * 26, eave - 14, { w: 0.8, passes: 1 });
     } else if (TH.school) {
       // École : clocheton et horloge arrêtée
       var cx0 = W / 2 - 260, cw = 80, ctop = roofTop - 10;
@@ -426,7 +438,11 @@
     var working = a && a.phase === 'work';
     var Lp = place(s, t);
     var o = Lp.o, H = Lp.H, P = Lp.P, x = Lp.x, y = Lp.y, dir = Lp.dir, headX = Lp.headX;
+    // Caché dans l'ombre : à peine visible
+    if (s.hidden) ctx.globalAlpha = 0.42;
     C.Figure.draw(ctx, s, x, y, dir, { t: t, pose: P });
+    ctx.globalAlpha = 1;
+    if (s.hurtT > 0) { ctx.fillStyle = 'rgba(160,30,20,' + (s.hurtT * 0.8) + ')'; ctx.beginPath(); ctx.arc(x, y - H * 0.6, 26, 0, Math.PI * 2); ctx.fill(); }
 
     // Couverture sur le lit
     if (P.kind === 'lie' && o) {
@@ -601,6 +617,7 @@
       p.t += dt;
       p.x += p.vx * dt; p.y += p.vy * dt;
       if (p.kind === 'dust') p.vy += 30 * dt;
+      if (p.kind === 'blood') { p.vy += 420 * dt; if (p.floorY == null) p.floorY = C.FLOORS.reduce(function (b, fl) { return fl.y >= p.y && (b == null || fl.y < b) ? fl.y : b; }, null); if (p.floorY != null && p.y > p.floorY) { p.y = p.floorY; p.vx = 0; p.vy = 0; } }
       if (p.kind === 'smoke' || p.kind === 'steam') { p.vx += (Math.random() - 0.5) * 6 * dt; p.size += dt * 5; }
       if (p.t >= p.life) list.splice(i, 1);
     }
@@ -648,6 +665,7 @@
       var a = 1 - p.t / p.life;
       switch (p.kind) {
         case 'dust': ctx.fillStyle = 'rgba(160,150,130,' + (a * 0.7) + ')'; ctx.fillRect(p.x, p.y, p.size, p.size); break;
+        case 'blood': ctx.fillStyle = 'rgba(110,22,18,' + Math.min(1, a * 1.6) + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); break;
         case 'spark': ctx.fillStyle = 'rgba(255,220,150,' + a + ')'; ctx.fillRect(p.x, p.y, 2, 2); break;
         case 'steam': case 'smoke':
           ctx.fillStyle = 'rgba(210,205,195,' + (a * 0.18) + ')';
@@ -686,6 +704,7 @@
       lg.addColorStop(0, 'rgba(255,225,170,0.26)'); lg.addColorStop(0.5, 'rgba(230,190,130,0.1)'); lg.addColorStop(1, 'rgba(200,160,100,0)');
       ctx.fillStyle = lg; ctx.fillRect(lx - 180, ly - 180, 360, 360);
     }
+    if (st.phase === 'explore' && C.Combat) C.Combat.drawLights(ctx, t);
     // Lueur du bidon-poêle dans la rue
     if (C.Props.has('barrel_stove')) {
       var bf = 0.8 + Math.sin(t * 9) * 0.1 + Math.sin(t * 17.3) * 0.08;
@@ -965,7 +984,7 @@
 
     // Surbrillance de l'objet survolé
     var ho = R.hoverObj;
-    if (ho && !R.placing) highlight(ctx, ho, t);
+    if (ho && !R.placing && ho.kind !== 'guard') highlight(ctx, ho, t);
 
     // Stations en panne
     st.objects.forEach(function (o) {
@@ -980,6 +999,9 @@
     });
 
     holeFx(ctx, st, t, dt);
+
+    // Soldats, zones gardées, bruit et tirs (exploration)
+    if (st.phase === 'explore' && C.Combat) C.Combat.draw(ctx, t);
 
     // Survivants
     var sel = C.UI ? C.UI.selected : null;

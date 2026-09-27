@@ -116,6 +116,10 @@
       if (loc && C.isPlayableLocation(loc.id)) {
         // Lieu jouable : c'est vous qui menez l'exploration
         scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Sac : ' + C.Explore.capacity(s) + ' de charge. Emportez de quoi aider ou échanger.</span>'));
+        if (loc.residents === 'militaires') {
+          var hostileNow = loc.danger >= 3 || Object.keys(st.locations[loc.id].hostile || {}).length;
+          scavBox.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + (hostileNow ? 'Les soldats tirent à vue. ' : 'Des soldats gardent les lieux : n\'entrez pas dans leur zone et ne volez pas sous leurs yeux. ') + 'Restez hors de leur regard, cachez-vous dans les recoins sombres, et évitez le bruit (double-clic = courir). Une arme et un gilet pare-balles peuvent vous sauver la vie.</span>'));
+        }
       } else {
         row.appendChild(seg('Attitude', [
           ['discret', 'Discrète', 'Moins de rencontres, moins de butin'],

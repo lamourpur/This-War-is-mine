@@ -193,6 +193,26 @@
         P.arms = [{ a: 0.02, bend: 0.3 }, { a: 0.45 + 0.25 * Math.sin(t * 2.3), bend: 0.9 + 0.5 * Math.sin(t * 3.1) }];
         P.head = 0.05 * Math.sin(t * 2); P.mouth = Math.sin(t * 9) > 0 ? 'open' : 'flat';
         break;
+      case 'attack':
+        // Coups portés : élan puis frappe
+        var sp = C.Combat ? C.Combat.swingPhase(s) : 0;
+        P.kind = 'fight'; P.lean = 0.16 + sp * 0.12;
+        P.legs = [{ a1: 0.34, bend: 0.3 }, { a1: -0.3, bend: 0.1 }];
+        P.arms = [{ a: 0.7, bend: 0.9 }, { a: U.lerp(-0.9, 1.6, sp), bend: U.lerp(1.4, 0.2, sp) }];
+        P.tool = a.p && a.p.tool || null; P.brow = 'angry';
+        break;
+      case 'shoot':
+        P.kind = 'aim'; P.lean = 0.02;
+        P.legs = [{ a1: 0.22, bend: 0.12 }, { a1: -0.2, bend: 0.06 }];
+        var two = a.p && a.p.tool === 'rifle';
+        P.arms = two ? [{ a: 1.25, bend: 0.35 }, { a: 1.05, bend: 0.5 }] : [{ a: 0.1, bend: 0.3 }, { a: 1.52, bend: 0.02 }];
+        P.tool = a.p && a.p.tool || null; P.brow = 'angry';
+        break;
+      case 'hide':
+        P.kind = 'crouch'; P.lean = 0.35; P.head = 0.1;
+        P.legs = [{ a1: 1.25, bend: 2.2 }, { a1: 0.85, bend: 1.9 }];
+        P.arms = [{ a: 0.8, bend: 0.9 }, { a: 0.95, bend: 0.8 }];
+        break;
       case 'listen': case 'news': case 'music':
         P.arms = [{ a: 0.35, bend: 1.45 }, { a: 0.3, bend: 1.5 }];
         P.head = 0.12 + 0.06 * Math.sin(t * 1.3);
@@ -209,6 +229,35 @@
       if (s.sick >= 30 && Math.sin(t * 0.9 + s.anim) > 0.93) { P.head += 0.35; P.lean += 0.12; P.arms[1] = { a: 0.5, bend: 2.3 }; }
     }
     if (s.fatigue >= 55 && P.eyes === 'open') P.eyes = 'half';
+    return P;
+  };
+
+  // Soldats et autres personnages armés : mode = patrol | aim | fire | strike | surrender | sleep | hurt
+  F.guardPose = function (g, t, mode, tool) {
+    var fake = { x: g.x, y: g.y, path: g.path, anim: g.anim || 0, moral: 70, fatigue: 20, wound: g.hp < 40 ? 40 : 0, sick: 0, act: null };
+    if (mode === 'sleep') { fake.act = { kind: 'sleepfloor', phase: 'work' }; return F.pose(fake, t); }
+    var P = F.pose(fake, t);
+    P.tool = tool;
+    var walking = g.path && g.path.length;
+    if (mode === 'aim' || mode === 'fire') {
+      var rec = mode === 'fire' ? 0.18 : 0;
+      P.arms = tool === 'rifle' ? [{ a: 1.25 - rec, bend: 0.35 }, { a: 1.05 - rec, bend: 0.5 }] : [{ a: 0.1, bend: 0.3 }, { a: 1.52 - rec, bend: 0.02 }];
+      P.lean = -rec * 0.4; P.brow = 'angry';
+      if (!walking) P.legs = [{ a1: 0.22, bend: 0.12 }, { a1: -0.2, bend: 0.06 }];
+    } else if (mode === 'strike') {
+      var sp = 0.5 + 0.5 * Math.sin(t * 9);
+      P.kind = 'fight'; P.lean = 0.2;
+      P.arms = [{ a: 0.7, bend: 0.9 }, { a: U.lerp(-0.8, 1.5, sp), bend: U.lerp(1.3, 0.3, sp) }];
+    } else if (mode === 'surrender') {
+      P.kind = 'crouch'; P.lean = 0.2; P.head = 0.25; P.brow = 'sad'; P.mouth = 'sad'; P.tool = null;
+      P.legs = [{ a1: 1.3, bend: 2.3 }, { a1: 0.9, bend: 2.0 }];
+      P.arms = [{ a: 2.7, bend: 0.3 }, { a: 2.9, bend: 0.2 }];
+    } else if (mode === 'hurt') {
+      P.lean = -0.25; P.head = -0.2; P.arms = [{ a: 0.3, bend: 1.8 }, { a: -0.4, bend: 0.4 }];
+    } else if (!walking && tool === 'rifle') {
+      // Arme portée en travers de la poitrine
+      P.arms = [{ a: 0.55, bend: 1.2 }, { a: 0.35, bend: 1.45 }];
+    }
     return P;
   };
 
@@ -349,6 +398,33 @@
           break;
         case 'pick':
           SK.line(ctx, r, hand[0], hand[1], hand[0] + d[0] * 9, hand[1] + d[1] * 9, { w: 1, passes: 1, color: '#9a9c9e' });
+          break;
+        case 'knife':
+          tip = [hand[0] + d[0] * 0.11 * H, hand[1] + d[1] * 0.11 * H];
+          SK.line(ctx, r, hand[0] - d[0] * 3, hand[1] - d[1] * 3, hand[0] + d[0] * 3, hand[1] + d[1] * 3, { w: 2.6, passes: 1, color: '#3a2e24' });
+          ctx.fillStyle = '#a7aaad';
+          polyPath(ctx, [[hand[0] + d[0] * 3 - n[0] * 1.6, hand[1] + d[1] * 3 - n[1] * 1.6], [tip[0], tip[1]], [hand[0] + d[0] * 3 + n[0] * 1.8, hand[1] + d[1] * 3 + n[1] * 1.8]]); ctx.fill();
+          ctx.strokeStyle = INK; ctx.lineWidth = 0.5; ctx.stroke();
+          break;
+        case 'hatchet':
+          tip = [hand[0] + d[0] * 0.17 * H, hand[1] + d[1] * 0.17 * H];
+          SK.line(ctx, r, hand[0] - d[0] * 4, hand[1] - d[1] * 4, tip[0], tip[1], { w: 2.4, passes: 1, color: '#5a4a3a' });
+          var hb = [[tip[0] - d[0] * 7, tip[1] - d[1] * 7], [tip[0] + n[0] * 9 - d[0] * 9, tip[1] + n[1] * 9 - d[1] * 9], [tip[0] + n[0] * 10 + d[0] * 3, tip[1] + n[1] * 10 + d[1] * 3], [tip[0], tip[1]]];
+          ctx.fillStyle = '#56595c'; polyPath(ctx, hb); ctx.fill();
+          SK.poly(ctx, r, hb, true, { w: 0.7, passes: 1, color: INK });
+          break;
+        case 'pistol':
+          // Tenu bras tendu : canon dans l'axe de l'avant-bras
+          var pb = [hand[0] + d[0] * 2, hand[1] + d[1] * 2], pt2 = [hand[0] + d[0] * 0.1 * H, hand[1] + d[1] * 0.1 * H];
+          SK.line(ctx, r, pb[0], pb[1], pt2[0], pt2[1], { w: 3.4, passes: 1, color: '#1f2022' });
+          SK.line(ctx, r, hand[0] - n[0] * 1, hand[1] - n[1] * 1, hand[0] - n[0] * 6 - d[0] * 1, hand[1] - n[1] * 6 - d[1] * 1, { w: 3, passes: 1, color: '#2a2622' });
+          break;
+        case 'rifle':
+          // Fusil : crosse à l'épaule, canon vers l'avant
+          var rb = [hand[0] - d[0] * 0.2 * H, hand[1] - d[1] * 0.2 * H], rt = [hand[0] + d[0] * 0.3 * H, hand[1] + d[1] * 0.3 * H];
+          SK.line(ctx, r, rb[0], rb[1], hand[0] + d[0] * 0.06 * H, hand[1] + d[1] * 0.06 * H, { w: 4.2, passes: 1, color: '#4b3b2c' });
+          SK.line(ctx, r, hand[0], hand[1], rt[0], rt[1], { w: 2.2, passes: 1, color: '#1f2022' });
+          SK.line(ctx, r, rb[0] - n[0] * 2, rb[1] - n[1] * 2, rb[0] + n[0] * 4, rb[1] + n[1] * 4, { w: 3, passes: 1, color: '#3d3024' });
           break;
         case 'spoon':
           tip = [hand[0] + d[0] * 0.12 * H, hand[1] + d[1] * 0.12 * H];
@@ -652,6 +728,7 @@
       ctx.strokeStyle = L.brow === 'thin' ? shade(hc.length === 7 ? hc : '#2a2622', 1.3) : INK;
       ctx.beginPath();
       if (P.brow === 'sad') { ctx.moveTo(ex - 2.6, ey - 2.4); ctx.lineTo(ex + 2.2, ey - 4.0); }
+      else if (P.brow === 'angry') { ctx.moveTo(ex - 2.6, ey - 4.2); ctx.lineTo(ex + 2.4, ey - 2.6); }
       else { ctx.moveTo(ex - 2.6, ey - 3.2); ctx.quadraticCurveTo(ex, ey - 4.3, ex + 2.4, ey - 3.4); }
       ctx.stroke();
       ctx.strokeStyle = INK;
@@ -726,6 +803,18 @@
         ctx.beginPath(); ctx.ellipse(-rx * 0.1, cy - ry * 0.5, rx * 1.12, ry * 0.72, -0.15, Math.PI, 0); ctx.fill();
         ctx.fillRect(-rx * 1.2, cy - ry * 0.62, rx * 2.15, ry * 0.3);
         SK.line(ctx, r, -rx * 1.2, cy - ry * 0.32, rx * 0.95, cy - ry * 0.4, { w: 0.8, passes: 1, color: INK });
+      }
+      if (L.hat === 'helmet') {
+        // Casque lourd : calotte ronde, bord, jugulaire
+        var hg2 = ctx.createLinearGradient(0, cy - ry * 1.3, 0, cy - ry * 0.2);
+        hg2.addColorStop(0, shade(L.hatColor || '#4a4e3c', 1.25)); hg2.addColorStop(1, shade(L.hatColor || '#4a4e3c', 0.7));
+        ctx.fillStyle = hg2;
+        ctx.beginPath(); ctx.ellipse(-rx * 0.08, cy - ry * 0.42, rx * 1.22, ry * 0.86, -0.08, Math.PI, 0); ctx.fill();
+        ctx.strokeStyle = 'rgba(15,13,11,0.9)'; ctx.lineWidth = 0.9; ctx.stroke();
+        ctx.fillStyle = shade(L.hatColor || '#4a4e3c', 0.6);
+        ctx.fillRect(-rx * 1.34, cy - ry * 0.46, rx * 2.6, ry * 0.14);
+        ctx.strokeRect(-rx * 1.34, cy - ry * 0.46, rx * 2.6, ry * 0.14);
+        SK.line(ctx, r, rx * 0.35, cy - ry * 0.36, rx * 0.2, cy + ry * 0.62, { w: 0.6, passes: 1, color: INK, alpha: 0.7 });
       }
       if (L.hat === 'cap') {
         ctx.fillStyle = L.hatColor || '#34322e';

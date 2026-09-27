@@ -15,7 +15,7 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
 | Parler, réconforter, soigner quelqu'un | Clic sur un **autre** survivant quand un survivant est déjà sélectionné |
 | Biographie et pensées | Bouton **Fiche** d'une carte |
 | Agir sur un objet | Clic sur l'objet, puis choix dans le menu |
-| Se déplacer | Clic sur le sol |
+| Se déplacer | Clic sur le sol (exploration : double-clic = courir, plus bruyant) |
 | Manger, se soigner, consommer | Bouton **Besoins ▾** de la fiche |
 | Pause / vitesses | `Espace` · `1` `2` `3` |
 | Survivant suivant | `Tab` |
@@ -35,6 +35,13 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
 - **Visiteurs** : marchands (troc, le trait négociateur aide), voisins, enfants, blessés, réfugiés qui veulent rejoindre le groupe, milice qui rackette. Chaque choix pèse sur le moral.
 - **Nuit** : chaque survivant dort (dans un lit ou par terre), monte la garde ou part piller. On peut piller 14 lieux, chacun avec son niveau de danger, ses habitants et ses réserves verrouillées. On choisit l'attitude, la priorité de butin et l'équipement. Des raids peuvent frapper le refuge.
 - **Exploration jouable** (lieux sans danger : Maison abandonnée dès le jour 1, École bombardée au jour 2, Maison des Whitaker au jour 4, Hôpital de campagne au jour 6, Église Sainte-Anne au jour 7) : on dirige soi-même le pilleur dans le bâtiment de 20 h à 5 h (cloche à 4 h, retour forcé à l'aube). Le sac est limité en poids (12, 18 avec « grand sac ») : fouille par glisser-déposer entre le meuble et le sac. On y rencontre des gens : un vagabond blessé, un vieux couple, un prêtre, une mère et son enfant malade, un marchand, une chirurgienne à court d'alcool pour désinfecter, un infirmier qui troque, un soldat blessé, une institutrice qui prépare l'anniversaire d'un enfant, un père de famille méfiant. On peut les aider (moral du groupe, récompense), échanger avec eux (chacun paie plus cher ce qu'il recherche), faire des dons… ou voler leurs affaires, avec les conséquences qui vont avec : chaque vol pèse différemment sur le moral selon la victime, et certains se paient plus tard (on apprend quelques jours après ce que le vol de la pharmacie de l'hôpital a coûté). L'état de chaque lieu est conservé d'une visite à l'autre.
+- **Lieux gardés par des soldats** (jouables) : l'**Entrepôt du port** (jour 8) et l'**Avant-poste militaire** (jour 15).
+  - Les soldats **patrouillent**, regardent devant eux (faisceau de leur lampe) et **entendent le bruit** : fouiller, forcer une serrure au pied-de-biche, déblayer, courir (double-clic) ou tirer produit des cercles de bruit qui les attirent. Un « ? » se remplit quand ils ont un doute, un « ! » quand ils vous ont repéré.
+  - À l'entrepôt, ils sont **neutres** : le sergent Maddox fait même du troc. Mais entrer dans leur **zone interdite** (marquée en rouge) déclenche un avertissement, puis ils ouvrent le feu si on ne recule pas ; **voler sous leurs yeux** ou **attaquer l'un d'eux** rend toute la garnison hostile, et elle s'en souviendra aux visites suivantes. Voler leur matériel sans être vu ne pèse pas sur le moral.
+  - À l'avant-poste, ils **tirent à vue**. Il faut progresser dans l'ombre.
+  - **Combat** : se cacher dans les **recoins sombres** (invisible tant qu'on ne bouge pas, et plus dur à toucher), **attaque furtive** par-derrière ou sur un soldat endormi (mortelle avec un couteau ou une hachette), corps à corps, **tir** au pistolet ou au fusil (munitions, portée, ligne de mire, très bruyant). Le gilet pare-balles réduit les blessures. Un survivant trop blessé meurt sur place, et son sac est perdu.
+  - Un soldat grièvement blessé peut **fuir puis se rendre** : l'épargner ou l'achever. Le moral encaisse différemment un combat pour sa vie, un meurtre dans le sommeil, ou l'exécution d'un homme qui supplie. Les corps peuvent être fouillés (armes, munitions).
+  - À l'étage de l'entrepôt, un soldat ivre retient une jeune femme. On peut passer son chemin… ou intervenir.
 - **Objets de valeur** : bijoux, montre en or, diamants (très rares), la meilleure monnaie de troc.
 - **Fin** : un cessez-le-feu tombe à une date aléatoire entre le jour 30 et le jour 45. Un épilogue est écrit pour chaque survivant.
 

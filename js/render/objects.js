@@ -506,6 +506,17 @@
 
   D.cache = function (ctx, r, o, y) {
     var x = o.x - o.w / 2, top = y - o.h;
+    if (o.variant === 'corps') {
+      // Corps d'un soldat, allongé dans une flaque sombre
+      var T = C.GUARD_TYPES && C.GUARD_TYPES[o.gtype];
+      ctx.fillStyle = 'rgba(70,14,12,0.55)'; ctx.beginPath(); ctx.ellipse(o.x, y - 2, 46, 5, 0, 0, Math.PI * 2); ctx.fill();
+      if (T) {
+        var fake = { id: 'corps' + o.uid, look: T.look, traits: [], path: [], x: o.x, y: y, f: o.f, anim: 0, moral: 40, fatigue: 0, wound: 80, sick: 0, act: { kind: 'sleepfloor', phase: 'work' } };
+        var H = C.Figure.BASE * T.look.h;
+        C.Figure.draw(ctx, fake, o.x + H * 0.45, y - 9, 1, { t: 0, pose: C.Figure.pose(fake, 0) });
+      }
+      return;
+    }
     if (o.variant === 'tas') {
       // Tas de débris : ce qui reste après avoir déblayé ou démonté
       var tp = [[x - 4, y], [x + o.w * 0.25, y - o.h * 0.8], [x + o.w * 0.55, y - o.h], [x + o.w + 4, y]];
@@ -659,6 +670,33 @@
     F(ctx, r, px - 5, y - 90, 10, 16, '#b7b8ae', 0.2); SK.rect(ctx, r, px - 5, y - 90, 10, 16, { w: 0.8, passes: 1 });
     ctx.strokeStyle = 'rgba(40,38,34,0.6)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(px, y - 74); ctx.quadraticCurveTo(px - 10, y - 50, x + o.w - 30, y - 34); ctx.stroke();
   }
+
+  // Recoin sombre : renfoncement dans le mur, rideau déchiré (cachette)
+  D.hide = function (ctx, r, o, y) {
+    var x = o.x - o.w / 2, top = y - o.h;
+    var rec = [[x, y], [x, top + 10], [o.x, top], [x + o.w, top + 10], [x + o.w, y]];
+    P(ctx, r, rec, '#1b1a18', 0.4);
+    var g = ctx.createLinearGradient(x, 0, x + o.w, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(0.5, 'rgba(0,0,0,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = g; ctx.beginPath(); rec.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fill();
+    SK.poly(ctx, r, rec, false, { w: 1.2 });
+    // Rideau de toile qui pend d'un côté
+    var cur = [[x + 2, top + 10], [x + 16, top + 8], [x + 13, y - 20], [x + 19, y - 2], [x + 2, y - 4]];
+    P(ctx, r, cur, '#4b463d', 0.8); SK.hatchPoly(ctx, r, cur, { gap: 3, alpha: 0.3, angle: 0.1 }); SK.poly(ctx, r, cur, true, { w: 0.8, passes: 1 });
+  };
+
+  // Sacs de sable empilés
+  D.sandbags = function (ctx, r, o, y) {
+    var x = o.x - o.w / 2, bw = 30, rows = 3;
+    for (var j = 0; j < rows; j++) {
+      var n = Math.floor(o.w / bw) - (j % 2 ? 1 : 0);
+      for (var i = 0; i < n; i++) {
+        var bx = x + i * bw + (j % 2 ? bw / 2 : 0), by = y - (j + 1) * 12;
+        var bag = [[bx, by + 12], [bx + 2, by + 2], [bx + bw / 2, by], [bx + bw - 2, by + 2], [bx + bw, by + 12]];
+        P(ctx, r, bag, '#6f6553', 0.8); SK.hatchPoly(ctx, r, bag, { gap: 3.5, alpha: 0.25, angle: 1.3 }); SK.poly(ctx, r, bag, true, { w: 0.9, passes: 1 });
+      }
+    }
+  };
 
   // Tableau noir d'une salle de classe (craie à moitié effacée)
   D.blackboard = function (ctx, r, o, y) {

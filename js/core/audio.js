@@ -304,6 +304,13 @@
       var n =1 + Math.floor(Math.random() * 6), gap = 0.08 + Math.random() * 0.12;
       for (var i = 0; i < n; i++) burst({ freq: 900, type: 'lowpass', dur: 0.09, gain: 0.08 + Math.random() * 0.06, delay: i * gap + Math.random() * 0.03, verb: true, bus: A.nodes.amb });
     },
+    // Coup de feu tout proche (combat en exploration)
+    shot: function () {
+      if (A.play('shot', { gain: 0.6, dur: 0.9, rate: 0.95 + Math.random() * 0.1 })) return;
+      burst({ freq: 1400, type: 'lowpass', dur: 0.16, gain: 0.35, attack: 0.002, verb: true });
+      tone({ freq: 90, slide: 40, dur: 0.25, gain: 0.2 });
+    },
+    hit: function () { burst({ brown: true, freq: 380, dur: 0.12, gain: 0.35, attack: 0.005 }); },
     victory: function () {
       [0, 4, 7, 12].forEach(function (s, i) { A.note(62 + s, 3, i * 0.35, 0.12); });
     }
