@@ -389,9 +389,10 @@ button { font-family: inherit; color: inherit; }
 .night-card .card-pf canvas { width: 56px; height: 68px; }
 .night-card h4 { margin: 0; font-family: var(--f-display); font-weight: normal; font-size: 28px; letter-spacing: .03em; line-height: 1; }
 .night-card .ns { font-size: 14px; color: var(--muted); line-height: 1.3; margin-top: 2px; }
-.roles { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
-.role { display: flex; flex-direction: column; align-items: center; gap: 3px; background: transparent; border: 1px solid #4d4840; color: var(--muted); padding: 8px 2px 6px; cursor: pointer; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; transition: all .12s; }
-.role .ico { font-size: 26px; }
+.roles { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 12px; }
+.role { display: flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #4d4840; color: var(--muted); padding: 6px 8px; cursor: pointer; font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; line-height: 1.1; text-align: left; transition: all .12s; }
+.role.on.r-bed { background: #d9c9a0; border-color: #d9c9a0; }
+.role .ico { font-size: 20px; flex: none; }
 .role:hover:not(:disabled) { border-color: var(--bone-2); color: var(--bone); }
 .role.on { background: var(--bone); color: var(--ink); border-color: var(--bone); }
 .role.on.r-scav { background: var(--amber); border-color: var(--amber); }
@@ -579,12 +580,14 @@ kbd { font-family: var(--f-ui); font-weight: 700; border: 1px solid currentColor
 .ending .stats div { padding: 8px 14px; border: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 .ending .stats b { display: block; font-family: var(--f-display); font-weight: normal; font-size: 30px; color: var(--bone); }
 
-#fader { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 60; transition: opacity .8s; }
+#fader { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 60; transition: opacity .85s ease-in-out; }
 #fader.on { opacity: 1; pointer-events: all; }
 .night-title { position: absolute; inset: 0; z-index: 61; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--bone); pointer-events: none; animation: fadeIn 1.2s; }
 .night-title .ico { font-size: 56px; color: var(--bone-2); margin-bottom: 10px; }
 .night-title h1 { font-family: var(--f-display); font-weight: normal; font-size: 110px; line-height: .9; margin: 0; letter-spacing: .04em; }
 .night-title p { font-family: var(--f-note); color: var(--muted); font-size: 20px; }
+.night-title { transition: opacity .8s; }
+.night-title.out { opacity: 0; }
 
 @media (max-width: 1280px) {
   #topbar > div { padding: 0 12px; }
@@ -865,3 +868,25 @@ body.skipping #tb-clock { color: var(--amber); }
 .trade-face .card-pf canvas { width: 70px; height: 84px; display: block; }
 .trade-face b { display: block; font-family: var(--f-display); font-weight: normal; font-size: 26px; letter-spacing: .03em; line-height: 1; }
 .trade-face span { font-family: var(--f-note); font-size: 15px; color: var(--ink-2); }
+
+/* Sac du pilleur (écran de la nuit) */
+.bag-pick { margin-top: 14px; border-top: 1px dashed #4d4840; padding-top: 12px; }
+.bp-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--f-display); font-size: 22px; letter-spacing: .05em; color: var(--bone); margin-bottom: 8px; }
+.bp-head span { display: inline-flex; align-items: center; gap: 8px; }
+.bp-head b { font-weight: normal; color: var(--bone-2); font-size: 20px; }
+.bp-head b.ko { color: #d9866a; }
+.bp-head.shake { animation: bpShake .35s; }
+@keyframes bpShake { 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+.bp-cells { display: grid; grid-template-columns: repeat(auto-fill, 52px); gap: 6px; margin-bottom: 12px; }
+.bp-cell { position: relative; width: 52px; height: 52px; border: 1px dashed #5a5346; background: rgba(0,0,0,.25); padding: 0; cursor: default; display: flex; align-items: center; justify-content: center; }
+.bp-cell.full { border: 1px solid #8d8472; background: rgba(233,224,203,.08); cursor: pointer; }
+.bp-cell.full:hover { border-color: #d9866a; background: rgba(217,134,106,.12); }
+.bp-cell i { position: absolute; right: 3px; bottom: 1px; font-style: normal; font: 700 13px var(--f-ui); color: var(--bone); text-shadow: 0 1px 2px #000; }
+.bp-res { display: flex; flex-direction: column; gap: 6px; }
+.bp-cat { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.bp-cat small { width: 100%; font: 11px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: #8a8170; }
+.bp-item { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #4d4840; color: var(--bone-2); padding: 2px 8px 2px 3px; cursor: pointer; font: 600 14px var(--f-ui); }
+.bp-item:hover { border-color: var(--amber); color: var(--bone); }
+.bp-item em { font-style: normal; color: #8a8170; font-size: 12px; }
+.bp-tips { margin: 10px 0 0; font: 13px var(--f-ui); color: #8a8170; line-height: 1.45; }
+.bp-tips .ko { color: #d9866a; }

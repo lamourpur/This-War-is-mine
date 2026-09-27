@@ -116,17 +116,48 @@
   }
 
   // Fondu au noir de la nuit
-  Main.nightFade = function (on, text) {
-    var f = $('fader');
+  function titleOut(t) { if (!t) return; t.classList.add('out'); setTimeout(function () { if (t.parentNode) t.remove(); }, 900); }
+  function showTitle(icon, title, text) {
     var old = document.querySelector('.night-title');
     if (old) old.remove();
+    var t = U.el('div', 'night-title', C.Icon(icon) + '<h1>' + U.esc(title) + '</h1><p>' + U.esc(text || '') + '</p>');
+    document.getElementById('app').appendChild(t);
+    return t;
+  }
+  Main.nightFade = function (on, text) {
+    var f = $('fader');
     if (on) {
       f.classList.add('on');
-      var t = U.el('div', 'night-title', C.Icon('moon') + '<h1>Nuit ' + G().st.day + '</h1><p>' + U.esc(text || '') + '</p>');
-      document.getElementById('app').appendChild(t);
+      showTitle('moon', 'Nuit ' + G().st.day, text);
     } else {
       f.classList.remove('on');
+      titleOut(document.querySelector('.night-title'));
     }
+  };
+  // Fondu au noir, titre sur fond noir, puis retour (comme dans le jeu d'origine)
+  // o : { icon, title, text, hold } · mid() est appelé pendant le noir
+  Main.fadeThrough = function (o, mid) {
+    if (Main.noFade) { if (mid) mid(); return; }
+    var f = $('fader');
+    f.classList.add('on');
+    setTimeout(function () {
+      var t = showTitle(o.icon || 'moon', o.title, o.text);
+      if (mid) mid();
+      setTimeout(function () { f.classList.remove('on'); titleOut(t); }, o.hold || 1600);
+    }, 850);
+  };
+  // L'aube : écran noir (déjà là après la nuit, sinon on y fond), « Jour N »,
+  // puis le rapport du matin apparaît en fondu
+  Main.dawnFade = function (st, cb) {
+    if (Main.noFade) { cb(); return; }
+    var f = $('fader'), was = f.classList.contains('on');
+    function go() {
+      var W = C.World;
+      showTitle('sun', 'Jour ' + st.day, (W.weatherLabel ? W.weatherLabel(st.weather.type) + ' · ' : '') + st.weather.out + ' °C' + (W.isWinter(st) ? ' · hiver' : ''));
+      setTimeout(cb, 1900);
+    }
+    if (was) setTimeout(go, 400);
+    else { f.classList.add('on'); setTimeout(go, 850); }
   };
 
   // Crépuscule : temps figé à 20 h pour nourrir / soigner avant la nuit
@@ -141,7 +172,7 @@
         st.survivors.forEach(function (s) { if (s.alive) { C.Actions.cancel(s); s.path = []; } });
         st.phase = 'night';
         Main.showDuskButton(false);
-        C.UI.openNight();
+        Main.fadeThrough({ icon: 'moon', title: 'Nuit ' + st.day, text: 'La nuit tombe sur la ville.' }, function () { C.UI.openNight(); });
       });
       $('hud').appendChild(b);
     }

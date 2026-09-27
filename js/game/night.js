@@ -37,7 +37,11 @@
     });
     back.forEach(function (t) { G().log(t, 'good'); });
     st.nightNotes = back;
-    if (C.UI) { C.UI.buildCards(); C.UI.openNight(); }
+    if (C.UI) {
+      C.UI.buildCards();
+      if (C.Main && C.Main.fadeThrough) C.Main.fadeThrough({ icon: 'moon', title: 'Nuit ' + st.day, text: 'La nuit tombe sur la ville.' }, function () { C.UI.openNight(); });
+      else C.UI.openNight();
+    }
   };
 
   function itemsText(items) {
@@ -99,7 +103,9 @@
     st.nightNotes = null;
 
     var present = G().present();
-    var sleepers = present.filter(function (s) { return plan.roles[s.id] === 'sleep'; });
+    // 'bed' = dormir dans un lit, 'sleep' = dormir par terre (ou lit attribué
+    // d'office aux plus fatigués si le plan ne précise rien, ex. le bot)
+    var sleepers = present.filter(function (s) { return plan.roles[s.id] === 'sleep' || plan.roles[s.id] === 'bed'; });
     var guards = present.filter(function (s) { return plan.roles[s.id] === 'guard'; });
     var scav = present.filter(function (s) { return plan.roles[s.id] === 'scav'; })[0] || null;
 
@@ -120,18 +126,20 @@
 
     // ---------------- Sommeil
     var beds = G().countBuilt('bed');
-    sleepers.sort(function (a, b) { return b.fatigue - a.fatigue; });
+    var explicit = plan.explicitBeds || present.some(function (s) { return plan.roles[s.id] === 'bed'; });
+    if (explicit) sleepers.sort(function (a, b) { return (plan.roles[b.id] === 'bed') - (plan.roles[a.id] === 'bed'); });
+    else sleepers.sort(function (a, b) { return b.fatigue - a.fatigue; });
+    var floorSl = [];
     sleepers.forEach(function (s, i) {
-      var inBed = i < beds;
+      var inBed = i < beds && (!explicit || plan.roles[s.id] === 'bed');
       s.fatigue = inBed ? 0 : Math.max(0, s.fatigue - 55);
       C.Surv.feedHunger(s, 8, 10);
       if (s.wound > 0 && s.hunger < 70) s.wound = Math.max(0, s.wound - (s.bandaged > 0 ? 6 : 2) * (inBed ? 1.5 : 1));
       if (s.bandaged > 0) s.bandaged = Math.max(0, s.bandaged - 10);
       coldNight(s, nightTemp, inBed ? 0.6 : 1);
-      if (!inBed && beds < sleepers.length) s.moral = Math.max(0, s.moral - 1.5);
+      if (!inBed) { s.moral = Math.max(0, s.moral - 1.5); floorSl.push(first(s)); }
     });
-    if (sleepers.length > beds && sleepers.length) {
-      var floorSl = sleepers.slice(beds).map(first);
+    if (floorSl.length) {
       add('home', (floorSl.length > 1 ? floorSl.join(', ') + ' ont' : floorSl[0] + ' a') + ' dormi par terre et récupéré' + (floorSl.length > 1 ? '' : '') + ' moins bien.', 'info');
     }
 
@@ -144,8 +152,11 @@
     // ---------------- Pillage
     var reserved = {};
     if (scav && plan.scav) {
-      (plan.scav.equip || []).forEach(function (id) { reserved[id] = (reserved[id] || 0) + 1; });
-      if (plan.scav.ammo) reserved.munitions = plan.scav.ammo;
+      if (plan.scav.bag) reserved = U.copy(plan.scav.bag);
+      else {
+        (plan.scav.equip || []).forEach(function (id) { reserved[id] = (reserved[id] || 0) + 1; });
+        if (plan.scav.ammo) reserved.munitions = plan.scav.ammo;
+      }
     }
     if (!scav && plan.scav && plan.scav.explored && plan.scav.explored.dead) {
       // Le pilleur n'est pas revenu de l'exploration
@@ -452,6 +463,9 @@
 
     G().markDirty();
     if (st.phase === 'day') C.Save.write(0, st);
-    if (C.UI) C.UI.openReport(st.lastReport);
+    if (C.UI) {
+      if (C.Main && C.Main.dawnFade) C.Main.dawnFade(st, function () { C.UI.openReport(st.lastReport); });
+      else C.UI.openReport(st.lastReport);
+    }
   };
 })(window.CQR);

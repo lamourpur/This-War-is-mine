@@ -3,6 +3,7 @@ window.runBot = function (group, opts) {
   opts = opts || {};
   const errors = [];
   const C = CQR, G = C.Game;
+  C.Main.noFade = true;   // pas de fondus au noir pendant la simulation
   const saveToast = C.UI.toast, saveDialog = C.UI.dialog;
   C.UI.toast = () => {}; C.UI.dialog = () => {}; C.UI.autoLoot = true;
   C.Main.startNew(group || ['nada', 'tomas', 'ilija']); C.UI.closeAllModals(); C.Main.setSpeed(0);

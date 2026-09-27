@@ -7,8 +7,6 @@
   var U = C.util, UI = C.UI;
   function G() { return C.Game; }
 
-  var EQUIP = ['pied_de_biche', 'passe_partout', 'scie', 'couteau', 'hachette', 'pistolet', 'fusil', 'gilet'];
-
   // Mise en garde selon qui occupe les lieux
   function dangerNote(st, loc) {
     var hostile = Object.keys(st.locations[loc.id].hostile || {}).length;
@@ -62,8 +60,11 @@
     var st = G().st;
     C.Main.setSpeed(0);
     var present = G().present();
-    var plan = { roles: {}, scav: { loc: null, stance: 'normal', prio: 'equilibre', equip: [], ammo: 0 } };
-    present.forEach(function (s) { plan.roles[s.id] = 'sleep'; });
+    var plan = { explicitBeds: true, roles: {}, scav: { loc: null, stance: 'normal', prio: 'equilibre', equip: [], ammo: 0, bag: {} } };
+    // Les lits vont d'abord aux plus fatigués (on peut changer)
+    var nBeds = G().countBuilt('bed');
+    present.slice().sort(function (a, b) { return b.fatigue - a.fatigue; }).forEach(function (s, i) { plan.roles[s.id] = i < nBeds ? 'bed' : 'sleep'; });
+    function bedsTaken(except) { return present.filter(function (x) { return x !== except && plan.roles[x.id] === 'bed'; }).length; }
 
     var p = UI.panel('La nuit tombe', 'Jour ' + st.day + ' · 20:00 — qui dort, qui veille, qui sort ?', { dark: true, foot: true, noClose: true, wide: true });
     var grid = U.el('div', 'night-grid');
@@ -91,12 +92,24 @@
         if (s.moral < 15) c.appendChild(U.el('div', 'nwarn', 'Brisé(e) : sans réconfort, risque de départ… ou pire.'));
         else if (s.moral < 35) c.appendChild(U.el('div', 'nwarn', 'Déprimé(e) : il faudrait lui parler.'));
         var roles = U.el('div', 'roles');
-        [['sleep', 'Dormir', 'bed'], ['guard', 'Garder', 'shield'], ['scav', 'Piller', 'pack']].forEach(function (r) {
-          var b = U.el('button', 'role r-' + r[0] + (plan.roles[s.id] === r[0] ? ' on' : ''), C.Icon(r[2]) + r[1]);
-          if (r[0] === 'scav' && anyScav && anyScav.id !== s.id) b.disabled = true;
-          if (r[0] === 'scav') b.title = 'Un seul survivant peut sortir par nuit';
+        [['bed', 'Dormir dans un lit', 'bed'], ['sleep', 'Dormir par terre', 'moon'], ['guard', 'Monter la garde', 'shield'], ['scav', 'Partir explorer', 'pack']].forEach(function (r) {
+          var b = U.el('button', 'role r-' + r[0] + (plan.roles[s.id] === r[0] ? ' on' : ''), C.Icon(r[2]) + '<span>' + r[1] + '</span>');
+          if (r[0] === 'scav' && anyScav && anyScav.id !== s.id) { b.disabled = true; b.title = 'Un seul survivant peut sortir par nuit'; }
+          if (r[0] === 'bed') {
+            if (!nBeds) { b.disabled = true; b.title = 'Aucun lit : construisez-en un à l\'établi'; }
+            else if (plan.roles[s.id] !== 'bed' && bedsTaken(s) >= nBeds) { b.disabled = true; b.title = 'Tous les lits sont pris'; }
+            else b.title = 'Récupère complètement, guérit mieux, protège un peu du froid (' + (nBeds - bedsTaken(s)) + ' lit' + (nBeds - bedsTaken(s) > 1 ? 's' : '') + ' libre' + (nBeds - bedsTaken(s) > 1 ? 's' : '') + ')';
+          }
+          if (r[0] === 'sleep') b.title = 'Repos partiel, un peu moins de moral';
+          if (r[0] === 'guard') b.title = 'Défend le refuge en cas d\'attaque ; ne se repose pas';
           b.addEventListener('click', function () {
+            var hadBed = plan.roles[s.id] === 'bed';
             plan.roles[s.id] = r[0];
+            // Un lit se libère : il revient au plus fatigué de ceux qui dorment par terre
+            if (hadBed && r[0] !== 'bed' && r[0] !== 'sleep') {
+              var next = present.filter(function (x) { return plan.roles[x.id] === 'sleep'; }).sort(function (a, b) { return b.fatigue - a.fatigue; })[0];
+              if (next) plan.roles[next.id] = 'bed';
+            }
             if (C.Audio.ready) C.Audio.sfx.click();
             renderAll();
           });
@@ -145,7 +158,7 @@
       var row = U.el('div', 'opt-row');
       if (loc && C.isPlayableLocation(loc.id)) {
         // Lieu jouable : c'est vous qui menez l'exploration
-        scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Sac : ' + C.Explore.capacity(s) + ' cases (l\'équipement en prend). Emportez de quoi aider ou échanger.</span>'));
+        scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Remplissez son sac ci-dessous : ce que vous emportez prend des cases, qui ne serviront plus au butin.</span>'));
         var danger = dangerNote(st, loc);
         if (danger) scavBox.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + danger + '</span>'));
       } else {
@@ -158,38 +171,92 @@
         scavBox.appendChild(row);
       }
 
-      var eqG = U.el('div', 'opt-group', '<span>Équipement emporté (3 max)</span>');
-      var eq = U.el('div', 'equip');
-      var have = EQUIP.filter(function (id) { return G().count(id) > 0; });
-      if (!have.length) eq.innerHTML = '<small style="color:#8a8170">Aucun outil ni arme dans la réserve.</small>';
-      have.forEach(function (id) {
-        var on = plan.scav.equip.indexOf(id) >= 0;
-        var b = U.el('button', on ? 'on' : '', C.ItemArt.img(id, 30) + '<span>' + C.ITEMS[id].name + '</span>');
-        b.title = C.ITEMS[id].desc;
-        b.addEventListener('click', function () {
-          if (on) plan.scav.equip.splice(plan.scav.equip.indexOf(id), 1);
-          else if (plan.scav.equip.length < 3) plan.scav.equip.push(id);
-          var gun = plan.scav.equip.some(function (x) { return C.ITEMS[x].ammo; });
-          plan.scav.ammo = gun ? Math.min(G().count('munitions'), C.stackOf ? C.stackOf('munitions') : 6) : 0;
-          renderAll();
-        });
-        eq.appendChild(b);
+      // Le sac : comme dans le jeu d'origine, on choisit case par case ce que
+      // l'on emporte (outils, armes, munitions, mais aussi de quoi aider ou
+      // échanger). Ce qui part dans le sac quitte la réserve pour la nuit.
+      var bag = plan.scav.bag, cap = C.Explore.capacity(s), used = C.Explore.slots(bag);
+      var bp = U.el('div', 'bag-pick');
+      bp.appendChild(U.el('div', 'bp-head', '<span>' + C.Icon('pack') + 'Sac de ' + U.esc(s.name.split(' ')[0]) + '</span><b class="' + (used > cap ? 'ko' : '') + '">' + used + ' / ' + cap + ' cases</b>'));
+      var cells = U.el('div', 'bp-cells');
+      var stacks = [];
+      Object.keys(bag).forEach(function (id) {
+        var n = bag[id], st0 = C.stackOf(id);
+        while (n > 0) { stacks.push({ id: id, n: Math.min(n, st0) }); n -= st0; }
       });
-      eqG.appendChild(eq);
-      if (plan.scav.ammo) eqG.appendChild(U.el('small', '', '<span style="color:#b9ae95">+ ' + plan.scav.ammo + ' munitions</span>'));
-      else if (plan.scav.equip.some(function (x) { return C.ITEMS[x].ammo; })) eqG.appendChild(U.el('small', '', '<span style="color:#d9866a">Aucune munition en réserve : l\'arme à feu ne pourra pas tirer.</span>'));
-      if (plan.scav.equip.length) eqG.appendChild(U.el('small', '', '<span style="color:#8a8170">Sur place, choisissez l\'arme en main dans le bandeau (touche A).</span>'));
-      var row2 = U.el('div', 'opt-row'); row2.appendChild(eqG);
-      scavBox.appendChild(row2);
+      for (var ci = 0; ci < cap; ci++) {
+        var sk = stacks[ci];
+        var cell = U.el('button', 'bp-cell' + (sk ? ' full' : ''), sk ? C.ItemArt.img(sk.id, 34) + (sk.n > 1 ? '<i>' + sk.n + '</i>' : '') : '');
+        if (sk) {
+          cell.title = C.ITEMS[sk.id].name + ' — clic : en retirer 1 · Maj+clic : toute la case';
+          (function (sk) {
+            cell.addEventListener('click', function (e) {
+              var k = e.shiftKey ? sk.n : 1;
+              bag[sk.id] -= k; if (bag[sk.id] <= 0) delete bag[sk.id];
+              if (C.Audio.ready) C.Audio.sfx.click();
+              syncBag(); renderAll();
+            });
+          })(sk);
+        }
+        cells.appendChild(cell);
+      }
+      bp.appendChild(cells);
+      // La réserve, par catégorie
+      var res = U.el('div', 'bp-res');
+      var anyItem = false;
+      C.ITEM_CATS.forEach(function (cat) {
+        var ids = Object.keys(C.ITEMS).filter(function (id) { return C.ITEMS[id].cat === cat[0] && G().count(id) - (bag[id] || 0) > 0; });
+        if (!ids.length) return;
+        anyItem = true;
+        var row = U.el('div', 'bp-cat', '<small>' + U.esc(cat[1]) + '</small>');
+        ids.forEach(function (id) {
+          var left = G().count(id) - (bag[id] || 0);
+          var b = U.el('button', 'bp-item', C.ItemArt.img(id, 28) + '<span>' + U.esc(C.ITEMS[id].name) + '</span><em>' + left + '</em>');
+          b.title = C.ITEMS[id].desc + ' — clic : 1 · Maj+clic : une case pleine';
+          b.addEventListener('click', function (e) {
+            var want = e.shiftKey ? Math.min(left, C.stackOf(id)) : 1, test;
+            for (; want > 0; want--) { test = U.copy(bag); test[id] = (test[id] || 0) + want; if (C.Explore.slots(test) <= cap) break; }
+            if (!want) {
+              if (C.Audio.ready) C.Audio.sfx.deny();
+              var hb = bp.querySelector('.bp-head'); hb.classList.remove('shake'); void hb.offsetWidth; hb.classList.add('shake');
+              return;
+            }
+            bag[id] = test[id];
+            if (C.Audio.ready) C.Audio.sfx.pickup();
+            syncBag(); renderAll();
+          });
+          row.appendChild(b);
+        });
+        res.appendChild(row);
+      });
+      if (!anyItem) res.innerHTML = '<small style="color:#8a8170">La réserve est vide.</small>';
+      bp.appendChild(res);
+      var tips = [];
+      var gunIn = Object.keys(bag).some(function (x) { return C.ITEMS[x].ammo; });
+      if (gunIn && !bag.munitions) tips.push('<span class="ko">Pas de munitions dans le sac : l\'arme à feu ne pourra pas tirer.</span>');
+      if (Object.keys(bag).some(function (x) { return C.ITEMS[x].weapon || C.ITEMS[x].tool; })) tips.push('Sur place, choisissez l\'arme en main dans le bandeau (touche A).');
+      tips.push('Chaque case vide rapportera du butin. Clic sur un objet de la réserve : l\'ajouter · clic sur une case : le retirer · Maj+clic : toute la pile.');
+      bp.appendChild(U.el('p', 'bp-tips', tips.join('<br>')));
+      scavBox.appendChild(bp);
+    }
+
+    // Outils et armes du sac → équipement (défense du refuge, pillage abstrait)
+    function syncBag() {
+      var b = plan.scav.bag;
+      plan.scav.equip = [];
+      Object.keys(b).forEach(function (id) {
+        var it = C.ITEMS[id];
+        if (it.tool || it.weapon || it.armor) for (var i = 0; i < b[id]; i++) plan.scav.equip.push(id);
+      });
+      plan.scav.ammo = b.munitions || 0;
     }
 
     function renderInfo() {
-      var sleepers = present.filter(function (s) { return plan.roles[s.id] === 'sleep'; }).length;
+      var sleepers = present.filter(function (s) { return plan.roles[s.id] === 'sleep' || plan.roles[s.id] === 'bed'; }).length;
+      var inBeds = present.filter(function (s) { return plan.roles[s.id] === 'bed'; }).length;
       var guards = present.filter(function (s) { return plan.roles[s.id] === 'guard'; });
       var beds = G().countBuilt('bed');
       var reserved = {};
-      if (scavenger()) plan.scav.equip.forEach(function (id) { reserved[id] = (reserved[id] || 0) + 1; });
-      if (plan.scav.ammo) reserved.munitions = plan.scav.ammo;
+      if (scavenger()) reserved = U.copy(plan.scav.bag);
       var def = C.Night.defense(st, guards, reserved).value;
       var risk = C.Night.raidChance(st);
       var riskTxt = risk < 0.15 ? 'faible' : risk < 0.3 ? 'réel' : risk < 0.5 ? 'élevé' : 'très élevé';
@@ -199,13 +266,14 @@
       var hungry = present.filter(function (s) { return s.hunger >= 45; }).map(function (s) { return s.name.split(' ')[0] + (s.hunger >= 100 ? ' (meurt de faim)' : ''); });
       function tile(cls, icon, big, small) { return '<div class="ni ' + cls + '">' + C.Icon(icon) + '<div><b>' + big + '</b>' + small + '</div></div>'; }
       info.innerHTML =
-        tile(sleepers > beds ? 'warn' : '', 'bed', beds + ' lit' + (beds > 1 ? 's' : '') + ' / ' + sleepers, sleepers > beds ? (sleepers - beds) + (sleepers - beds > 1 ? ' dormiront' : ' dormira') + ' par terre' : 'Tout le monde a un lit') +
+        tile(sleepers > inBeds ? 'warn' : '', 'bed', inBeds + ' / ' + beds + ' lit' + (beds > 1 ? 's' : ''), sleepers > inBeds ? (sleepers - inBeds) + (sleepers - inBeds > 1 ? ' dormiront' : ' dormira') + ' par terre' : sleepers ? 'Chacun dort dans un lit' : 'Personne ne dort') +
         tile(risk >= 0.3 && def < 2 ? 'bad' : '', 'shield', 'Défense ' + def.toFixed(1), 'Risque d\'attaque : ' + riskTxt + (st.raidBonus ? ' (menace de la milice)' : '')) +
         tile(estTemp < 0 ? 'bad' : estTemp < 8 ? 'warn' : '', 'thermo', estTemp + ' °C', estTemp < 8 ? 'Nuit froide : risque de maladie' : 'Température prévue cette nuit');
       if (hungry.length) info.innerHTML += tile('warn', 'hunger', 'Faim', hungry.join(', ') + ' — nourrissez-les d\'abord');
       var s = scavenger();
-      go.disabled = !!(s && !plan.scav.loc);
-      go.textContent = s && !plan.scav.loc ? 'Choisissez un lieu' : 'Passer la nuit';
+      var over = s && C.Explore.slots(plan.scav.bag) > C.Explore.capacity(s);
+      go.disabled = !!(s && (!plan.scav.loc || over));
+      go.textContent = !s ? 'Passer la nuit' : !plan.scav.loc ? 'Choisissez un lieu' : over ? 'Sac trop plein' : 'Partir en exploration';
     }
 
     function renderAll() { renderCards(); renderScav(); renderInfo(); }

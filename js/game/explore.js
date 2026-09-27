@@ -64,8 +64,11 @@
 
     // Le sac part avec l'équipement choisi
     var bag = {};
-    (plan.scav.equip || []).forEach(function (k) { bag[k] = (bag[k] || 0) + 1; });
-    if (plan.scav.ammo) bag.munitions = plan.scav.ammo;
+    if (plan.scav.bag) { for (var bk in plan.scav.bag) if (plan.scav.bag[bk] > 0) bag[bk] = Math.min(plan.scav.bag[bk], G().count(bk)); }
+    else {
+      (plan.scav.equip || []).forEach(function (k) { bag[k] = (bag[k] || 0) + 1; });
+      if (plan.scav.ammo) bag.munitions = plan.scav.ammo;
+    }
     G().removeItems(bag);
 
     E.active = true;
