@@ -25,6 +25,8 @@
     var total = 0; for (var k in inv) total += inv[k];
     var p = UI.panel('Réserve', total + ' objets · valeur de troc estimée : ' + G().inventoryValue() + ' ¤', { wide: true });
     var html = '';
+    var sh = C.Market && C.Market.current(G().st);
+    if (sh) html += '<p class="trade-wants market">' + I('alert') + '<span><b>Pénurie en ville</b> : ' + U.esc(C.Market.wantedText(G().st)) + ' valent bien plus cher au troc en ce moment.</span></p>';
     C.ITEM_CATS.forEach(function (cat) {
       var ids = Object.keys(C.ITEMS).filter(function (id) { return C.ITEMS[id].cat === cat[0] && inv[id] > 0; });
       if (!ids.length) return;
@@ -32,7 +34,8 @@
       html += '<div class="inv-cat"><h3>' + I('c_' + cat[0]) + cat[1] + ' <small>' + n + '</small></h3><div class="inv-grid">';
       ids.forEach(function (id) {
         var it = C.ITEMS[id];
-        html += '<div class="inv-item" title="' + U.esc(it.desc) + '"><span class="inv-art">' + C.ItemArt.img(id, 52) + '</span><span class="inv-name">' + it.name + '</span><span class="inv-qty">' + inv[id] + '</span></div>';
+        var hot = C.Market && C.Market.mult(id) > 1;
+        html += '<div class="inv-item' + (hot ? ' hot' : '') + '" title="' + U.esc(it.desc) + (hot ? ' — Très recherché en ce moment !' : '') + '"><span class="inv-art">' + C.ItemArt.img(id, 52) + '</span><span class="inv-name">' + it.name + '</span><span class="inv-qty">' + inv[id] + '</span></div>';
       });
       html += '</div></div>';
     });
@@ -325,7 +328,14 @@
       b.disabled = !ok;
       b.addEventListener('click', function () {
         UI.closeModal();
-        if (c.trade) { C.TradeUI.open(s, v.data.stock, function () { finishVisitor(); }); return; }
+        if (c.trade) {
+          var tf = UI.visitorFace(v), sh = C.Market && C.Market.current(G().st);
+          C.TradeUI.open(s, v.data.stock, function () { finishVisitor(); }, {
+            name: v.id === 'marchand' ? 'Franko' : (tf && tf.name) || null, face: tf,
+            faceLine: v.id === 'marchand' ? (sh ? 'Ce qui manque en ville, je le paie cher. Et je le vends cher.' : 'Voyons ce que vous avez. Pas de crédit.') : null
+          });
+          return;
+        }
         var res = c.run(ctx);
         finishVisitor();
         if (res) { G().log(res, 'info'); UI.dialog(def.title, '<p class="dialog-text quote">' + res + '</p>', [{ label: 'Continuer' }]); }
@@ -383,7 +393,7 @@
     var p = UI.panel('Jour ' + rep.day, over ? 'Le dernier matin' : 'Ce que la nuit a laissé', { foot: true, noClose: true, wide: true });
     var html = '';
     if (!over) html += '<div class="report-date">' + I(WEATHER_ICON[st.weather.type] || 'cloud') + C.World.weatherLabel(st.weather.type) + ' · ' + st.weather.out + ' °C dehors' + (C.World.isWinter(st) ? ' · hiver' : '') + '</div>';
-    var secs = [['scav', 'Pillage', 'pack'], ['home', 'Au refuge', 'home'], ['people', 'Les survivants', 'moral']];
+    var secs = [['scav', 'Pillage', 'pack'], ['home', 'Au refuge', 'home'], ['people', 'Les survivants', 'moral'], ['market', 'Le marché', 'trade']];
     var any = false;
     secs.forEach(function (sc) {
       var lines = rep.items.filter(function (i) { return i.sec === sc[0] && i.t; });

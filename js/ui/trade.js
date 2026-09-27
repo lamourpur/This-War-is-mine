@@ -12,6 +12,7 @@
   var Trade = C.Trade = {};
 
   Trade.genTraderStock = function (st, R) {
+    if (C.Market) return C.Market.traderStock(st, R);
     var pool = ['conserve', 'eau', 'legumes', 'bois', 'composants', 'pieces_meca', 'pieces_elec', 'bandage', 'medicaments', 'cafe', 'cigarettes', 'sucre', 'munitions', 'filtre', 'engrais', 'carburant', 'tabac', 'livres', 'herbes', 'pied_de_biche', 'passe_partout', 'couteau', 'pelle'];
     if (st.day > 10) pool.push('pistolet', 'hachette', 'scie');
     var stock = {};
@@ -24,11 +25,15 @@
     return stock;
   };
 
+  // Valeur du moment : l'hiver renchérit le chauffage, les pénuries du
+  // marché (C.Market) font flamber ce qui manque en ville
   function scarcity(id) {
-    var st = G().st;
-    if (C.World.isWinter(st) && (id === 'bois' || id === 'carburant' || id === 'conserve' || id === 'medicaments')) return 1.5;
-    return 1;
+    var st = G().st, k = 1;
+    if (C.World.isWinter(st) && (id === 'bois' || id === 'carburant')) k = 1.3;
+    if (C.Market) k = Math.max(k, C.Market.mult(id, st));
+    return k;
   }
+  Trade.scarcity = scarcity;
   Trade.sellPrice = function (id, nego) { return Math.max(1, Math.round(C.ITEMS[id].v * scarcity(id) * (nego ? 0.9 : 1))); };
   Trade.buyPrice = function (id, nego) { return Math.max(1, Math.round(C.ITEMS[id].v * scarcity(id) * (nego ? 0.95 : 0.7))); };
 
@@ -52,6 +57,8 @@
       p.body.appendChild(fr);
     }
     var wantList = Object.keys(likes).filter(function (k) { return likes[k] > 1; });
+    var market = C.Market ? C.Market.wanted(G().st) : [];
+    if (market.length) p.body.appendChild(U.el('p', 'trade-wants market', C.Icon('alert') + '<span>Pénurie en ville : ' + U.esc(C.Market.wantedText(G().st)) + ' valent bien plus cher en ce moment (à l\'achat comme à la vente).</span>'));
     if (wantList.length) p.body.appendChild(U.el('p', 'trade-wants', C.Icon('star') + '<span>' + U.esc(who) + ' recherche : ' + wantList.map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ') + '</span>'));
     var wrap = U.el('div', 'trade');
     p.body.appendChild(wrap);
@@ -64,7 +71,8 @@
       var box = U.el('div', 'trade-list');
       Object.keys(src).filter(function (id) { return avail(src, offered, id) > 0; }).sort(function (a, b) { return C.ITEMS[a].cat.localeCompare(C.ITEMS[b].cat); }).forEach(function (id) {
         var liked = priceFn === buyP && (likes[id] || 1) > 1;
-        var row = U.el('div', 'trade-row' + (liked ? ' liked' : ''), '<span class="inv-art sm">' + C.ItemArt.img(id, 30) + '</span><span class="n">' + C.ITEMS[id].name + (liked ? ' <em>recherché</em>' : '') + '</span><span class="v">' + priceFn(id, nego) + '¤</span><span class="q">' + avail(src, offered, id) + '</span>');
+        var rare = scarcity(id) > 1.4;
+        var row = U.el('div', 'trade-row' + (liked ? ' liked' : '') + (rare ? ' rare' : ''), '<span class="inv-art sm">' + C.ItemArt.img(id, 30) + '</span><span class="n">' + C.ITEMS[id].name + (liked ? ' <em>recherché</em>' : rare ? ' <em class="rare">pénurie</em>' : '') + '</span><span class="v">' + priceFn(id, nego) + '¤</span><span class="q">' + avail(src, offered, id) + '</span>');
         row.title = 'Clic : 1 · Maj+clic : 5';
         row.addEventListener('click', function (e) { onPick(id, e.shiftKey ? 5 : 1); });
         box.appendChild(row);

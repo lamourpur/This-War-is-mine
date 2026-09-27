@@ -10,11 +10,25 @@
   function G() { return C.Game; }
 
   C.VISITORS = {
+    // Franko : il repasse tous les 3 à 5 jours (C.Market), jamais tiré au hasard
     marchand: {
-      weight: 6, minDay: 2,
-      title: 'Un marchand',
+      weight: 0, minDay: 2, scheduled: true,
+      title: 'Franko, le marchand',
       text: function (ctx) {
-        return 'Un homme sec, un gros sac sur le dos, jette un œil par-dessus votre épaule.<br>« J\'ai de quoi faire affaire, si vous avez de quoi payer. »';
+        var st = ctx.st, m = st.market || {}, sh = C.Market && C.Market.current(st);
+        var t = (m.frankoVisits || 0) <= 1
+          ? 'Un homme sec, un gros sac sur le dos, jette un œil par-dessus votre épaule.<br>« Franko. Je passe de temps en temps dans le quartier. J\'ai de quoi faire affaire, si vous avez de quoi payer. »'
+          : 'Franko est de retour, son gros sac sur le dos.<br>« Alors, toujours vivants ? Bien. J\'ai de la marchandise. »';
+        if (sh) t += '<br><br>« ' + ({
+          medic: 'Des médicaments ? Introuvables en ce moment. Si vous en avez, je vous les paie au prix fort.',
+          vivres: 'La bouffe, c\'est de l\'or en ce moment. Je n\'en ai presque plus. Mais j\'achète.',
+          munitions: 'Avec ce qui se passe en ville, tout le monde veut des balles. Ça se paie.',
+          tabac: 'Des cigarettes, du café ? Plus rien nulle part. Pour un paquet, on vous donne n\'importe quoi.',
+          eau: 'L\'eau est coupée. Une bouteille propre vaut une fortune.',
+          pieces: 'Tout ce qui est mécanique ou électrique, je prends. Et je paie bien.',
+          froid: 'Avec ce froid, le bois part plus vite que le pain. J\'en ai un peu, mais c\'est cher.'
+        }[sh.id] || 'Il y a pénurie de tout.') + ' »';
+        return t;
       },
       init: function (st, R) { return { stock: C.Trade.genTraderStock(st, R) }; },
       choices: [

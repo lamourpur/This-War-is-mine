@@ -744,6 +744,12 @@ body.exploring #btn-place, body.exploring #door-alert, body.exploring #dusk-btn 
 .loc-note.warn svg { color: #d0735a; }
 .trade-wants { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 14px; color: var(--ink-2); }
 .trade-wants svg { width: 18px; height: 18px; color: #b0822c; }
+.inv-item.hot { box-shadow: inset 0 0 0 2px rgba(164,71,44,.65); }
+.inv-item.hot .inv-name::after { content: ' ★'; color: #a4472c; }
+.trade-wants.market { background: rgba(164,71,44,.1); border-left: 3px solid #a4472c; padding: 6px 10px; color: var(--ink); }
+.trade-wants.market svg { color: #a4472c; }
+.trade-row.rare .n em.rare { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #a4472c; margin-left: 4px; }
+.trade-row.rare .v { color: #a4472c; font-weight: 600; }
 .trade-row.liked .n em { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #b0822c; margin-left: 4px; }
 .trade-say.bad { color: #a4472c; }
 

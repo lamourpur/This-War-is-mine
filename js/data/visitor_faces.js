@@ -41,7 +41,7 @@
 
   C.VISITOR_PEOPLE = {
     marchand: {
-      name: 'Le marchand',
+      name: 'Franko, le marchand',
       face: { skin: '#c4a283', hair: '#2e2823', hairStyle: 'short', hat: 'cap', hatColor: '#34322e', fw: 33, fh: 51, jaw: 0.8, eye: 0.82, iris: '#3b3226', brow: 2.6, nose: 'long', lips: 0.8, age: 0.5, beard: 'stubble', clothes: 'overcoat', cloth: '#4a4238', squint: true, turn: 0.18 },
       figs: [{ hair: 'short', build: 0.92, h: 1.0, coat: '#4a4238', pants: '#2c2a26', coatLen: 0.3, skin: '#c4a283', hairColor: '#2e2823', beard: 'stubble', top: 'overcoat', shirt: '#5c5448', hat: 'cap', hatColor: '#34322e', bag: true }]
     },

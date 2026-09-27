@@ -121,11 +121,17 @@
     // Une histoire en cours passe avant les visiteurs au hasard
     var due = C.Story && C.Story.due(st);
     if (due) { st.visitorPlan = { id: due.step, at: R.int(8 * 60, 15 * 60), data: due.data || {} }; return; }
+    // Franko, le marchand, repasse tous les 3 à 5 jours
+    if (C.Market && C.Market.frankoDue(st) && C.VISITORS.marchand) {
+      C.Market.frankoPlanned(st);
+      st.visitorPlan = { id: 'marchand', at: R.int(8 * 60, 13 * 60), data: C.VISITORS.marchand.init(st, R) };
+      return;
+    }
     if (st.day < 2 || !R.chance(0.55)) return;
     var entries = [];
     for (var id in C.VISITORS) {
       var v = C.VISITORS[id];
-      if (v.story) continue;
+      if (v.story || v.scheduled) continue;
       if (st.day < v.minDay) continue;
       if (v.canAppear && !v.canAppear(st)) continue;
       entries.push([id, v.weight]);
@@ -215,6 +221,8 @@
     if (toC > 0 && toC <= 2) pool.push('Les bandes armées se multiplient en ville. La police conseille de barricader les logements.');
     if (World.crimeHigh(st)) pool.push('Vague de pillages dans les quartiers ouest. Plusieurs abris attaqués cette semaine.');
     if (st.ceasefireDay - st.day <= 5) pool.push('Des pourparlers de cessez-le-feu auraient débuté. Rien n\'est encore signé.');
+    var sh = C.Market && C.Market.current(st);
+    if (sh && R.chance(0.7)) pool.unshift(sh.radio + ' Au marché noir, ' + C.Market.wantedText(st) + ' atteignent des prix jamais vus.');
     if (!pool.length || R.chance(0.25)) pool.push(R.pick(C.NEWS_FILLER));
     return pool[0];
   };

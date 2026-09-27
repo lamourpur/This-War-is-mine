@@ -393,6 +393,7 @@
 
     var wasWinter = C.World.isWinter(Object.assign({}, st, { day: prevDay }));
     C.World.rollWeather(st);
+    if (C.Market) C.Market.dawn(st, add);
     if (C.World.isWinter(st) && !wasWinter) { add('home', 'L\'hiver est arrivé. Le gel s\'installe sur la ville. Il va falloir chauffer le refuge.', 'bad'); G().alive().forEach(function (s) { C.Mood.think(s, 'winter'); }); }
     if (!C.World.isWinter(st) && wasWinter) add('home', 'Le redoux est là. Le pire du froid est passé.', 'good');
     if (st.day === st.crimeStart) add('home', 'Les rumeurs le disent : les bandes de pillards se multiplient dans le quartier.', 'bad');
