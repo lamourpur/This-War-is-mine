@@ -43,7 +43,7 @@
   C.GUARD_TYPES.bandit_arme.say = C.GUARD_TYPES.bandit.say;
 
   C.GUARD_TYPES.pilleur = {
-    name: 'Pilleur', hp: 80, weapon: null, tool: 'crowbar', mdmg: [10, 20], ammo: 0,
+    name: 'Pilleur', hp: 80, weapon: null, tool: 'crowbar', mdmg: [10, 20], ammo: 0, tolerant: true, noun: 'pilleur', cat: 'civ',
     dmg: [0, 0], acc: 0, range: 0, sight: 280, walk: 52, run: 115,
     look: { hair: 'messy', build: 0.96, h: 0.98, coat: '#4f4a40', pants: '#2e2c28', coatLen: 0.1, skin: '#a8927d', hairColor: '#3d3228', beard: 'stubble', top: 'work', shirt: '#5c564b', bag: true },
     loot: { conserve: 1, composants: 2, bandage: 1 },
@@ -202,7 +202,7 @@
   C.MAPS.garage = M({
     theme: { walls: ['plaster2', 'brickPlaster', 'plaster2', 'plaster'], dirt: 0.45 },
     walls: [{ f: 0, x: 800 }, { f: 1, x: 1000 }, { f: 2, x: 700 }, { f: 3, x: 640 }],
-    zones: [{ id: 'atelier_ray', f: 1, x0: 1010, x1: 1460, group: 'ray', label: 'L\'atelier de Ray', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' }],
+    zones: [{ id: 'atelier_ray', f: 1, x0: 1235, x1: 1460, group: 'ray', label: 'L\'atelier de Ray', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' }],
     decor: [
       { f: 1, x: 300, p: 'rusted_wheel_rim_01', h: 26 }, { f: 1, x: 900, p: 'metal_jerrycan', h: 28 }, { f: 1, x: 1400, p: 'old_tyre', h: 26 },
       { f: 0, x: 560, p: 'wooden_barrels_01', h: 30 }, { f: 2, x: 480, p: 'metal_tool_chest', h: 26 }, { f: 3, x: 1400, p: 'old_tyre', h: 26 }
@@ -212,7 +212,7 @@
       { key: 'epave1', kind: 'cache', variant: 'epave', label: 'Voiture éventrée', f: 1, x: 520, w: 150, h: 60, loot: { pieces_meca: 2, composants: 3, carburant: 1 } },
       { key: 'recoin_atelier', kind: 'hide', f: 1, x: 760, w: 46, h: 108 },
       { key: 'etabli', kind: 'cache', variant: 'caisse', label: 'Établi du mécanicien', f: 1, x: 900, w: 78, h: 48, loot: { composants: 3, pieces_meca: 1 } },
-      { key: 'ray', kind: 'guard', type: 'pilleur', name: 'Ray', f: 1, x: 1200, facing: -1, attitude: 'neutral', group: 'ray', patrol: [1060, 1300] },
+      { key: 'ray', kind: 'guard', type: 'pilleur', name: 'Ray', f: 1, x: 1320, facing: -1, attitude: 'neutral', group: 'ray', patrol: [1250, 1420] },
       { key: 'epave2', kind: 'cache', variant: 'epave', label: 'Camionnette démontée', f: 1, x: 1330, w: 150, h: 60, owner: 'pilleur', loot: { pieces_meca: 3, carburant: 2, pieces_elec: 1 } },
       { key: 'fosse', kind: 'cache', variant: 'caisse', label: 'Fosse de vidange', f: 0, x: 1050, w: 78, h: 48, loot: { carburant: 1, composants: 2 } },
       { key: 'armoire_meca', kind: 'cache', variant: 'coffre', label: 'Armoire à outils fermée', f: 0, x: 420, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_meca: 3, munitions: 6, pied_de_biche: 1 } },

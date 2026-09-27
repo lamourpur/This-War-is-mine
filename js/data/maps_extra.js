@@ -16,7 +16,7 @@
 
   // ------------------------------------------------------------ squatteurs
   C.GUARD_TYPES.squatteur = {
-    name: 'Squatteur', hp: 75, weapon: null, tool: 'knife', mdmg: [10, 20], ammo: 0,
+    name: 'Squatteur', hp: 75, weapon: null, tool: 'knife', mdmg: [10, 20], ammo: 0, tolerant: true, noun: 'squatteur', cat: 'civ',
     dmg: [0, 0], acc: 0, range: 0, sight: 270, walk: 48, run: 108,
     look: { hair: 'messy', build: 0.9, h: 0.98, coat: '#4c463d', pants: '#2c2a26', coatLen: 0.3, skin: '#a08a74', hairColor: '#3a3128', beard: 'full', top: 'overcoat', shirt: '#5a5347', hat: 'beanie', hatColor: '#3a352e', scarf: '#4e3a2c' },
     loot: { cigarettes: 1, conserve: 1 },

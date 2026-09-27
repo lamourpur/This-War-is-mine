@@ -113,7 +113,8 @@
     ls.visits++;
     home.stats.scavenged++;
     var gs = est.objects.filter(function (o) { return o.kind === 'guard'; });
-    E.ev('enter', { visits: ls.visits, guards: gs.length, hostile: gs.some(function (g) { return g.attitude === 'hostile'; }) });
+    var cats = {}; gs.forEach(function (g) { cats[C.Combat.catOf(g)] = (cats[C.Combat.catOf(g)] || 0) + 1; });
+    E.ev('enter', { visits: ls.visits, guards: gs.length, cats: cats, hostile: gs.some(function (g) { return g.attitude === 'hostile'; }), named: (gs.filter(function (g) { return g.name && C.Combat.catOf(g) === 'civ'; })[0] || {}).name });
     s.x = 230; s.f = 1; s.y = C.FLOORS[1].y; s.facing = 1; s.path = []; s.act = null; s.run = false; s.hidden = false;
 
     C.Render.dirty = true;
@@ -277,6 +278,7 @@
     return (masc[n.split(' ')[0]] ? 'le ' : 'la ') + n;
   }
 
+  function cap1(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
   // Carnet à la première personne (accordé au genre du survivant)
   E.story = function (s, ev, reason, bag) {
     var fe = s.look && s.look.female ? 'e' : '';
@@ -287,11 +289,15 @@
       switch (e.type) {
         case 'enter':
           add(e.m, (e.visits > 1 ? 'De retour à : ' : 'Arrivé' + fe + ' à : ') + locName + '. Je me glisse à l\'intérieur sans un bruit.');
-          if (e.guards) add(e.m, e.hostile ? 'Des soldats partout. S\'ils me voient, ils tirent.' : 'Des soldats gardent l\'endroit. Je garde les mains bien en vue.', 'bad');
+          var cs = e.cats || (e.guards ? { mil: e.guards } : {});
+          if (cs.mil) add(e.m, e.hostile ? 'Des soldats partout. S\'ils me voient, ils tirent.' : 'Des soldats gardent l\'endroit. Je garde les mains bien en vue.', 'bad');
+          else if (cs.bandit) add(e.m, 'Des bandits occupent l\'endroit. S\'ils me voient, je suis mort' + fe + '.', 'bad');
+          else if (cs.sniper) add(e.m, 'Un tireur surveille la rue. Surtout, ne pas rester à découvert.', 'bad');
+          else if (cs.civ) add(e.m, e.named ? 'Je ne suis pas seul' + fe + ' : ' + e.named + ' fouille aussi le coin. Mieux vaut ne pas le chercher.' : 'Des gens vivent ici. Ils n\'aimeront pas me voir fouiller chez eux.', '');
           break;
         case 'loot':
           lootLines++;
-          if (lootLines <= 4) add(e.m, (e.name === 'Corps' ? 'Sur le corps du soldat' : 'Dans ' + withArticle(e.name)) + ' : ' + C.itemsText(e.items) + '.');
+          if (lootLines <= 4) add(e.m, (/^Corps/.test(e.name) ? 'Sur le c' + e.name.slice(1) : 'Dans ' + withArticle(e.name)) + ' : ' + C.itemsText(e.items) + '.');
           else if (lootLines === 5) add(e.m, 'Et d\'autres choses encore, ici et là.');
           break;
         case 'steal':
@@ -299,7 +305,7 @@
           break;
         case 'rob': add(e.m, 'J\'ai pointé mon arme sur ' + e.name + '. Il a tout donné en tremblant' + (Object.keys(e.items || {}).length ? ' : ' + C.itemsText(e.items) : '') + '. Je n\'oublierai pas son regard.', 'bad'); break;
         case 'peek': add(e.m, 'J\'ai regardé par le trou d\'une serrure' + (e.guards ? ' : des hommes armés, de l\'autre côté.' : e.npcs ? ' : il y avait quelqu\'un.' : '. Personne.')); break;
-        case 'caught': add(e.m, 'Un soldat m\'a vu' + fe + ' faire. « Voleur ! »', 'bad'); break;
+        case 'caught': add(e.m, cap1(e.who || 'un soldat') + ' m\'a vu' + fe + ' faire. « Voleur ! »', 'bad'); break;
         case 'help': add(e.m, e.name + ' avait besoin de ' + C.itemsText(e.items) + '. Je le lui ai donné.' + (e.reward ? ' En échange : ' + C.itemsText(e.reward) + '.' : ''), 'good'); break;
         case 'donate': add(e.m, 'J\'ai laissé ' + C.itemsText(e.items) + ' pour ' + e.name + '.', 'good'); break;
         case 'trade': add(e.m, 'Troc avec ' + e.name + ' : ' + C.itemsText(e.gave) + ' contre ' + C.itemsText(e.got) + '.'); break;
@@ -308,18 +314,21 @@
           talked[e.name] = true;
           add(e.m, 'J\'ai échangé quelques mots avec ' + e.name + '.');
           break;
-        case 'warn': add(e.m, '« Halte ! » Un soldat m\'a mis' + fe + ' en joue et m\'a ordonné de reculer.', 'bad'); break;
+        case 'warn':
+          if (e.cat === 'civ') add(e.m, '« C\'est mon coin ! » ' + cap1(e.who || 'quelqu\'un') + ' m\'a sommé' + fe + ' de passer mon chemin.', '');
+          else add(e.m, '« Halte ! » ' + cap1(e.who || 'un soldat') + ' m\'a mis' + fe + ' en joue et m\'a ordonné de reculer.', 'bad');
+          break;
         case 'provoked':
           add(e.m, {
-            zone: 'Je n\'ai pas reculé assez vite. Ils ont ouvert le feu.',
-            theft: 'Ils ont ouvert le feu. Toute la garnison était après moi.',
+            zone: e.cat === 'civ' ? 'Je me suis attardé' + fe + ' dans son coin. ' + cap1(e.who || 'il') + ' m\'est tombé dessus.' : 'Je n\'ai pas reculé assez vite. Ils ont ouvert le feu.',
+            theft: e.cat === 'civ' ? cap1(e.who || 'il') + ' m\'a vu' + fe + ' prendre ses affaires. Il s\'est jeté sur moi.' : e.cat === 'bandit' ? 'Toute la bande était après moi.' : 'Ils ont ouvert le feu. Toute la garnison était après moi.',
             attack: 'J\'ai frappé le premier. Maintenant, ils étaient tous après moi.',
             shot_at: 'J\'ai tiré. Tout l\'endroit s\'est réveillé.'
           }[e.why] || 'Ils m\'ont repéré' + fe + '.', 'bad');
           break;
         case 'hide':
           hideLines++;
-          if (hideLines <= 2) add(e.m, 'Je me suis terré' + fe + ' dans un coin sombre, le souffle coupé, pendant qu\'un soldat passait à quelques pas.');
+          if (hideLines <= 2) add(e.m, 'Je me suis terré' + fe + ' dans un coin sombre, le souffle coupé, pendant qu' + (/^[aeiouy]/i.test(e.who || 'un') ? '\'' : 'e ') + (e.who || 'un soldat') + ' passait à quelques pas.');
           break;
         case 'hit':
           hitLines++;
@@ -328,14 +337,14 @@
           break;
         case 'kill':
           add(e.m, {
-            fight: 'J\'ai tué un soldat. C\'était lui ou moi. Je me le répète.',
+            fight: 'J\'ai tué ' + (e.who || 'un soldat') + '. C\'était lui ou moi. Je me le répète.',
             asleep: 'Il dormait. Je l\'ai tué avant qu\'il ouvre les yeux.',
             unprovoked: 'Il ne m\'avait rien fait. Je l\'ai tué quand même.',
             surrender: 'Il s\'était rendu. Il suppliait. Je l\'ai tué quand même.',
             villain: 'Le soldat ivre ne fera plus de mal à personne.'
           }[e.kind] || 'J\'ai tué quelqu\'un.', e.kind === 'villain' ? '' : 'bad');
           break;
-        case 'spare': add(e.m, 'Un soldat s\'est rendu, à genoux. Je l\'ai laissé partir.', 'good'); break;
+        case 'spare': add(e.m, cap1(e.who || 'un soldat') + ' s\'est rendu, à genoux. Je l\'ai laissé partir.', 'good'); break;
         case 'rescue': add(e.m, e.name + ' est libre. Elle m\'a serré la main sans un mot, puis m\'a donné ' + C.itemsText(e.items) + '.', 'good'); break;
         case 'abandon': add(e.m, 'J\'ai laissé la jeune femme là-haut avec lui. Je n\'ai rien fait.', 'bad'); break;
         case 'bell': add(e.m, '4 h. Le ciel pâlit déjà. Il faut rentrer.'); break;

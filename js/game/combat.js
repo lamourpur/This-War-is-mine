@@ -109,6 +109,19 @@
     return false;
   };
 
+  // Qui est-ce ? (pour les textes du carnet) : soldat, pilleur, bandit…
+  var NOUN = { soldat: 'soldat', intendant: 'soldat', brute: 'soldat', bandit: 'bandit', bandit_arme: 'bandit', pilleur: 'pilleur', squatteur: 'squatteur', tireur: 'tireur' };
+  K.nounOf = function (g) { var T = C.GUARD_TYPES[g.type] || {}; return T.noun || NOUN[g.type] || 'homme armé'; };
+  K.catOf = function (g) {
+    var T = C.GUARD_TYPES[g.type] || {};
+    if (T.cat) return T.cat;
+    if (T.sniper) return 'sniper';
+    var n = K.nounOf(g);
+    return n === 'soldat' ? 'mil' : n === 'bandit' ? 'bandit' : 'civ';
+  };
+  // « Ray », « un soldat »…
+  K.whoOf = function (g, def) { return g.name || (def ? 'le ' : 'un ') + K.nounOf(g); };
+
   // ------------------------------------------------------------ soldats
   K.type = function (g) { return C.GUARD_TYPES[g.type]; };
   // Nom affiché : prénom propre (Rick, Kurt…) ou nom du type
@@ -305,7 +318,8 @@
       ls.hostile[group] = true;
       E().provoked = E().provoked || {};
       E().provoked[group] = why;
-      E().ev('provoked', { why: why, group: group });
+      var gg = K.guards().filter(function (x) { return x.group === group; })[0];
+      E().ev('provoked', { why: why, group: group, cat: gg ? K.catOf(gg) : 'mil', who: gg ? K.whoOf(gg) : null });
       if (C.Audio.ready) C.Audio.sfx.alert();
     }
     K.guards().forEach(function (g) {
@@ -318,7 +332,7 @@
   K.witnessTheft = function (s, owner) {
     var seen = K.guards().filter(function (g) { return !g.dead && K.sees(g, s) && (g.susp > 0.3 || Math.abs(g.x - s.x) < 220); });
     if (!seen.length) return false;
-    E().ev('caught');
+    E().ev('caught', { who: K.whoOf(seen[0]) });
     K.provoke(seen[0].group, 'theft', s);
     E().say(seen[0], 'Voleur !', 3);
     return true;
@@ -400,13 +414,13 @@
     else if (g.attitudeAtStart === 'hostile' || why === 'zone' || why === 'theft') kind = 'fight';
     else kind = 'unprovoked';
     E().kills.push({ type: g.type, name: g.name ? T.name : T.name, who: K.nameOf(g), kind: kind });
-    E().ev('kill', { kind: kind, name: K.nameOf(g) });
+    E().ev('kill', { kind: kind, name: K.nameOf(g), who: K.whoOf(g), cat: K.catOf(g) });
     G().removeObject(g);
     // Le corps : on peut le fouiller (arme, munitions, affaires)
     var loot = U.copy(T.loot);
     if (T.weapon) loot[T.weapon] = 1;
     if (g.ammo > 0) loot.munitions = (loot.munitions || 0) + Math.min(g.ammo, 6);
-    G().spawnObject({ key: g.key + '_corps', kind: 'cache', variant: 'corps', gtype: g.type, f: g.f, x: U.clamp(g.x, C.WORLD.walkMin + 30, C.WORLD.walkMax - 30), w: 90, h: 26, facing: g.facing, loot: loot, dead: true });
+    G().spawnObject({ key: g.key + '_corps', kind: 'cache', variant: 'corps', label: 'Corps ' + (g.name ? 'de ' + g.name : 'du ' + K.nounOf(g)), gtype: g.type, f: g.f, x: U.clamp(g.x, C.WORLD.walkMin + 30, C.WORLD.walkMax - 30), w: 90, h: 26, facing: g.facing, loot: loot, dead: true });
     G().markDirty();
     // Le reste du groupe apprend la mort d'un camarade (s'il l'entend ou le voit)
     if (how !== 'stealth') K.provoke(g.group, 'attack', s);
@@ -439,7 +453,10 @@
     if (!E().warnedExposed && K.exposed(s)) { E().warnedExposed = true; E().say(s, 'Un tireur… Il ne faut pas rester à découvert. Courir d\'abri en abri.', 5); }
     // Un soldat passe tout près pendant qu'on se cache : on le note au carnet
     if (!s.hidden) s.hideNoted = false;
-    else if (!s.hideNoted && K.guards().some(function (g) { return g.f === s.f && g.state !== 'sleep' && Math.abs(g.x - s.x) < 140; })) { s.hideNoted = true; E().ev('hide'); }
+    else if (!s.hideNoted) {
+      var near = K.guards().filter(function (g) { return g.f === s.f && g.state !== 'sleep' && !g.dead && Math.abs(g.x - s.x) < 140; })[0];
+      if (near) { s.hideNoted = true; E().ev('hide', { who: K.whoOf(near) }); }
+    }
 
     K.guards().forEach(function (g) { think(g, s, rs, gm); });
     separate(rs);
@@ -494,6 +511,15 @@
         if (!inZone) {
           g.state = 'watch'; g.watchT = 3; g.warned++;
           E().say(g, g.warned > 1 ? 'Et que je ne vous y reprenne plus.' : 'C\'est ça. Restez de ce côté.', 3);
+          return;
+        }
+        // Pilleurs, squatteurs : on peut traverser leur coin. Ils ne
+        // s'énervent que si l'on s'y attarde, qu'on y fouille ou qu'on les frôle.
+        if (T.tolerant) {
+          var passing = s.path.length > 0 && !(s.act && s.act.phase === 'work');
+          if (dist < 50) g.warnT -= rs * 1.5;
+          else if (!passing) g.warnT -= rs;
+          if (g.warnT <= 0) { K.provoke(g.group, 'zone', s); sayG(g, 'attack'); }
           return;
         }
         g.warnT -= rs;
@@ -566,10 +592,11 @@
     if (!sees) return false;
     var z = zoneAt(s.f, s.x);
     if (!z || z.group !== g.group || !onFloor(s)) return false;
-    // Deuxième fois dans la zone : plus d'avertissement
-    if (g.warned >= 2) { K.provoke(g.group, 'zone', s); sayG(g, 'attack'); return true; }
-    g.state = 'warn'; g.warnT = g.warned ? 3 : 5.5; g.path = [];
-    E().ev('warn', { name: K.nameOf(g) });
+    var T = K.type(g);
+    // Soldats : deuxième fois dans la zone, plus d'avertissement
+    if (!T.tolerant && g.warned >= 2) { K.provoke(g.group, 'zone', s); sayG(g, 'attack'); return true; }
+    g.state = 'warn'; g.warnT = T.tolerant ? (g.warned ? 6 : 8) : g.warned ? 3 : 5.5; g.path = [];
+    if (!T.tolerant || !g.warned) E().ev('warn', { name: K.nameOf(g), who: K.whoOf(g), cat: K.catOf(g) });
     sayG(g, g.warned ? 'warn2' : 'warn', 5);
     if (C.Audio.ready) C.Audio.sfx.alert();
     return true;
@@ -740,7 +767,7 @@
   K.spare = function (s, g) {
     sayG(g, 'spared', 4);
     E().spared.push(g.type);
-    E().ev('spare', { name: K.nameOf(g) });
+    E().ev('spare', { name: K.nameOf(g), who: K.whoOf(g) });
     G().removeObject(g);
     G().markDirty();
   };
