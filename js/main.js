@@ -227,7 +227,7 @@
       guitar: guitarOn,
       fire: inGame && st.objects.some(function (o) { return o.kind === 'heater' && o.fuel > 0; }),
       radio: inGame && st.survivors.some(function (s) { return s.alive && s.act && (s.act.kind === 'news' || s.act.kind === 'music') && s.act.phase === 'work'; }),
-      war: true, onShell: function () { if (Math.random() < 0.6) C.Render.shake(2 + Math.random() * 4); } });
+      war: true, onShell: function () { if (C.Render.shellGlow) C.Render.shellGlow(); if (Math.random() < 0.6) C.Render.shake(2 + Math.random() * 4); } });
     C.Render.frame(dt, t);
     requestAnimationFrame(loop);
   }

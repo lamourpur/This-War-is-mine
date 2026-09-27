@@ -646,7 +646,7 @@
   }
 
   // ============================================================ particules
-  R.spawn = function (p) { if (R.particles.length < 500) R.particles.push(p); };
+  R.spawn = function (p) { if (R.particles.length < 900 || p.kind === 'blood' || p.kind === 'dust') R.particles.push(p); };
 
   R.shake = function (amount) {
     R.shakeT = 0.6; R.shakeAmt = amount || 4; R.flashT = 0.25;
@@ -704,7 +704,88 @@
         if (wt === 'pluie') R.spawn({ x: zx, y: -10, vx: -40, vy: 700, life: maxY / 700, t: 0, kind: 'rain' });
         else R.spawn({ x: zx, y: -10, vx: -10, vy: 45 + Math.random() * 25, life: maxY / 55, t: 0, kind: 'snow', size: 1 + Math.random() * 1.8 });
       }
+      // Rideau de pluie au premier plan (léger) et éclaboussures au sol
+      if (wt === 'pluie') {
+        for (var fg = 0; fg < 26 * dt * 10; fg++) R.spawn({ x: Math.random() * (W + 200), y: -40, vx: -70, vy: 1100, life: (H + 40) / 1100, t: 0, kind: 'rainfg', len: 22 + Math.random() * 18 });
+        for (var sp = 0; sp < 30 * dt; sp++) {
+          var spx = Math.random() < 0.5 ? Math.random() * (C.WORLD.left - 20) : C.WORLD.right + 20 + Math.random() * (W - C.WORLD.right - 20);
+          R.spawn({ x: spx, y: C.WORLD.ground, vx: 0, vy: 0, life: 0.25, t: 0, kind: 'splash' });
+        }
+      }
     }
+    // Neige qui tient (toit, rue) et fond ensuite
+    var spd = (C.Main && C.Main.speed) || 0;
+    if (wt === 'neige') R.snowCover = Math.min(1, (R.snowCover || 0) + dt * Math.max(spd, 0.2) * 0.006);
+    else if (R.snowCover) R.snowCover = Math.max(0, R.snowCover - dt * Math.max(spd, 0.2) * (st.weather.out > 2 ? 0.004 : 0.0008));
+    // Souffle qui fume quand il fait froid
+    var cold = st.phase === 'explore' ? st.weather.out < 4 : (C.World.shelterTemp ? C.World.shelterTemp(st) < 5 : false);
+    if (cold) {
+      st.survivors.forEach(function (x) {
+        if (!x.alive || x.away) return;
+        var ac = x.act, lying = ac && ac.phase === 'work' && (ac.kind === 'sleep' || ac.kind === 'sleepfloor');
+        if (lying || Math.random() > dt * 0.45) return;
+        var Hh = C.Figure.height(x), fc = x.facing || 1;
+        var seat = ac && ac.phase === 'work' && (ac.kind === 'rest' || ac.kind === 'read' || (ac.kind === 'idle' && ac.p && ac.p.pose !== 'lean'));
+        R.spawn({ x: x.x + fc * Hh * 0.07, y: x.y - Hh * (seat ? 0.6 : 0.86), vx: fc * 10, vy: -6, life: 1.2, t: 0, kind: 'breath', size: 2 });
+      });
+    }
+    // Lueurs des bombardements, au loin
+    R.shellGlows = (R.shellGlows || []).filter(function (g) { g.t += dt; return g.t < g.life; });
+    // Sans le son (pas encore de clic), la guerre se voit quand même au loin
+    if (!(C.Audio && C.Audio.ready) && Math.random() < dt / 25) R.shellGlow();
+  }
+
+  // Toit du refuge (même tracé que drawHouse) : pour la neige et le ciel
+  function roofLine() {
+    var L = C.WORLD.left, Rr = C.WORLD.right, roofTop = 40, eave = C.FLOORS[3].ceil - 12;
+    return [[L - 30, eave], [W / 2 - 160, roofTop], [W / 2 + 40, roofTop + 14], [W / 2 + 90, eave - 50], [W / 2 + 140, eave - 20], [W / 2 + 190, eave - 60], [Rr + 30, eave]];
+  }
+  function drawSnowCover(ctx, st) {
+    var c = R.snowCover || 0;
+    if (c < 0.02) return;
+    var th = 1.5 + 7 * c;
+    ctx.save();
+    ctx.fillStyle = 'rgba(232,234,238,' + (0.55 + 0.35 * c) + ')';
+    // Rue, de part et d'autre de la maison
+    [[0, C.WORLD.left - 8], [C.WORLD.right + 8, W]].forEach(function (seg) {
+      ctx.beginPath(); ctx.moveTo(seg[0], C.WORLD.ground + 1);
+      for (var x = seg[0]; x <= seg[1]; x += 16) ctx.lineTo(x, C.WORLD.ground - th + Math.sin(x * 0.07) * th * 0.25);
+      ctx.lineTo(seg[1], C.WORLD.ground + 1); ctx.closePath(); ctx.fill();
+    });
+    // Toit : la neige tient sur les pentes douces
+    var rl = roofLine();
+    for (var i = 0; i < rl.length - 1; i++) {
+      var a = rl[i], b = rl[i + 1], slope = Math.abs((b[1] - a[1]) / (b[0] - a[0]));
+      if (slope > 0.9) continue;
+      var t2 = th * (1 - slope * 0.7);
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+      ctx.lineTo(b[0], b[1] - t2); ctx.lineTo(a[0], a[1] - t2); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  // Un obus au loin : une lueur orange derrière les toits de la ville
+  R.shellGlow = function () {
+    var x = Math.random() < 0.5 ? Math.random() * (C.WORLD.left + 60) : C.WORLD.right - 60 + Math.random() * (W - C.WORLD.right + 60);
+    if (Math.random() < 0.35) x = Math.random() * W;
+    (R.shellGlows = R.shellGlows || []).push({ x: x, y: 300 + Math.random() * 160, t: 0, life: 1.4 + Math.random() * 0.8, r: 180 + Math.random() * 160 });
+  };
+  function drawShellGlows(ctx, st) {
+    var gl = R.shellGlows || [];
+    if (!gl.length) return;
+    var night = st.phase !== 'day' || st.minute >= 19 * 60 || st.minute < 7 * 60;
+    // Seulement dans le ciel : hors de la maison
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-20, -20, W + 40, H + 40);
+    var rl = roofLine();
+    ctx.moveTo(rl[0][0], C.WORLD.ground); rl.forEach(function (p) { ctx.lineTo(p[0], p[1]); }); ctx.lineTo(rl[rl.length - 1][0], C.WORLD.ground); ctx.closePath();
+    ctx.clip('evenodd');
+    gl.forEach(function (g) {
+      var k = g.t / g.life, a = (k < 0.12 ? k / 0.12 : 1 - (k - 0.12) / 0.88) * (night ? 0.55 : 0.22);
+      var gr = ctx.createRadialGradient(g.x, g.y, 4, g.x, g.y, g.r);
+      gr.addColorStop(0, 'rgba(255,170,90,' + a + ')'); gr.addColorStop(0.35, 'rgba(210,110,50,' + (a * 0.5) + ')'); gr.addColorStop(1, 'rgba(120,50,20,0)');
+      ctx.fillStyle = gr; ctx.fillRect(g.x - g.r, g.y - g.r, g.r * 2, g.r * 2);
+    });
+    ctx.restore();
   }
 
   function drawParticles(ctx) {
@@ -725,6 +806,16 @@
         case 'rain':
           ctx.strokeStyle = 'rgba(200,200,205,0.35)'; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - 2, p.y + 12); ctx.stroke(); break;
+        case 'rainfg':
+          ctx.strokeStyle = 'rgba(205,210,220,0.12)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.len * 0.06, p.y + p.len); ctx.stroke(); break;
+        case 'splash':
+          var k2 = p.t / p.life;
+          ctx.strokeStyle = 'rgba(210,214,222,' + (0.45 * (1 - k2)) + ')'; ctx.lineWidth = 0.9;
+          ctx.beginPath(); ctx.ellipse(p.x, p.y - 1, 2 + k2 * 6, 1 + k2 * 1.5, 0, Math.PI, 0); ctx.stroke(); break;
+        case 'breath':
+          ctx.fillStyle = 'rgba(230,232,236,' + (0.28 * a) + ')';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size + (1 - a) * 5, 0, Math.PI * 2); ctx.fill(); break;
         case 'snow':
           ctx.fillStyle = 'rgba(235,235,240,0.8)';
           ctx.beginPath(); ctx.arc(p.x + Math.sin(p.t * 2 + p.x) * 6, p.y, p.size, 0, Math.PI * 2); ctx.fill(); break;
@@ -1077,12 +1168,14 @@
     }
 
     drawParticles(ctx);
+    drawSnowCover(ctx, st);
 
     // Obscurité, puis lumières chaudes par-dessus
     var dk = darkness(st);
     if (dk > 0) { ctx.fillStyle = 'rgba(8,9,16,' + dk + ')'; ctx.fillRect(-20, -20, W + 40, H + 40); }
     ctx.globalCompositeOperation = 'lighter';
     drawLights(ctx, st, t);
+    drawShellGlows(ctx, st);
     ctx.globalCompositeOperation = 'source-over';
 
     // Lumière froide de l'hiver
