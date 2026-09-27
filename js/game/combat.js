@@ -311,6 +311,19 @@
     else if (!s.hideNoted && K.guards().some(function (g) { return g.f === s.f && g.state !== 'sleep' && Math.abs(g.x - s.x) < 140; })) { s.hideNoted = true; E().ev('hide'); }
 
     K.guards().forEach(function (g) { think(g, s, rs, gm); });
+
+    // Délivrée, la personne retenue vient remercier d'elle-même quand on est là
+    K.thankT = (K.thankT || 0) - rs;
+    if (K.thankT <= 0) {
+      K.thankT = 0.5;
+      G().st.objects.forEach(function (o) {
+        var d = o.kind === 'npc' && C.NPCS[o.npc];
+        if (!d || !d.rescued || !K.freed('brute')) return;
+        var ns = E().npcState(o);
+        if (ns.rescued || s.f !== o.f || Math.abs(s.x - o.x) > 260) return;
+        E().talk(s, o);
+      });
+    }
   };
 
   // (les coups et les tirs font leur propre bruit, au moment où ils partent)

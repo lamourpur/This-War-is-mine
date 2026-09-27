@@ -55,7 +55,7 @@
     E.active = true;
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
     E.notes = []; E.effects = []; E.stolen = {}; E.helped = [];
-    E.kills = []; E.spared = []; E.provoked = {}; E.events = [];
+    E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = [];
     E.mode = 'explore';          // 'explore' | 'combat' (bouton, touche C)
     E.w0 = s.wound; E.startBag = U.copy(bag);
     C.Combat.noises = []; C.Combat.shots = [];
@@ -152,6 +152,7 @@
   E.finish = function (reason) {
     if (!E.active) return;
     var est = G().st, home = E.home, s = E.s, ls = home.locations[E.loc];
+    if (reason !== 'dead') E.flushGifts(); else E.gifts = [];
     C.Actions.cancel(s, true);
     s.path = []; s.act = null;
     // Mémorise l'état de chaque objet du lieu
@@ -347,14 +348,17 @@
       ns.talk = (ns.talk || 0) + 1;
       if (!C.Combat.freed('brute')) { E.say(o, d.greet[(ns.talk - 1) % d.greet.length], 5); return; }
       if (!ns.rescued) {
-        ns.rescued = true; ns.helped = true;
-        E.give(s, o, d.reward, 'Cadeau de ' + d.name);
+        ns.rescued = true; ns.helped = true; ns.after = 0;
+        E.say(o, d.thanks, 3.5);
+        E.giveLater(s, o, d.reward, 'Cadeau de ' + d.name, 3.2, d.giveLine);
         E.home.stats.helped++;
         E.notes.push({ t: first(s) + ' a libéré ' + d.name + ' du soldat qui la retenait.', k: 'good' });
         E.ev('rescue', { name: d.name, items: U.copy(d.reward) });
         E.effects.push(function () { G().moralAll(10, { good: true, key: 'helped' }); });
+        return;
       }
-      E.say(o, d.rescued[(ns.talk - 1) % d.rescued.length], 6);
+      ns.after = (ns.after || 0) + 1;
+      E.say(o, d.rescued[(ns.after - 1) % d.rescued.length], 6);
       return;
     }
     var pool = ls.angry && d.afterSteal ? d.afterSteal : ns.helped && d.after ? d.after : d.greet;
@@ -385,13 +389,33 @@
     return false;
   };
 
+  // Donner après un temps (le temps de dire merci). Si l'exploration se
+  // termine avant, finish() remet le cadeau quand même (E.flushGifts).
+  E.gifts = [];
+  E.giveLater = function (s, o, items, label, secs, line) {
+    var g = { s: s, o: o, items: items, label: label, line: line };
+    E.gifts.push(g);
+    setTimeout(function () {
+      var i = E.gifts.indexOf(g);
+      if (i < 0 || !E.active) return;
+      E.gifts.splice(i, 1);
+      if (line) E.say(o, line, 4);
+      E.give(s, o, items, label);
+    }, (secs || 2) * 1000);
+  };
+  E.flushGifts = function () {
+    var list = E.gifts; E.gifts = [];
+    list.forEach(function (g) { E.give(g.s, g.o, g.items, g.label); });
+  };
+
   E.help = function (s, o) {
     var d = E.npcDef(o), ns = E.npcState(o), need = d.need;
     if (!need || ns.helped || !G().has(need.items)) return;
     G().removeItems(need.items);
     ns.helped = true;
-    if (need.reward) E.give(s, o, need.reward, 'Cadeau de ' + d.name);
     E.say(o, need.thanks, 7);
+    // La récompense vient après le merci, pas avant
+    if (need.reward) E.giveLater(s, o, need.reward, 'Cadeau de ' + d.name, 2.2);
     E.ev('help', { name: d.name, items: U.copy(need.items), reward: need.reward ? U.copy(need.reward) : null });
     E.home.stats.helped++;
     var name = d.name;

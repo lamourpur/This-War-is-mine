@@ -772,11 +772,23 @@
           (o.tools || []).forEach(function (t) {
             m.entries.push(E('Ouvrir : ' + C.ITEMS[t].name.toLowerCase(), costSub(null, t === 'passe_partout' ? 45 : 30), G().count(t) ? null : 'Il faut : ' + C.ITEMS[t].name, go('unlock', { tool: t })));
           });
+        } else if (o.owner && C.Explore && C.Explore.active && C.OWNERS[o.owner] && C.OWNERS[o.owner].military) {
+          // Matériel de l'armée : le risque, c'est d'être vu
+          var od = C.OWNERS[o.owner];
+          var watcher = C.Combat.guards().filter(function (g) { return !g.dead && g.attitude !== 'hostile' && C.Combat.sees(g, s); })[0];
+          m.desc = od.desc;
+          m.entries.push(E('Fouiller', watcher ? '<span class="ko">un soldat vous regarde</span>' : costSub(null, 30) + ' · à l\'abri des regards', null, watcher ? function () {
+            C.UI.dialog('Sous ses yeux ?', '<p class="dialog-text">' + U.esc(od.warn) + '</p>', [
+              { label: 'Attendre', cls: 'ghost' },
+              { label: 'Fouiller quand même', run: go('search') }
+            ]);
+          } : go('search')));
         } else if (o.owner && C.Explore && C.Explore.active) {
           // Les affaires des habitants : fouiller, c'est voler
-          m.desc = 'Ce n\'est pas à vous. Les gens qui vivent ici en ont besoin.';
+          var ow = C.OWNERS[o.owner] || {};
+          m.desc = ow.desc || 'Ce n\'est pas à vous. Les gens qui vivent ici en ont besoin.';
           m.entries.push(E('Fouiller (voler)', 'mauvais pour le moral', null, function () {
-            C.UI.dialog('Voler ?', '<p class="dialog-text">Ces affaires appartiennent aux gens qui vivent ici. Ils en ont besoin pour survivre, eux aussi.</p><p class="dialog-text">Tout le groupe l\'apprendra.</p>', [
+            C.UI.dialog('Voler ?', '<p class="dialog-text">' + U.esc(ow.warn || 'Ces affaires appartiennent aux gens qui vivent ici. Ils en ont besoin pour survivre, eux aussi.') + '</p><p class="dialog-text">Tout le groupe l\'apprendra.</p>', [
               { label: 'Renoncer', cls: 'ghost' },
               { label: 'Fouiller quand même', run: go('search') }
             ]);
@@ -798,8 +810,10 @@
         m.entries.push(E('Scier la grille', costSub(null, 90), G().count('scie') ? null : 'Il faut une scie à métaux (établi niv. 2)', go('cut')));
         break;
       case 'furniture':
-        m.desc = o.owner && C.Explore && C.Explore.active ? 'Le meuble de quelqu\'un. Le démonter, c\'est le voler.' : 'Un vieux meuble. Démonté, il fournira du bois.';
-        m.entries.push(E('Démonter' + (hach ? ' (hachette)' : '') + (o.owner && C.Explore && C.Explore.active ? ' — voler' : ''), costSub(null, o.work * (hach ? 0.6 : 1)), null, go('dismantle')));
+        var fo = o.owner && C.Explore && C.Explore.active ? (C.OWNERS[o.owner] || {}) : null;
+        var theft = fo && !fo.military;
+        m.desc = fo ? (fo.furn || fo.desc || 'Le meuble de quelqu\'un. Le démonter, c\'est le voler.') : 'Un vieux meuble. Démonté, il fournira du bois.';
+        m.entries.push(E('Démonter' + (hach ? ' (hachette)' : '') + (theft ? ' — voler' : ''), costSub(null, o.work * (hach ? 0.6 : 1)), null, go('dismantle')));
         break;
       case 'hole':
         m.desc = o.boarded ? 'Des planches clouées bouchent le trou.' : 'Le vent et le froid s\'engouffrent. Et n\'importe qui pourrait entrer.';

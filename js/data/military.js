@@ -95,11 +95,19 @@
     look: { hair: 'long', build: 0.84, h: 0.92, coat: '#5e554c', pants: '#302d29', coatLen: 0.2, skin: '#b19a86', hairColor: '#3b2a20', lips: true, female: true, top: 'cardigan', shirt: '#7c7166' },
     pose: 'sit',
     greet: ['Aidez-moi… je vous en prie.', 'Il dit qu\'il va me donner à manger si… Je ne veux pas.'],
-    rescued: ['Il est parti ? Vraiment parti ?', 'Merci. Je vais rejoindre ma tante, à l\'église Sainte-Anne.'],
+    // Délivrée : d'abord les remerciements, puis elle donne ce qu'elle a
+    thanks: 'Il ne reviendra pas ? Vraiment ? … Merci. Merci, merci…',
+    giveLine: 'Tenez. C\'est tout ce que j\'ai. Prenez-le, je vous en prie.',
+    rescued: ['Je vais rejoindre ma tante, à l\'église Sainte-Anne.', 'Je n\'oublierai jamais ce que vous avez fait cette nuit.'],
     reward: { bijoux: 1, medicaments: 1 }
   };
 
-  C.OWNERS.armee = { text: ' a pris du matériel à l\'armée.', moral: 0, key: null };
+  // Matériel militaire : pas une question de conscience, une question de discrétion
+  C.OWNERS.armee = {
+    text: ' a pris du matériel à l\'armée.', moral: 0, key: null, military: true,
+    desc: 'Du matériel de l\'armée. Personne n\'en mourra de faim, mais si un soldat vous voit vous servir, toute la garnison ouvrira le feu.',
+    warn: 'Un soldat vous regarde. Vous servir maintenant, c\'est déclencher la fusillade : toute la garnison deviendra hostile.'
+  };
 
   var STAIRS = [
     { a: { f: 1, x: 420 }, b: { f: 2, x: 260 } },
@@ -131,21 +139,21 @@
       { key: 'ferraille', kind: 'rubble', f: 1, x: 540, w: 90, h: 40, work: 60, loot: { composants: 3, pieces_meca: 1 } },
       { key: 'recoin_quai', kind: 'hide', f: 1, x: 640, w: 46, h: 108 },
       { key: 'maddox', kind: 'guard', type: 'intendant', f: 1, x: 730, facing: -1, attitude: 'neutral', group: 'garnison' },
-      { key: 'caisses_armee', kind: 'cache', variant: 'caisse', f: 1, x: 980, w: 78, h: 48, owner: 'armee', loot: { conserve: 3, eau: 2, cafe: 1 } },
+      { key: 'caisses_armee', kind: 'cache', variant: 'caisse', label: 'Caisse de l\'armée', f: 1, x: 980, w: 78, h: 48, owner: 'armee', loot: { conserve: 3, eau: 2, cafe: 1 } },
       { key: 'recoin_depot', kind: 'hide', f: 1, x: 1090, w: 46, h: 108 },
       { key: 'soldat_depot', kind: 'guard', type: 'soldat', f: 1, x: 1250, facing: -1, attitude: 'neutral', group: 'garnison', patrol: [860, 1400] },
-      { key: 'rations', kind: 'cache', variant: 'etagere', f: 1, x: 1330, w: 70, h: 104, owner: 'armee', loot: { conserve: 2, medicaments: 1, bandage: 2 } },
-      { key: 'armurerie', kind: 'cache', variant: 'coffre', f: 0, x: 420, w: 60, h: 48, owner: 'armee', locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 8, gilet: 1 } },
+      { key: 'rations', kind: 'cache', variant: 'etagere', label: 'Rations de l\'armée', f: 1, x: 1330, w: 70, h: 104, owner: 'armee', loot: { conserve: 2, medicaments: 1, bandage: 2 } },
+      { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 0, x: 420, w: 60, h: 48, owner: 'armee', locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 8, gilet: 1 } },
       { key: 'lit_camp', kind: 'bed', f: 0, x: 690, metal: true, deco: true },
       { key: 'soldat_cave', kind: 'guard', type: 'soldat', f: 0, x: 690, facing: 1, attitude: 'neutral', group: 'garnison', sleep: true },
-      { key: 'caisse_munitions', kind: 'cache', variant: 'caisse', f: 0, x: 1000, w: 78, h: 48, owner: 'armee', loot: { munitions: 6, pieces_elec: 2 } },
+      { key: 'caisse_munitions', kind: 'cache', variant: 'caisse', label: 'Caisse de munitions', f: 0, x: 1000, w: 78, h: 48, owner: 'armee', loot: { munitions: 6, pieces_elec: 2 } },
       { key: 'recoin_cave', kind: 'hide', f: 0, x: 1130, w: 46, h: 108 },
       { key: 'bureau', kind: 'cache', variant: 'armoire', f: 2, x: 560, w: 58, h: 112, loot: { cafe: 1, tabac: 2, livres: 2 } },
       { key: 'classeur', kind: 'cache', variant: 'etagere', f: 2, x: 760, w: 70, h: 104, loot: { composants: 2, pieces_elec: 1 } },
       { key: 'recoin_bureau', kind: 'hide', f: 2, x: 850, w: 46, h: 108 },
       { key: 'brute', kind: 'guard', type: 'brute', f: 2, x: 1060, facing: 1, attitude: 'neutral', group: 'brute' },
       { key: 'mila', kind: 'npc', npc: 'mila', f: 2, x: 1130, w: 50, h: 70, facing: -1 },
-      { key: 'paquetage', kind: 'cache', variant: 'valise', f: 2, x: 1330, w: 62, h: 36, owner: 'armee', loot: { alcool: 1, cigarettes: 3 } },
+      { key: 'paquetage', kind: 'cache', variant: 'valise', label: 'Paquetage de Holt', f: 2, x: 1330, w: 62, h: 36, owner: 'armee', loot: { alcool: 1, cigarettes: 3 } },
       { key: 'etagere_toit', kind: 'cache', variant: 'etagere', f: 3, x: 380, w: 70, h: 104, loot: { livres: 2, filtre: 1 } },
       { key: 'caisse_toit', kind: 'cache', variant: 'caisse', f: 3, x: 760, w: 78, h: 48, loot: { carburant: 2, pieces_meca: 2 } },
       { key: 'valise_toit', kind: 'cache', variant: 'valise', f: 3, x: 1100, w: 62, h: 36, loot: { tabac: 2, cigarettes: 2 } }
@@ -170,11 +178,11 @@
       { key: 'recoin_entree', kind: 'hide', f: 1, x: 300, w: 46, h: 108 },
       { key: 'sacs', kind: 'sandbags', f: 1, x: 530, w: 90, h: 40, deco: true },
       { key: 'sentinelle', kind: 'guard', type: 'soldat', f: 1, x: 690, facing: 1, attitude: 'hostile', group: 'poste', lookBack: 9 },
-      { key: 'caisse_rations', kind: 'cache', variant: 'caisse', f: 1, x: 820, w: 78, h: 48, loot: { conserve: 3, eau: 2 } },
+      { key: 'caisse_rations', kind: 'cache', variant: 'caisse', label: 'Caisse de rations', f: 1, x: 820, w: 78, h: 48, loot: { conserve: 3, eau: 2 } },
       { key: 'recoin_couloir', kind: 'hide', f: 1, x: 1060, w: 46, h: 108 },
       { key: 'ronde', kind: 'guard', type: 'soldat', f: 1, x: 1300, facing: -1, attitude: 'hostile', group: 'poste', patrol: [960, 1400] },
       { key: 'infirmerie', kind: 'cache', variant: 'pharmacie', f: 1, x: 1330, w: 60, h: 112, loot: { medicaments: 2, bandage: 3 } },
-      { key: 'armurerie', kind: 'cache', variant: 'coffre', f: 0, x: 560, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 10, gilet: 1 } },
+      { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 0, x: 560, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 10, gilet: 1 } },
       { key: 'recoin_cave', kind: 'hide', f: 0, x: 840, w: 46, h: 108 },
       { key: 'lit_camp', kind: 'bed', f: 0, x: 1010, metal: true, deco: true },
       { key: 'dormeur', kind: 'guard', type: 'soldat', f: 0, x: 1010, facing: 1, attitude: 'hostile', group: 'poste', sleep: true },
@@ -182,8 +190,8 @@
       { key: 'etage', kind: 'guard', type: 'soldat', f: 2, x: 400, facing: 1, attitude: 'hostile', group: 'poste', patrol: [300, 640] },
       { key: 'recoin_etage', kind: 'hide', f: 2, x: 740, w: 46, h: 108 },
       { key: 'lit_officier', kind: 'bed', f: 2, x: 860, metal: true, deco: true },
-      { key: 'bureau_officier', kind: 'cache', variant: 'coffre', f: 2, x: 1030, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 2, cafe: 2, cigarettes: 3, pistolet: 1 } },
-      { key: 'caisse_etage', kind: 'cache', variant: 'caisse', f: 2, x: 1310, w: 78, h: 48, loot: { munitions: 6, conserve: 2 } },
+      { key: 'bureau_officier', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'officier', f: 2, x: 1030, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 2, cafe: 2, cigarettes: 3, pistolet: 1 } },
+      { key: 'caisse_etage', kind: 'cache', variant: 'caisse', label: 'Caisse de munitions', f: 2, x: 1310, w: 78, h: 48, loot: { munitions: 6, conserve: 2 } },
       { key: 'caisse_toit', kind: 'cache', variant: 'caisse', f: 3, x: 400, w: 78, h: 48, loot: { carburant: 2, munitions: 4 } },
       { key: 'guetteur', kind: 'guard', type: 'soldat', f: 3, x: 820, facing: -1, attitude: 'hostile', group: 'poste' },
       { key: 'caisse_radio', kind: 'cache', variant: 'caisse', f: 3, x: 1080, w: 78, h: 48, loot: { pieces_elec: 3, composants: 3 } },

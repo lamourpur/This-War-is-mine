@@ -186,13 +186,30 @@
   // Propriétaires : ce que coûte au groupe le vol de leurs affaires
   // later : conséquence apprise quelques jours plus tard
   C.OWNERS = {
-    whitaker: { text: ' a volé les Whitaker. Le vieil homme a supplié ; sa femme pleurait.', moral: -16, key: 'stole_old', horvat: true },
-    eglise: { text: ' a volé ceux qui s\'abritaient dans l\'église.', moral: -9, key: 'stole' },
+    // desc : texte du menu · warn : fenêtre de confirmation · furn : meuble à démonter
+    whitaker: {
+      text: ' a volé les Whitaker. Le vieil homme a supplié ; sa femme pleurait.', moral: -16, key: 'stole_old', horvat: true,
+      desc: 'Les affaires des Whitaker. Ce vieux couple n\'a presque plus rien.',
+      warn: 'Tout ce qui est là appartient à Arthur et Edith Whitaker. Sans ça, ils ne passeront peut-être pas l\'hiver.',
+      furn: 'Un meuble des Whitaker. Le démonter, c\'est les voler.'
+    },
+    eglise: {
+      text: ' a volé ceux qui s\'abritaient dans l\'église.', moral: -9, key: 'stole',
+      desc: 'Les réserves du père Daniel, pour les réfugiés qu\'il héberge.',
+      warn: 'Ce sont les vivres des réfugiés de l\'église. Onze personnes en dépendent, dont des enfants.'
+    },
     hopital: {
       text: ' a volé la pharmacie de l\'hôpital. Les blessés n\'auront rien cette nuit.', moral: -15, key: 'stole_hospital',
+      desc: 'Les réserves de l\'hôpital. Des blessés en dépendent.',
+      warn: 'Ces médicaments et ces bandages sont ceux des blessés de l\'hôpital. Le docteur n\'a rien d\'autre.',
+      furn: 'Un meuble de l\'hôpital. Le démonter, c\'est voler les soignants.',
       later: { days: 2, text: 'On raconte qu\'une fillette est morte à l\'hôpital de campagne, faute de médicaments.', moral: -7, key: 'hospital_death' }
     },
-    ecole: { text: ' a volé les familles réfugiées de l\'école. Des enfants ont tout vu.', moral: -13, key: 'stole_kids' }
+    ecole: {
+      text: ' a volé les familles réfugiées de l\'école. Des enfants ont tout vu.', moral: -13, key: 'stole_kids',
+      desc: 'Les affaires des familles réfugiées dans le gymnase.',
+      warn: 'Ces affaires appartiennent aux familles de l\'école. Des enfants dorment juste à côté.'
+    }
   };
 
   // ------------------------------------------------------------ plans
