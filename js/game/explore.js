@@ -294,6 +294,8 @@
         case 'steal':
           add(e.m, e.owner === 'armee' ? 'Je me suis servi' + fe + ' dans les réserves de l\'armée. Eux ne manqueront de rien.' : 'J\'ai pris ce qui ne m\'appartenait pas. Ils n\'avaient déjà presque rien.', e.owner === 'armee' ? '' : 'bad');
           break;
+        case 'rob': add(e.m, 'J\'ai pointé mon arme sur ' + e.name + '. Il a tout donné en tremblant' + (Object.keys(e.items || {}).length ? ' : ' + C.itemsText(e.items) : '') + '. Je n\'oublierai pas son regard.', 'bad'); break;
+        case 'peek': add(e.m, 'J\'ai regardé par le trou d\'une serrure' + (e.guards ? ' : des hommes armés, de l\'autre côté.' : e.npcs ? ' : il y avait quelqu\'un.' : '. Personne.')); break;
         case 'caught': add(e.m, 'Un soldat m\'a vu' + fe + ' faire. « Voleur ! »', 'bad'); break;
         case 'help': add(e.m, e.name + ' avait besoin de ' + C.itemsText(e.items) + '. Je le lui ai donné.' + (e.reward ? ' En échange : ' + C.itemsText(e.reward) + '.' : ''), 'good'); break;
         case 'donate': add(e.m, 'J\'ai laissé ' + C.itemsText(e.items) + ' pour ' + e.name + '.', 'good'); break;
@@ -378,7 +380,7 @@
       E.say(o, d.rescued[(ns.after - 1) % d.rescued.length], 6);
       return;
     }
-    var pool = ls.angry && d.afterSteal ? d.afterSteal : ns.helped && d.after ? d.after : d.greet;
+    var pool = ns.robbed ? AFTER_ROB : ls.angry && d.afterSteal ? d.afterSteal : ns.helped && d.after ? d.after : d.greet;
     ns.talk = (ns.talk || 0) + 1;
     E.say(o, pool[(ns.talk - 1) % pool.length]);
     E.ev('talk', { name: d.name });
@@ -473,6 +475,44 @@
     E.say(o, d.trade.say || 'Voyons ce que vous avez.', 4);
     C.TradeUI.open(s, E.traderStock(o), null, { name: d.name, likes: d.trade.likes, bag: true, face: C.npcPortrait(o), faceLine: d.trade.say });
   };
+
+  // ------------------------------------------------------------ braquage
+  // Comme dans le jeu d'origine : arme au poing, on force un civil à donner
+  // ce qu'il a. Il cède, terrorisé ; ses affaires sont à vous… et le groupe
+  // ne l'oubliera pas.
+  var FEAR = ['Non, non ! Ne tirez pas ! Prenez tout !', 'Pitié… j\'ai des enfants. Tenez, tenez !', 'D\'accord, d\'accord ! Voilà, c\'est tout ce que j\'ai !'];
+  var AFTER_ROB = ['Allez-vous-en. Allez-vous-en !', '…', 'Vous êtes pires qu\'eux.'];
+  E.canRob = function (o) {
+    var d = E.npcDef(o);
+    return !!d && d.pose !== 'lie' && d.look.h >= 0.8 && !d.rescued && !E.npcState(o).robbed;
+  };
+  E.ownerHere = function () {
+    var ow = null;
+    G().st.objects.forEach(function (x) { if (!ow && x.owner && C.OWNERS[x.owner] && !C.OWNERS[x.owner].military && x.owner !== 'bande' && x.owner !== 'pilleur') ow = x.owner; });
+    return ow;
+  };
+  E.rob = function (s, o) {
+    var d = E.npcDef(o), ns = E.npcState(o), ls = locState(E.home, E.loc);
+    if (!E.canRob(o)) return;
+    ns.robbed = true; ls.angry = true;
+    E.say(o, FEAR[(o.uid || 0) % FEAR.length], 5);
+    C.Combat.noise(o.f, o.x, 200, 'work');
+    // Ce qu'il a sur lui : la moitié de son stock (s'il en a un), sinon un peu de vivres
+    var got = {};
+    if (d.trade) {
+      var st0 = E.traderStock(o);
+      Object.keys(st0).forEach(function (k) { var n = Math.ceil(st0[k] / 2); if (n > 0) { got[k] = n; st0[k] -= n; if (!st0[k]) delete st0[k]; } });
+    } else got = d.rob || { conserve: 1 };
+    E.giveLater(s, o, got, 'Affaires de ' + d.name, 1.6);
+    var ow = E.ownerHere();
+    if (ow) E.stolen[ow] = true;
+    E.ev('rob', { name: d.name, items: U.copy(got) });
+    E.notes.push({ t: first(s) + ' a braqué ' + d.name + ', arme au poing.', k: 'bad' });
+    E.effects.push(function () { G().moralAll(-8, { bad: true, key: 'robbed' }); });
+    E.home.stats.stole++;
+    if (C.Audio.ready) C.Audio.sfx.alert();
+  };
+  E.afterRob = AFTER_ROB;
 
   // Un objet appartient-il aux habitants ? (prendre = voler)
   E.markStolen = function (o, items) {

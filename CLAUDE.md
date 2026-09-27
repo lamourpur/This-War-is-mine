@@ -24,6 +24,8 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - Objets donnés par un PNJ en exploration : toujours passer par `C.Explore.give(s, o, items, label)` (sac si la place, sinon baluchon à terre + fenêtre de fouille), jamais `addItems` direct.
 - Modes d'exploration : `C.Explore.mode` = `'explore'` (parler, pas d'attaque dans les menus) ou `'combat'` (clic sur un soldat = `Combat.quickAttack`, arme tenue via `Combat.readyTool`). Bascule : `Combat.setMode` / touche C.
 - Espacement des ennemis (`combat.js`) : `goTo` passe par `freeSpot` (jamais deux soldats sur la même destination, écart `GAP`) ; `separate()` écarte chaque image les soldats **arrêtés** (le plus proche du survivant avance d'un pas ; un soldat en marche passe sans bousculer). Au corps à corps, le second contourne de l'autre côté.
+- Portes : action `peek` (`o.peeked`, voile léger sur la pièce dans `buildStatic`, `rg.peeked`). `Combat.hidden(g)` = soldat dans une région non atteinte et non regardée : pas dessiné (marque de bruit s'il bouge ou parle), pas cliquable.
+- Braquage : `Explore.canRob(o)` / `Explore.rob(s, o)` (action `npc` avec `what: 'rob'`) ; la moitié du stock du PNJ ou `d.rob`, `E.stolen[ownerHere()]`, pensée `robbed`.
 - Arme en main : `C.Combat.weapon()` (choix `Explore.weapon` validé, sinon la meilleure), `setWeapon`, `cycleWeapon` (touche A), `weapons()` ; `Combat.plan` / `menu` / `readyTool` l'utilisent.
 - Faim : `C.Surv.feedHunger(s, faim, heures)` (plafond 100, compteur `s.starving`) ; la mort de faim n'arrive qu'à l'aube (`checkDeath(s, true)`) après `Surv.STARVE_H` heures à 100.
 - Temps en exploration : `gm` = minutes de jeu (1,6 par seconde), `rs` = secondes réelles × vitesse (IA, cadence de tir).

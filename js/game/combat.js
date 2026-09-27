@@ -98,6 +98,17 @@
     if (list.length > 1) K.setWeapon(list[(i + 1) % list.length].id);
   };
 
+  // Soldat dans une pièce encore inexplorée (brouillard) et pas regardée par
+  // la serrure : invisible, comme dans le jeu d'origine
+  K.hidden = function (g) {
+    if (!E() || !E().active || !C.Nav.regions) return false;
+    for (var i = 0; i < C.Nav.regions.length; i++) {
+      var rg = C.Nav.regions[i];
+      if (rg.f === g.f && g.x >= rg.x0 && g.x <= rg.x1 && Math.abs(g.y - C.FLOORS[g.f].y) < 2) return !rg.reach && !rg.peeked;
+    }
+    return false;
+  };
+
   // ------------------------------------------------------------ soldats
   K.type = function (g) { return C.GUARD_TYPES[g.type]; };
   // Nom affiché : prénom propre (Rick, Kurt…) ou nom du type
@@ -865,7 +876,7 @@
   K.guardAt = function (wx, wy) {
     var best = null, bd = 48;
     K.guards().forEach(function (g) {
-      if (g.dead || (K.type(g) && K.type(g).unseen)) return;
+      if (g.dead || (K.type(g) && K.type(g).unseen) || K.hidden(g)) return;
       var fl = C.FLOORS[g.f];
       if (wy < fl.ceil - 10 || wy > fl.y + 12) return;
       var dx = Math.abs(wx - g.x);
@@ -995,8 +1006,21 @@
       var vr = Math.min(n.r, 320);   // rayon affiché (les tirs portent bien plus loin)
       ctx.beginPath(); ctx.ellipse(n.x, fy, Math.max(4, vr * (0.25 + 0.75 * k)), Math.max(3, Math.min(vr, 150) * 0.5 * (0.25 + 0.75 * k)), 0, 0, Math.PI * 2); ctx.stroke();
     });
-    // Soldats
-    K.guards().forEach(function (g) { drawGuard(ctx, g, t); });
+    // Soldats (derrière une porte jamais ouverte ni regardée : on ne les voit
+    // pas, on les entend — marque de bruit quand ils bougent ou parlent)
+    K.guards().forEach(function (g) {
+      if (!K.hidden(g)) { drawGuard(ctx, g, t); return; }
+      var talking = C.Render.npcSay && C.Render.npcSay[g.uid];
+      if (g.dead || g.state === 'sleep' || (!g.path.length && !talking)) return;
+      var fy = C.FLOORS[g.f].y - 70, k = (t * 1.6 + g.uid * 0.37) % 1;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(235,225,200,' + (0.55 * (1 - k)) + ')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(g.x, fy, 8 + 18 * k, -0.9, 0.9); ctx.stroke();
+      ctx.beginPath(); ctx.arc(g.x, fy, 8 + 18 * k, Math.PI - 0.9, Math.PI + 0.9); ctx.stroke();
+      ctx.fillStyle = 'rgba(235,225,200,0.75)';
+      ctx.beginPath(); ctx.arc(g.x, fy, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    });
     // Tirs : traçante et éclair
     K.shots.forEach(function (sh) {
       var a = 1 - sh.t / sh.life;

@@ -82,6 +82,10 @@
     // Brouillard sur les zones inaccessibles
     C.Nav.regions.forEach(function (rg) {
       if (rg.reach) return;
+      // Pièce vue par le trou de la serrure : voile léger, on distingue tout
+      rg.peeked = C.Game.st.objects.some(function (o) {
+        return o.kind === 'door' && o.peeked && o.f === rg.f && (Math.abs(o.x - rg.x0) < 1 || Math.abs(o.x - rg.x1) < 1);
+      });
       var fl = C.FLOORS[rg.f];
       var x0 = Math.max(rg.x0, C.WORLD.left + 6), x1 = Math.min(rg.x1, C.WORLD.right - 6);
       var pad = 0;
@@ -90,8 +94,9 @@
       });
       if (Math.abs(x0 - rg.x0) < 1 && rg.x0 > C.WORLD.left + 10) x0 += pad;
       if (Math.abs(x1 - rg.x1) < 1 && rg.x1 < C.WORLD.right - 10) x1 -= pad;
-      ctx.fillStyle = 'rgba(12,11,10,0.8)';
+      ctx.fillStyle = rg.peeked ? 'rgba(12,11,10,0.38)' : 'rgba(12,11,10,0.8)';
       ctx.fillRect(x0, fl.ceil, x1 - x0, fl.y - fl.ceil);
+      if (rg.peeked) return;
       var rr = SK.rng(rg.f * 31 + Math.round(rg.x0));
       SK.scribble(ctx, rr, x0 + 6, fl.ceil + 6, x1 - x0 - 12, fl.y - fl.ceil - 12, 60, 0.18);
     });

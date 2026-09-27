@@ -12,6 +12,8 @@
     helped_cyn: ['On n\'a pas de quoi faire la charité.', 'Très généreux. On verra si ça nous nourrit.'],
     refused: ['On n\'avait pas le choix… si ?', 'Je revois encore son visage.', 'On a fermé la porte. Qu\'est-ce qu\'on est en train de devenir ?'],
     refused_cyn: ['Chacun pour soi. C\'est la guerre.', 'On ne peut pas sauver tout le monde.'],
+    robbed: ['On a braqué quelqu\'un. Avec une arme. Comme des bandits.', 'Il tremblait. Il nous a tout donné. Et on est partis.'],
+    robbed_cyn: ['Il valait mieux qu\'il ait peur de nous que l\'inverse.'],
     stole: ['On vole des gens comme nous, maintenant.', 'Je n\'arrive pas à oublier ce qu\'on a fait cette nuit.', 'Ils n\'avaient déjà presque rien.'],
     stole_cyn: ['Ils avaient plus que nous. C\'est comme ça.', 'Mieux vaut eux que nous.'],
     stole_old: ['Les Whitaker… on leur a tout pris. Tout.', 'Ces deux vieux ne méritaient pas ça. Personne ne mérite ça.'],

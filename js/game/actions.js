@@ -91,6 +91,42 @@
       }
     },
 
+    // Regarder par le trou de la serrure (exploration) : révèle la pièce
+    peek: {
+      label: 'Regarde par la serrure', fatigue: 0,
+      dur: function () { return 3; },
+      done: function (s, o) {
+        o.peeked = true;
+        G().markDirty();
+        // La pièce regardée : le côté encore inexploré de la porte
+        var side = !C.Nav.isReachable(o.f, o.x + 20) ? 1 : !C.Nav.isReachable(o.f, o.x - 20) ? -1 : (s.x < o.x ? 1 : -1);
+        var x0 = side > 0 ? o.x : -1e9, x1 = side > 0 ? 1e9 : o.x;
+        // Jusqu'au prochain obstacle de ce côté
+        G().st.objects.forEach(function (b) {
+          if (b === o || b.f !== o.f || !G().isBlocking(b)) return;
+          if (side > 0 && b.x > o.x && b.x < x1) x1 = b.x;
+          if (side < 0 && b.x < o.x && b.x > x0) x0 = b.x;
+        });
+        var inRoom = function (b) { return b.f === o.f && b.x > x0 && b.x < x1; };
+        var gs = G().st.objects.filter(function (b) { return b.kind === 'guard' && !b.dead && inRoom(b) && !(C.GUARD_TYPES[b.type] || {}).unseen; });
+        var npcs = G().st.objects.filter(function (b) { return b.kind === 'npc' && inRoom(b); });
+        var caches = G().st.objects.filter(function (b) { return (b.kind === 'cache' || b.kind === 'furniture') && inRoom(b) && !b.searched; });
+        var parts = [];
+        if (gs.length) {
+          var asleep = gs.filter(function (g) { return g.state === 'sleep'; }).length;
+          var mil = gs.every(function (g) { return /soldat|sergent|garde/i.test(C.GUARD_TYPES[g.type].name || ''); });
+          var noun1 = mil ? 'Un soldat' : 'Un homme armé', nounN = mil ? ' soldats' : ' hommes armés';
+          parts.push(gs.length === 1 ? noun1 + (asleep ? ', endormi' : '') + '.' : (gs.length === 2 ? 'Deux' : gs.length === 3 ? 'Trois' : 'Plusieurs') + nounN + (asleep ? ' (' + (asleep === gs.length ? 'ils dorment' : asleep + ' dort') + ')' : '') + '.');
+        }
+        if (npcs.length) parts.push(npcs.length === 1 ? 'Quelqu\'un est là.' : npcs.length + ' personnes.');
+        if (!gs.length && !npcs.length) parts.push('Personne, on dirait.');
+        parts.push(caches.length ? (caches.length > 2 ? 'Des meubles, des caisses : de quoi fouiller.' : 'Quelques affaires à fouiller.') : 'Pas grand-chose à prendre.');
+        var txt = 'Par la serrure… ' + parts.join(' ');
+        if (C.Explore && C.Explore.active) { C.Explore.say(s, txt, 5); C.Explore.ev('peek', { guards: gs.length, npcs: npcs.length }); }
+        return null;
+      }
+    },
+
     clear: {
       work: true, label: 'Déblaie', sound: 'dig', fatigue: 4.5,
       dur: function (s, o) { return o.work * (G().count('pelle') > 0 ? 0.5 : 1); },
@@ -723,6 +759,17 @@
       var can = G().has(d.donate.items) || (d.donate.alt && G().has(d.donate.alt));
       m.entries.push(E(d.donate.label, C.itemsText(d.donate.items) + (d.donate.alt ? ' ou ' + C.itemsText(d.donate.alt) : ''), can ? null : 'Rien à donner dans le sac', go('npc', { what: 'donate' }), Object.keys(d.donate.items)[0]));
     }
+    // Braquage (arme en main, mode combat)
+    if (C.Explore.canRob(o)) {
+      var held = C.Combat.weapon(), armed = held && held !== 'poings';
+      var why = !armed ? 'Il faut une arme en main' : C.Explore.mode !== 'combat' ? 'Passez en mode combat (touche C)' : null;
+      m.entries.push(E('Menacer avec une arme', '<span class="ko">très mauvais pour le moral</span>', why, function () {
+        C.UI.dialog('Braquer ' + U.esc(d.name) + ' ?', '<p class="dialog-text">' + U.esc(d.name) + ' ne vous a rien fait. Sous la menace, il vous donnera ce qu\'il a — et le groupe apprendra ce que vous avez fait.</p>', [
+          { label: 'Renoncer', cls: 'ghost' },
+          { label: 'Le menacer', run: go('npc', { what: 'rob' }) }
+        ]);
+      }, armed ? held : null));
+    }
     if (!m.entries.length) m.desc = d.title + '. Endormie, brûlante de fièvre.';
     return m;
   }
@@ -814,7 +861,8 @@
         break;
       case 'door':
         if (o.open) { m.desc = 'La porte est ouverte.'; break; }
-        m.desc = 'Une porte fermée à clé. Qu\'y a-t-il derrière ?';
+        m.desc = o.peeked ? 'Une porte fermée à clé. Vous avez vu ce qu\'il y a derrière.' : 'Une porte fermée à clé. Qu\'y a-t-il derrière ?';
+        if (C.Explore && C.Explore.active && !o.peeked) m.entries.push(E('Regarder par la serrure', costSub(null, 3) + ' · silencieux', null, go('peek')));
         (o.tools || []).forEach(function (t) {
           m.entries.push(E('Ouvrir : ' + C.ITEMS[t].name.toLowerCase(), costSub(null, t === 'passe_partout' ? 45 : 30), G().count(t) ? null : 'Il faut : ' + C.ITEMS[t].name, go('unlock', { tool: t })));
         });

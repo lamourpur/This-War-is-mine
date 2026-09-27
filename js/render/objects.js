@@ -41,7 +41,7 @@
   D.bounds = function (o) {
     var y = C.FLOORS[o.f].y;
     if (o.kind === 'hole') { var hs = D.holeSize(o); return { x: o.x - hs.w / 2 - 10, y: y - D.HOLE_CY - hs.h / 2 - 8, w: hs.w + 20, h: hs.h + 16 }; }
-    if (o.kind === 'guard' && C.GUARD_TYPES && C.GUARD_TYPES[o.type] && C.GUARD_TYPES[o.type].unseen) return { x: -9999, y: -9999, w: 0, h: 0 };
+    if (o.kind === 'guard' && C.GUARD_TYPES && C.GUARD_TYPES[o.type] && (C.GUARD_TYPES[o.type].unseen || (C.Combat && C.Combat.hidden(o)))) return { x: -9999, y: -9999, w: 0, h: 0 };
     if (o.kind === 'npc' && C.NPCS && C.NPCS[o.npc]) {
       var nd = C.NPCS[o.npc], nh = C.Figure.BASE * nd.look.h;
       if (nd.pose === 'lie') { var ly = o.onBed ? y - 42 : y - 9; return { x: o.x - nh * 0.58, y: ly - 22, w: nh * 1.1, h: 30 }; }
