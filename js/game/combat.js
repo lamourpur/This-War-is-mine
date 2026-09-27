@@ -194,8 +194,73 @@
   // ------------------------------------------------------------ déplacements
   function goTo(g, f, x) {
     if (K.type(g).fixed) { g.path = []; return; }
-    var p = C.Nav.findPath({ f: g.f, x: g.x }, { f: f, x: U.clamp(x, C.WORLD.walkMin, C.WORLD.walkMax) });
+    x = freeSpot(g, f, U.clamp(x, C.WORLD.walkMin, C.WORLD.walkMax));
+    var p = C.Nav.findPath({ f: g.f, x: g.x }, { f: f, x: x });
     g.path = p || [];
+  }
+
+  // ------------------------------------------------------------ espacement
+  // Plusieurs soldats ne visent jamais le même point : chacun prend une place
+  // libre à côté (du côté d'où il arrive), sans traverser de mur.
+  var GAP = 54;
+  function destOf(o) {
+    if (o.path && o.path.length) { var e = o.path[o.path.length - 1]; return { f: e.f, x: e.x }; }
+    return { f: o.f, x: o.x };
+  }
+  function freeSpot(g, f, x) {
+    var taken = [];
+    K.guards().forEach(function (o) {
+      if (o === g || o.dead) return;
+      var d = destOf(o);
+      if (d.f === f) taken.push(d.x);
+      if (o.f === f && (d.f !== f || Math.abs(d.x - o.x) > 1)) taken.push(o.x);
+    });
+    if (!taken.length) return x;
+    var side = g.f === f ? (g.x <= x ? -1 : 1) : (g.uid % 2 ? -1 : 1);
+    function ok(v) {
+      if (v < C.WORLD.walkMin || v > C.WORLD.walkMax) return false;
+      for (var i = 0; i < taken.length; i++) if (Math.abs(taken[i] - v) < GAP) return false;
+      return v === x || C.Nav.clear(f, x, v);
+    }
+    for (var k = 0; k <= 6; k++) {
+      var a = x + side * k * GAP * 0.9, b = x - side * k * GAP * 0.9;
+      if (ok(a)) return a;
+      if (k && ok(b)) return b;
+    }
+    return x;
+  }
+  // Chaque image : deux soldats arrêtés trop près l'un de l'autre sur le même
+  // étage s'écartent doucement. Un soldat en marche passe devant un camarade
+  // sans le bousculer (sinon ils se bloquent dans les portes).
+  function separate(rs) {
+    var list = K.guards().filter(function (o) {
+      return !o.dead && o.state !== 'sleep' && !K.type(o).fixed && !o.path.length && Math.abs(o.y - C.FLOORS[o.f].y) < 2;
+    });
+    for (var i = 0; i < list.length; i++) {
+      for (var j = i + 1; j < list.length; j++) {
+        var a = list[i], b = list[j];
+        if (a.f !== b.f) continue;
+        var dx = b.x - a.x, ad = Math.abs(dx);
+        if (ad >= GAP - 6) continue;
+        var dir = dx !== 0 ? (dx > 0 ? 1 : -1) : (a.uid < b.uid ? 1 : -1);
+        var push = Math.min(GAP - 6 - ad, 90 * rs);
+        // Le plus proche du survivant avance d'un pas vers lui (il reste à
+        // portée de tir) ; sinon, ou si le passage est bloqué, les deux s'écartent.
+        var sv = E().s, near = null;
+        if (sv && sv.f === a.f) near = Math.abs(a.x - sv.x) < Math.abs(b.x - sv.x) ? a : b;
+        if (near) {
+          var nd = sv.x >= near.x ? 1 : -1, other = near === a ? b : a;
+          // n'avance que si ça l'éloigne vraiment de son camarade
+          var nx0 = U.clamp(near.x + nd * push, C.WORLD.walkMin, C.WORLD.walkMax);
+          if ((nx0 - other.x) * nd > (near.x - other.x) * nd - 0.01 && Math.abs(nx0 - sv.x) > 60 && C.Nav.clear(near.f, near.x, nx0)) { near.x = nx0; near.facing = nd; continue; }
+        }
+        push /= 2;
+        [[a, -dir], [b, dir]].forEach(function (pr) {
+          var o = pr[0], nx = U.clamp(o.x + pr[1] * push, C.WORLD.walkMin, C.WORLD.walkMax);
+          if (C.Nav.clear(o.f, o.x, nx)) o.x = nx;
+        });
+      }
+    }
   }
   function move(g, gm, fast) {
     if (!g.path.length) return false;
@@ -366,6 +431,7 @@
     else if (!s.hideNoted && K.guards().some(function (g) { return g.f === s.f && g.state !== 'sleep' && Math.abs(g.x - s.x) < 140; })) { s.hideNoted = true; E().ev('hide'); }
 
     K.guards().forEach(function (g) { think(g, s, rs, gm); });
+    separate(rs);
 
     // Délivrée, la personne retenue vient remercier d'elle-même quand on est là
     K.thankT = (K.thankT || 0) - rs;
@@ -525,9 +591,6 @@
       var gun = T.weapon && g.ammo > 0;
       if (gun && dist <= T.range) {
         g.path = [];
-        // Ne pas se coller à un camarade qui tire déjà : recule d'un pas
-        var mate = K.guards().some(function (o) { return o !== g && !o.dead && o.f === g.f && Math.abs(o.x - g.x) < 30 && o.uid < g.uid; });
-        if (mate) g.x = U.clamp(g.x + (s.x >= g.x ? -1 : 1) * T.walk * gm, C.WORLD.walkMin, C.WORLD.walkMax);
         g.aimT -= rs;
         if (g.aimT <= 0) { guardFire(g, s); g.aimT = rand(1.3, 2.2) * (T.weapon === 'fusil' ? 1.15 : 1); }
         return;
@@ -539,7 +602,15 @@
         return;
       }
       // Se rapproche
-      if (!g.path.length || g.repath <= 0) { goTo(g, s.f, s.x - (s.x >= g.x ? 1 : -1) * (gun ? 0 : 36)); g.repath = 0.5; }
+      if (!g.path.length || g.repath <= 0) {
+        var dir = s.x >= g.x ? 1 : -1, tx = s.x - dir * (gun ? 0 : 36);
+        // Corps à corps : si la place est prise par un camarade, il contourne
+        if (!gun && freeSpot(g, s.f, tx) !== tx) {
+          var alt = s.x + dir * 36;
+          if (C.Nav.clear(s.f, s.x, alt) && freeSpot(g, s.f, alt) === alt) tx = alt;
+        }
+        goTo(g, s.f, tx); g.repath = 0.5;
+      }
       g.repath -= rs;
       move(g, gm, true);
       return;
