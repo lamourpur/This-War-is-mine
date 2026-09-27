@@ -73,6 +73,22 @@
       loot: { bijoux: 4, alcool: 2, cafe: 2, livres: 5, conserve: 4, viande: 2, pieces_elec: 2, bois: 6 },
       stash: { tool: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 4, pistolet: 1, munitions: 6 } } },
 
+    { id: 'maison_mitoyenne', name: 'Maison mitoyenne', danger: 0, residents: 'civils', unlock: 5, dist: 1,
+      desc: 'Un obus a coupé la maison en deux. D\'un côté, les Morrow et leur fille malade ; de l\'autre, les ruines de chez leurs voisins.',
+      loot: { bois: 6, composants: 5, livres: 3, pieces_meca: 1, bijoux: 1 },
+      residentsLoot: { conserve: 3, legumes: 2, eau: 2, filtre: 1 },
+      stash: { tool: ['pied_de_biche', 'passe_partout'], loot: { pieces_elec: 2, medicaments: 1, munitions: 4 } } },
+
+    { id: 'squat', name: 'Squat délabré', danger: 1, residents: 'civils', unlock: 7, dist: 2,
+      desc: 'Des sans-abri ont pris possession d\'un immeuble éventré. Ils partagent tout… et ne laissent entrer personne.',
+      loot: { bois: 7, composants: 5, pieces_meca: 1, viande: 2 },
+      residentsLoot: { conserve: 4, medicaments: 1, munitions: 4, cigarettes: 1 } },
+
+    { id: 'hotel', name: 'Hôtel Continental', danger: 2, residents: 'militaires', unlock: 11, dist: 2,
+      desc: 'Des soldats occupent les étages du vieil hôtel. En bas, quelques civils s\'abritent. Les cuisines et les suites regorgent de tout.',
+      loot: { alcool: 3, cafe: 2, cigarettes: 3, conserve: 4, viande: 2, livres: 2, bijoux: 2 },
+      stash: { tool: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } } },
+
     { id: 'carrefour', name: 'Carrefour sous le feu', danger: 3, residents: 'aucun', unlock: 12, dist: 2,
       desc: 'Un tireur embusqué surveille le carrefour. Des carcasses de voitures pleines de choses que personne n\'ose aller chercher.',
       loot: { conserve: 6, medicaments: 3, pieces_meca: 5, pieces_elec: 3, munitions: 8, carburant: 3, cafe: 2 } },

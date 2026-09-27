@@ -484,7 +484,7 @@
   var AFTER_ROB = ['Allez-vous-en. Allez-vous-en !', '…', 'Vous êtes pires qu\'eux.'];
   E.canRob = function (o) {
     var d = E.npcDef(o);
-    return !!d && d.pose !== 'lie' && d.look.h >= 0.8 && !d.rescued && !E.npcState(o).robbed;
+    return !!d && d.pose !== 'lie' && d.look.h >= 0.8 && !d.rescued && !d.noRob && !E.npcState(o).robbed;
   };
   E.ownerHere = function () {
     var ow = null;

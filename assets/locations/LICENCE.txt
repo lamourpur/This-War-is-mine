@@ -19,3 +19,6 @@ carrefour.jpg          derelict_underpass
 avant_poste.jpg        abandoned_tank_farm_01
 
 Page d'origine : https://polyhaven.com/a/<nom>
+hotel.jpg              old_hall
+squat.jpg              abandoned_workshop_02
+maison_mitoyenne.jpg   artist_workshop

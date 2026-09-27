@@ -19,7 +19,8 @@
     immeuble: { x: 520, y: 330 }, boulangerie: { x: 410, y: 420 }, eglise: { x: 355, y: 120 },
     chantier: { x: 640, y: 150 }, supermarche: { x: 660, y: 300 }, garage: { x: 150, y: 455 },
     hopital: { x: 590, y: 440 }, villa: { x: 140, y: 110 }, carrefour: { x: 790, y: 240 },
-    entrepot: { x: 860, y: 450 }, avant_poste: { x: 900, y: 110 }
+    entrepot: { x: 860, y: 450 }, avant_poste: { x: 900, y: 110 },
+    maison_mitoyenne: { x: 150, y: 290 }, squat: { x: 880, y: 335 }, hotel: { x: 520, y: 95 }
   };
   var DANGER_COL = ['#5f7a3e', '#c08a2c', '#c4582f', '#9c2f22'];
   var ICON = { aucun: 'pack', civils: 'user', bandits: 'skull', militaires: 'shield' };

@@ -29,7 +29,7 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - Arme en main : `C.Combat.weapon()` (choix `Explore.weapon` validé, sinon la meilleure), `setWeapon`, `cycleWeapon` (touche A), `weapons()` ; `Combat.plan` / `menu` / `readyTool` l'utilisent.
 - Faim : `C.Surv.feedHunger(s, faim, heures)` (plafond 100, compteur `s.starving`) ; la mort de faim n'arrive qu'à l'aube (`checkDeath(s, true)`) après `Surv.STARVE_H` heures à 100.
 - Temps en exploration : `gm` = minutes de jeu (1,6 par seconde), `rs` = secondes réelles × vitesse (IA, cadence de tir).
-- **Tous les lieux sont jouables** (pas de pillage automatique pour le joueur ; `scavenge()` de `night.js` ne sert plus qu'au bot). Plans : `maps.js` (lieux civils), `military.js` (entrepôt, avant-poste), `maps_ville.js` (chantier, supermarché, immeuble, boulangerie, garage, villa, carrefour).
+- **Tous les lieux sont jouables** (pas de pillage automatique pour le joueur ; `scavenge()` de `night.js` ne sert plus qu'au bot). Plans : `maps.js` (lieux civils), `military.js` (entrepôt, avant-poste), `maps_ville.js` (chantier, supermarché, immeuble, boulangerie, garage, villa, carrefour), `maps_extra.js` (hôtel, squat, maison mitoyenne ; type `squatteur` ; PNJ `noRob` = jamais braqué).
 - Types armés supplémentaires (`maps_ville.js`) : `bandit` (couteau, `mdmg`), `bandit_arme` (pistolet), `pilleur` (neutre, zone « chasse gardée », `name` propre sur l'objet), `tireur` (`sniper`/`fixed`/`unseen` : ne voit que les zones `exposed` du plan, ne bouge pas, invisible). Contenants gardés : `owner: 'bande'` (comme l'armée) ou `'pilleur'`.
 
 ## Histoires
