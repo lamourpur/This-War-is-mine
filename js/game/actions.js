@@ -37,14 +37,28 @@
   // excl : la station ne peut servir qu'à un survivant à la fois
   // inPlace : pas de déplacement
   // loop : action continue (sommeil, repos…)
+  // Durée de fouille (minutes de jeu) selon le contenant, comme dans
+  // This War of Mine : un corps ou une valise se fouillent en un instant,
+  // une armoire ou un coffre prennent plus de temps. En exploration,
+  // 1 minute de jeu ≈ 0,6 s.
+  var SEARCH_MIN = {
+    corps: 4, baluchon: 3, valise: 6, pharmacie: 6, commode: 10, etagere: 10,
+    caisse: 12, tas: 12, epave: 15, bibliotheque: 15, armoire: 16, coffre: 16
+  };
+  function searchTime(o) {
+    if (!o) return 15;
+    if (o.searched) return o.variant === 'corps' || o.variant === 'baluchon' ? 2 : 4;
+    return SEARCH_MIN[o.variant] || 15;
+  }
+
   var ACT = {
     move: { label: 'Se déplace', inPlace: false, dur: function () { return 0; } },
 
     search: {
       work: true, label: 'Fouille', sound: 'search', fatigue: 2.5,
       check: function (s, o) { if (o.searched && !lootLeft(o)) return 'Déjà fouillé.'; if (o.locked) return 'C\'est verrouillé.'; },
-      // Première fouille : 30 min ; y revenir chercher le reste est rapide
-      dur: function (s, o) { return o && o.searched ? 5 : 30; },
+      // Selon le contenant ; y revenir chercher le reste est rapide
+      dur: function (s, o) { return searchTime(o); },
       done: function (s, o) {
         var first0 = !o.searched;
         o.searched = true;
@@ -486,7 +500,7 @@
   }
 
   // ---------------------------------------------------------------- moteur
-  var Actions = C.Actions = { findCraft: findCraft, findStation: findStation, growNeed: growNeed, collectable: collectable };
+  var Actions = C.Actions = { findCraft: findCraft, findStation: findStation, growNeed: growNeed, collectable: collectable, searchTime: searchTime };
 
   // Raison pour laquelle un survivant refuse de travailler (ou null)
   Actions.refusal = function (s, def) {
@@ -764,7 +778,7 @@
         if (o.searched) {
           if (!lootLeft(o)) { m.desc = 'Il n\'y a plus rien.'; break; }
           m.desc = 'Il reste des choses à l\'intérieur.';
-          m.entries.push(E('Ouvrir', costSub(null, 5), null, go('search')));
+          m.entries.push(E('Ouvrir', costSub(null, searchTime(o)), null, go('search')));
           break;
         }
         if (o.locked) {
@@ -777,7 +791,7 @@
           var od = C.OWNERS[o.owner];
           var watcher = C.Combat.guards().filter(function (g) { return !g.dead && g.attitude !== 'hostile' && C.Combat.sees(g, s); })[0];
           m.desc = od.desc;
-          m.entries.push(E('Fouiller', watcher ? '<span class="ko">un soldat vous regarde</span>' : costSub(null, 30) + ' · à l\'abri des regards', null, watcher ? function () {
+          m.entries.push(E('Fouiller', watcher ? '<span class="ko">un soldat vous regarde</span>' : costSub(null, searchTime(o)) + ' · à l\'abri des regards', null, watcher ? function () {
             C.UI.dialog('Sous ses yeux ?', '<p class="dialog-text">' + U.esc(od.warn) + '</p>', [
               { label: 'Attendre', cls: 'ghost' },
               { label: 'Fouiller quand même', run: go('search') }
@@ -787,7 +801,7 @@
           // Les affaires des habitants : fouiller, c'est voler
           var ow = C.OWNERS[o.owner] || {};
           m.desc = ow.desc || 'Ce n\'est pas à vous. Les gens qui vivent ici en ont besoin.';
-          m.entries.push(E('Fouiller (voler)', 'mauvais pour le moral', null, function () {
+          m.entries.push(E('Fouiller (voler)', costSub(null, searchTime(o)) + ' · mauvais pour le moral', null, function () {
             C.UI.dialog('Voler ?', '<p class="dialog-text">' + U.esc(ow.warn || 'Ces affaires appartiennent aux gens qui vivent ici. Ils en ont besoin pour survivre, eux aussi.') + '</p><p class="dialog-text">Tout le groupe l\'apprendra.</p>', [
               { label: 'Renoncer', cls: 'ghost' },
               { label: 'Fouiller quand même', run: go('search') }
@@ -795,7 +809,7 @@
           }));
         } else {
           m.desc = 'On peut le fouiller.';
-          m.entries.push(E('Fouiller', costSub(null, 30), null, go('search')));
+          m.entries.push(E('Fouiller', costSub(null, searchTime(o)), null, go('search')));
         }
         break;
       case 'door':
