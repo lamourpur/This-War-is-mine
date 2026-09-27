@@ -32,9 +32,42 @@
   };
 
   Main.setSpeed = function (n) {
-    if (n > 0) Main.lastSpeed = n;
+    if (Main.skipping && n !== SKIP_SPEED) Main.stopSkip();
+    if (n > 0 && n !== SKIP_SPEED) Main.lastSpeed = n;
     Main.speed = n;
   };
+
+  // ------------------------------------------------------------ passer la journée
+  // Comme dans This War of Mine : le reste de la journée défile d'un coup
+  // (≈ 4 h de jeu par seconde). Tout continue de se passer normalement
+  // (faim, travaux en cours, visiteurs, événements) et le défilement s'arrête
+  // de lui-même dès que quelque chose demande votre attention.
+  var SKIP_SPEED = 240;
+  Main.skipping = false;
+  Main.skipDay = function () {
+    var st = G().st;
+    if (!st || st.phase !== 'day' || C.UI.modalOpen || Main.skipping) return;
+    Main.skipping = true;
+    Main.skipVisitor = !!st.visitor;
+    Main.speed = SKIP_SPEED;
+    if (C.Audio.ready) C.Audio.sfx.click();
+    C.UI.showSkip(true);
+  };
+  Main.stopSkip = function () {
+    if (!Main.skipping) return;
+    Main.skipping = false;
+    Main.speed = 0;
+    C.UI.showSkip(false);
+  };
+  // Pendant le défilement : faut-il s'arrêter ?
+  function checkSkip(st) {
+    if (!Main.skipping) return;
+    if (st.phase !== 'day') { Main.skipping = false; C.UI.showSkip(false); return; }
+    if (C.UI.modalOpen) { Main.stopSkip(); return; }
+    // (l'alerte « On frappe à la porte » du jeu suffit)
+    if (st.visitor && !Main.skipVisitor) { Main.stopSkip(); return; }
+    Main.skipVisitor = !!st.visitor;
+  }
 
   Main.startNew = function (ids) {
     C.Menus.close();
@@ -113,6 +146,7 @@
 
     if (Main.mode === 'game' && st) {
       var env = { temp: C.World.shelterTemp(st), empath: G().present().some(function (s) { return G().hasTrait(s, 'empathique') && s.moral >= 55; }) };
+      checkSkip(st);
       if (st.phase === 'day' && !C.UI.modalOpen && Main.speed > 0) {
         var gm = dt * Main.speed;
         var steps = Math.ceil(gm / 0.5);
@@ -120,6 +154,8 @@
           var sgm = gm / steps;
           C.World.update(st, sgm);
           if (st.phase !== 'day') break;
+          // Défilement : on s'arrête à l'instant où quelque chose arrive
+          if (Main.skipping && (C.UI.modalOpen || (st.visitor && !Main.skipVisitor))) break;
           st.survivors.forEach(function (s) { C.Surv.update(s, sgm, env); });
         }
         workSounds(dt);
@@ -266,6 +302,7 @@
         case 'Tab': e.preventDefault(); if (!C.UI.modalOpen) C.UI.cycle(e.shiftKey ? -1 : 1); break;
         case 'i': case 'I': if (!C.UI.modalOpen) C.UI.openStock(); break;
         case 'j': case 'J': if (!C.UI.modalOpen) C.UI.openLog(); break;
+        case 'n': case 'N': if (!C.UI.modalOpen && st.phase === 'day') { if (Main.skipping) Main.stopSkip(); else Main.skipDay(); } break;
         case 'c': case 'C': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.toggleMode(); break;
       }
     });

@@ -18,13 +18,14 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
 | Se déplacer | Clic sur le sol (exploration : double-clic = courir, plus bruyant) |
 | Manger, se soigner, consommer | Bouton **Besoins ▾** de la fiche |
 | Pause / vitesses | `Espace` · `1` `2` `3` |
+| Passer la journée (le temps défile jusqu'à 20 h) | `N` ou bouton lune |
 | Survivant suivant | `Tab` |
 | Mode exploration / mode combat (exploration de nuit) | `C` ou bouton du bandeau |
 | Réserve / Journal / Menu | `I` · `J` · `Échap` |
 
 ## Mécaniques
 
-- **Journée de 6 h à 20 h** en temps réel (1 s = 1 min de jeu en x1). Le jeu se met en pause dès qu'une fenêtre est ouverte.
+- **Journée de 6 h à 20 h** en temps réel (1 s = 1 min de jeu en x1). Le jeu se met en pause dès qu'une fenêtre est ouverte. Comme dans le jeu d'origine, on peut **passer la journée** : le temps défile jusqu'au soir (environ 4 heures de jeu par seconde). Tout continue de se passer normalement (faim, travaux en cours, potager, visiteurs, événements), et le défilement s'arrête de lui-même dès que quelque chose demande votre attention : un visiteur qui frappe, un événement, une fouille terminée. On peut aussi l'arrêter à tout moment.
 - **Besoins** : faim, fatigue, blessures, maladie, moral. Un survivant peut mourir de faim, de ses blessures ou de maladie.
 - **Moral** : chaque survivant a ses **pensées** (fiche), qui réagissent à ce que fait le groupe (aider, refuser, voler, tuer, perdre quelqu'un). Les survivants **parlent** entre eux (bulles), peuvent **se réconforter** et **se soigner** mutuellement, avec un bonus pour les soignants et les empathiques. Chaque jour, le confort du refuge (lits, fauteuil, radio, poêle, trous bouchés, chauffage en hiver) fait monter ou baisser le moral. Après un décès, le groupe est **en deuil** pendant plusieurs jours. Un survivant **déprimé** travaille mal et refuse parfois les ordres. **Brisé**, il refuse tout et, sans réconfort, peut **quitter le refuge** ou **mettre fin à ses jours**. Les survivants **cyniques** sont moins touchés par les actes discutables.
 - **Personnages** : silhouettes articulées dessinées au crayon (marche, posture selon le moral et la fatigue, toux quand ils sont malades), vêtements et accessoires propres à chacun, et outils en main selon l'action.

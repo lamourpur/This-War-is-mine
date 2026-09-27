@@ -22,6 +22,11 @@
       b.addEventListener('click', function () { C.Main.setSpeed(d[0]); if (C.Audio.ready) C.Audio.sfx.click(); });
       sp.appendChild(b);
     });
+    // Passer la journée (jusqu'à 20 h)
+    var sk = U.el('button', 'tb-skip', I('moon'));
+    sk.title = 'Passer la journée : le temps défile jusqu\'au soir (N)';
+    sk.addEventListener('click', function () { if (C.Main.skipping) C.Main.stopSkip(); else C.Main.skipDay(); });
+    sp.appendChild(sk);
     $('btn-stock').querySelector('.rb-ico').innerHTML = I('stock');
     $('btn-log').querySelector('.rb-ico').innerHTML = I('journal');
     $('btn-menu').querySelector('.rb-ico').innerHTML = I('menu');
@@ -207,7 +212,9 @@
     eo.className = st.weather.out < 0 ? 'freezing' : st.weather.out < 8 ? 'cold' : '';
     ei.className = tin < 0 ? 'freezing' : tin < 8 ? 'cold' : tin >= 15 ? 'warm' : '';
     ei.parentNode.title = 'Refuge : ' + C.World.tempLabel(tin);
-    document.querySelectorAll('#tb-speed button').forEach(function (b) { b.classList.toggle('on', +b.dataset.speed === C.Main.speed); });
+    document.querySelectorAll('#tb-speed button[data-speed]').forEach(function (b) { b.classList.toggle('on', +b.dataset.speed === C.Main.speed); });
+    var skb = document.querySelector('#tb-speed .tb-skip');
+    if (skb) { skb.classList.toggle('on', !!C.Main.skipping); skb.disabled = st.phase !== 'day'; }
   };
 
   UI.refreshDoor = function () { $('door-alert').classList.toggle('hidden', !G().st.visitor); };
@@ -441,6 +448,19 @@
     acc += dt;
     UI.updateTop();
     if (acc > 0.25) { acc = 0; UI.updateCards(); UI.updateExploreHud(); }
+  };
+
+  // Bandeau pendant que la journée défile
+  UI.showSkip = function (on) {
+    var b = $('skip-banner');
+    if (!b) {
+      b = U.el('div', 'hidden', '<span class="sk-moon">' + I('moon') + '</span><span class="sk-t">La journée passe…</span><button class="btn ghost sk-stop">Arrêter</button>');
+      b.id = 'skip-banner';
+      b.querySelector('.sk-stop').addEventListener('click', function () { C.Main.stopSkip(); });
+      $('hud').appendChild(b);
+    }
+    b.classList.toggle('hidden', !on);
+    document.body.classList.toggle('skipping', !!on);
   };
 
   // ------------------------------------------------ exploration de nuit
