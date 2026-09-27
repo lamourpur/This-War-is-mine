@@ -171,84 +171,20 @@
         scavBox.appendChild(row);
       }
 
-      // Le sac : comme dans le jeu d'origine, on choisit case par case ce que
-      // l'on emporte (outils, armes, munitions, mais aussi de quoi aider ou
-      // échanger). Ce qui part dans le sac quitte la réserve pour la nuit.
+      // Le sac se prépare sur un écran à part (Préparer l'expédition)
       var bag = plan.scav.bag, cap = C.Explore.capacity(s), used = C.Explore.slots(bag);
-      var bp = U.el('div', 'bag-pick');
-      bp.appendChild(U.el('div', 'bp-head', '<span>' + C.Icon('pack') + 'Sac de ' + U.esc(s.name.split(' ')[0]) + '</span><b class="' + (used > cap ? 'ko' : '') + '">' + used + ' / ' + cap + ' cases</b>'));
-      var cells = U.el('div', 'bp-cells');
-      var stacks = [];
-      Object.keys(bag).forEach(function (id) {
-        var n = bag[id], st0 = C.stackOf(id);
-        while (n > 0) { stacks.push({ id: id, n: Math.min(n, st0) }); n -= st0; }
-      });
-      for (var ci = 0; ci < cap; ci++) {
-        var sk = stacks[ci];
-        var cell = U.el('button', 'bp-cell' + (sk ? ' full' : ''), sk ? C.ItemArt.img(sk.id, 34) + (sk.n > 1 ? '<i>' + sk.n + '</i>' : '') : '');
-        if (sk) {
-          cell.title = C.ITEMS[sk.id].name + ' — clic : en retirer 1 · Maj+clic : toute la case';
-          (function (sk) {
-            cell.addEventListener('click', function (e) {
-              var k = e.shiftKey ? sk.n : 1;
-              bag[sk.id] -= k; if (bag[sk.id] <= 0) delete bag[sk.id];
-              if (C.Audio.ready) C.Audio.sfx.click();
-              syncBag(); renderAll();
-            });
-          })(sk);
-        }
-        cells.appendChild(cell);
-      }
-      bp.appendChild(cells);
-      // La réserve, par catégorie
-      var res = U.el('div', 'bp-res');
-      var anyItem = false;
-      C.ITEM_CATS.forEach(function (cat) {
-        var ids = Object.keys(C.ITEMS).filter(function (id) { return C.ITEMS[id].cat === cat[0] && G().count(id) - (bag[id] || 0) > 0; });
-        if (!ids.length) return;
-        anyItem = true;
-        var row = U.el('div', 'bp-cat', '<small>' + U.esc(cat[1]) + '</small>');
-        ids.forEach(function (id) {
-          var left = G().count(id) - (bag[id] || 0);
-          var b = U.el('button', 'bp-item', C.ItemArt.img(id, 28) + '<span>' + U.esc(C.ITEMS[id].name) + '</span><em>' + left + '</em>');
-          b.title = C.ITEMS[id].desc + ' — clic : 1 · Maj+clic : une case pleine';
-          b.addEventListener('click', function (e) {
-            var want = e.shiftKey ? Math.min(left, C.stackOf(id)) : 1, test;
-            for (; want > 0; want--) { test = U.copy(bag); test[id] = (test[id] || 0) + want; if (C.Explore.slots(test) <= cap) break; }
-            if (!want) {
-              if (C.Audio.ready) C.Audio.sfx.deny();
-              var hb = bp.querySelector('.bp-head'); hb.classList.remove('shake'); void hb.offsetWidth; hb.classList.add('shake');
-              return;
-            }
-            bag[id] = test[id];
-            if (C.Audio.ready) C.Audio.sfx.pickup();
-            syncBag(); renderAll();
-          });
-          row.appendChild(b);
-        });
-        res.appendChild(row);
-      });
-      if (!anyItem) res.innerHTML = '<small style="color:#8a8170">La réserve est vide.</small>';
-      bp.appendChild(res);
-      var tips = [];
-      var gunIn = Object.keys(bag).some(function (x) { return C.ITEMS[x].ammo; });
-      if (gunIn && !bag.munitions) tips.push('<span class="ko">Pas de munitions dans le sac : l\'arme à feu ne pourra pas tirer.</span>');
-      if (Object.keys(bag).some(function (x) { return C.ITEMS[x].weapon || C.ITEMS[x].tool; })) tips.push('Sur place, choisissez l\'arme en main dans le bandeau (touche A).');
-      tips.push('Chaque case vide rapportera du butin. Clic sur un objet de la réserve : l\'ajouter · clic sur une case : le retirer · Maj+clic : toute la pile.');
-      bp.appendChild(U.el('p', 'bp-tips', tips.join('<br>')));
-      scavBox.appendChild(bp);
+      var sum = U.el('div', 'bag-sum');
+      var icons = Object.keys(bag).map(function (id) { return '<span title="' + U.esc(C.ITEMS[id].name) + '">' + C.ItemArt.img(id, 28) + (bag[id] > 1 ? '<i>' + bag[id] + '</i>' : '') + '</span>'; }).join('');
+      sum.innerHTML = '<div class="bs-l">' + C.Icon('pack') + '<b>Sac de ' + U.esc(s.name.split(' ')[0]) + '</b><em>' + used + ' / ' + cap + ' cases</em></div><div class="bs-items">' + (icons || '<small>Vide : tout l\'espace pour le butin.</small>') + '</div>';
+      var prep = U.el('button', 'btn ghost', 'Préparer le sac →');
+      prep.disabled = !loc;
+      prep.title = loc ? '' : 'Choisissez d\'abord un lieu sur la carte';
+      prep.addEventListener('click', function () { UI.openPack(plan, s, depart, renderAll); });
+      sum.appendChild(prep);
+      scavBox.appendChild(sum);
     }
 
-    // Outils et armes du sac → équipement (défense du refuge, pillage abstrait)
-    function syncBag() {
-      var b = plan.scav.bag;
-      plan.scav.equip = [];
-      Object.keys(b).forEach(function (id) {
-        var it = C.ITEMS[id];
-        if (it.tool || it.weapon || it.armor) for (var i = 0; i < b[id]; i++) plan.scav.equip.push(id);
-      });
-      plan.scav.ammo = b.munitions || 0;
-    }
+    function syncBag() { UI.syncBag(plan); }
 
     function renderInfo() {
       var sleepers = present.filter(function (s) { return plan.roles[s.id] === 'sleep' || plan.roles[s.id] === 'bed'; }).length;
@@ -273,7 +209,7 @@
       var s = scavenger();
       var over = s && C.Explore.slots(plan.scav.bag) > C.Explore.capacity(s);
       go.disabled = !!(s && (!plan.scav.loc || over));
-      go.textContent = !s ? 'Passer la nuit' : !plan.scav.loc ? 'Choisissez un lieu' : over ? 'Sac trop plein' : 'Partir en exploration';
+      go.textContent = !s ? 'Passer la nuit' : !plan.scav.loc ? 'Choisissez un lieu' : over ? 'Sac trop plein' : 'Préparer l\'expédition →';
     }
 
     function renderAll() { renderCards(); renderScav(); renderInfo(); }
@@ -288,6 +224,12 @@
     });
     var go = U.el('button', 'btn', 'Passer la nuit');
     go.addEventListener('click', function () {
+      var sc = scavenger();
+      // Un explorateur et un lieu : on passe d'abord par la préparation du sac
+      if (sc && plan.scav.loc) { UI.openPack(plan, sc, depart, renderAll); return; }
+      depart();
+    });
+    function depart() {
       UI.closeModal();
       var s = scavenger();
       if (!s) plan.scav = null;
@@ -304,7 +246,7 @@
         return;
       }
       setTimeout(function () { C.Night.resolve(plan); }, 2600);
-    });
+    }
     p.foot.appendChild(feed);
     p.foot.appendChild(go);
     renderAll();

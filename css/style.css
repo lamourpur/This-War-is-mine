@@ -903,3 +903,39 @@ body.skipping #tb-clock { color: var(--amber); }
 .pm-item b { font-family: var(--f-display); font-size: 19px; font-weight: normal; letter-spacing: .04em; }
 .pm-item small { font: 12px var(--f-ui); color: #9d917a; line-height: 1.3; }
 .pm-item.off { opacity: .55; }
+
+/* Préparer l'expédition */
+.panel.pack-screen { width: min(1480px, 96vw); max-width: none; }
+.pack-banner { position: relative; height: 112px; margin: -4px 0 14px; background-size: cover; background-position: center 45%; display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 16px; box-shadow: inset 0 0 0 1px #3a352d; }
+.pack-banner::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(12,10,8,.92) 0%, rgba(12,10,8,.55) 45%, rgba(12,10,8,.85) 100%); }
+.pack-who, .pack-loc { position: relative; display: flex; gap: 12px; align-items: flex-end; color: var(--bone); }
+.pack-who > div { display: flex; flex-direction: column; gap: 2px; }
+.pack-who b, .pack-loc b { font-family: var(--f-display); font-size: 28px; font-weight: normal; letter-spacing: .04em; line-height: 1; }
+.pack-who span { font: 13px var(--f-ui); color: var(--bone-2); }
+.pack-who i { font: italic 12px var(--f-ui); color: #9d917a; }
+.pack-loc { flex-direction: column; align-items: flex-end; }
+.pack-wrap { display: grid; grid-template-columns: 1.15fr auto 1fr 300px; gap: 12px; align-items: start; }
+.pack-wrap .loot-grid { max-height: 420px; }
+.pack-wrap .loot-side.res .loot-grid { grid-template-columns: repeat(5, 1fr); }
+.loot-slot.useful { box-shadow: inset 0 0 0 1px #4a443a, 0 0 0 2px rgba(216,170,80,.55); }
+.loot-slot .star { position: absolute; right: 4px; top: 2px; font-style: normal; color: #e0b458; font-size: 14px; text-shadow: 0 1px 2px #000; }
+.pack-intel { background: #1f1c18; border: 1px solid #14120f; box-shadow: inset 0 0 0 1px #3a352d; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.pi { display: flex; gap: 8px; align-items: flex-start; font: 14px/1.35 var(--f-ui); color: var(--bone-2); }
+.pi .ico { flex: none; width: 18px; height: 18px; margin-top: 1px; color: #9d917a; }
+.pi.bad { color: #e2b3a0; } .pi.bad .ico { color: #d9866a; }
+.pi.good { color: #c7d6a8; } .pi.good .ico { color: #8fae62; }
+.pi-legend { font: 12px var(--f-ui); color: #8a8170; margin-top: 4px; }
+.pi-legend .star { font-style: normal; color: #e0b458; }
+.pack-warn { margin: 8px 0 0; display: flex; gap: 6px; align-items: center; font: 13px var(--f-ui); color: #d9866a; }
+.pack-warn:empty { display: none; }
+.pack-warn .ico { width: 16px; height: 16px; }
+/* Résumé du sac sur l'écran de la nuit */
+.bag-sum { display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 10px 12px; border: 1px dashed #4d4840; }
+.bag-sum .bs-l { display: flex; align-items: center; gap: 8px; color: var(--bone); white-space: nowrap; }
+.bag-sum .bs-l b { font-family: var(--f-display); font-size: 21px; font-weight: normal; letter-spacing: .04em; }
+.bag-sum .bs-l em { font-style: normal; font: 13px var(--f-ui); color: #9d917a; }
+.bag-sum .bs-items { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.bag-sum .bs-items span { position: relative; }
+.bag-sum .bs-items i { position: absolute; right: -2px; bottom: -3px; font: 700 11px var(--f-ui); font-style: normal; color: var(--bone); text-shadow: 0 1px 2px #000; }
+.bag-sum .bs-items small { font: 13px var(--f-ui); color: #8a8170; }
+@media (max-width: 1100px) { .pack-wrap { grid-template-columns: 1fr 1fr; } .pack-wrap .loot-mid { display: none; } .pack-intel { grid-column: 1 / -1; } }
