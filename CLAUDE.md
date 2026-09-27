@@ -23,7 +23,8 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - Objets donnés par un PNJ en exploration : toujours passer par `C.Explore.give(s, o, items, label)` (sac si la place, sinon baluchon à terre + fenêtre de fouille), jamais `addItems` direct.
 - Modes d'exploration : `C.Explore.mode` = `'explore'` (parler, pas d'attaque dans les menus) ou `'combat'` (clic sur un soldat = `Combat.quickAttack`, arme tenue via `Combat.readyTool`). Bascule : `Combat.setMode` / touche C.
 - Temps en exploration : `gm` = minutes de jeu (1,6 par seconde), `rs` = secondes réelles × vitesse (IA, cadence de tir).
-- Lieux jouables : maison abandonnée, école (institutrice, enfants, père de famille), Whitaker, hôpital (chirurgienne, infirmier marchand, soldat blessé, pharmacie verrouillée), église.
+- **Tous les lieux sont jouables** (pas de pillage automatique pour le joueur ; `scavenge()` de `night.js` ne sert plus qu'au bot). Plans : `maps.js` (lieux civils), `military.js` (entrepôt, avant-poste), `maps_ville.js` (chantier, supermarché, immeuble, boulangerie, garage, villa, carrefour).
+- Types armés supplémentaires (`maps_ville.js`) : `bandit` (couteau, `mdmg`), `bandit_arme` (pistolet), `pilleur` (neutre, zone « chasse gardée », `name` propre sur l'objet), `tireur` (`sniper`/`fixed`/`unseen` : ne voit que les zones `exposed` du plan, ne bouge pas, invisible). Contenants gardés : `owner: 'bande'` (comme l'armée) ou `'pilleur'`.
 
 ## Pièges connus
 - `file://` : canvas « tainted » → `ItemArt.buildingUrl` désactive textures/props ; audio en HTMLAudio au lieu de Web Audio.

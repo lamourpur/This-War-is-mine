@@ -56,6 +56,8 @@
 
   // ------------------------------------------------------------ soldats
   K.type = function (g) { return C.GUARD_TYPES[g.type]; };
+  // Nom affiché : prénom propre (Rick, Kurt…) ou nom du type
+  K.nameOf = function (g) { return g.name || K.type(g).name; };
   K.guards = function () { return G().st.objects.filter(function (o) { return o.kind === 'guard'; }); };
   K.active = function () { return E() && E().active && K.guards().length > 0; };
 
@@ -81,7 +83,7 @@
 
   function sayG(g, kind, secs) {
     var T = K.type(g), pool = T.say[kind] || C.GUARD_TYPES.soldat.say[kind];
-    if (!pool) return;
+    if (!pool || !pool.length || T.unseen) return;
     g.lastSay = g.lastSay || {};
     var now = performance.now();
     if (g.lastSay[kind] && now - g.lastSay[kind] < 3500) return;
@@ -102,8 +104,14 @@
   K.isHidden = function (s) { return !!(s.act && s.act.kind === 'hide' && s.act.phase === 'work'); };
 
   // Un soldat voit-il le survivant ?
+  K.exposed = function (s) {
+    var ex = (C.MAPS[E().loc] || {}).exposed || [];
+    for (var i = 0; i < ex.length; i++) if (s.f === ex[i].f && onFloor(s) && s.x >= ex[i].x0 && s.x <= ex[i].x1) return ex[i];
+    return null;
+  };
   K.sees = function (g, s) {
     if (!s || !s.alive || g.dead) return false;
+    if (K.type(g).sniper) return !!K.exposed(s) && !K.isHidden(s);
     if (g.state === 'sleep' || g.state === 'surrender' || g.state === 'flee') return false;
     if (s.f !== g.f || !onFloor(s) || Math.abs(g.y - C.FLOORS[g.f].y) > 2) return false;
     var dx = s.x - g.x, dist = Math.abs(dx);
@@ -120,7 +128,7 @@
   K.noise = function (f, x, radius, src) {
     K.noises.push({ f: f, x: x, r: radius, t: 0, life: 0.9 });
     K.guards().forEach(function (g) {
-      if (g.dead || g.state === 'surrender' || g.state === 'flee') return;
+      if (g.dead || g.state === 'surrender' || g.state === 'flee' || K.type(g).sniper) return;
       var d = Math.abs(g.x - x) + Math.abs(g.f - f) * 260;
       var r = g.state === 'sleep' ? radius * 0.55 : radius;
       if (d > r) return;
@@ -141,6 +149,7 @@
 
   // ------------------------------------------------------------ déplacements
   function goTo(g, f, x) {
+    if (K.type(g).fixed) { g.path = []; return; }
     var p = C.Nav.findPath({ f: g.f, x: g.x }, { f: f, x: U.clamp(x, C.WORLD.walkMin, C.WORLD.walkMax) });
     g.path = p || [];
   }
@@ -227,7 +236,7 @@
     g.ammo--;
     var hit = chance(p);
     shotFx(g.x + g.facing * 30, g.y - 62, s.x + (hit ? 0 : rand(-30, 30)), s.y - rand(40, 70), hit);
-    K.noise(g.f, g.x, 1100, 'shot');
+    if (!T.unseen) K.noise(g.f, g.x, 1100, 'shot');
     g.fireT = 0.15;
     if (hit) hitSurvivor(s, rand(T.dmg[0], T.dmg[1]), g);
   }
@@ -235,7 +244,8 @@
     var T = K.type(g);
     g.strikeT = 0.3;
     K.noise(g.f, g.x, 260, 'fight');
-    if (chance(0.6)) hitSurvivor(s, rand(10, 20) * (T.weapon ? 1 : 0.8), g);
+    var md = T.mdmg || [10, 20];
+    if (chance(0.62)) hitSurvivor(s, rand(md[0], md[1]), g);
   }
 
   // Blessure d'un soldat : peut fuir ou se rendre
@@ -269,8 +279,8 @@
     else if (g.state === 'sleep') kind = 'asleep';
     else if (g.attitudeAtStart === 'hostile' || why === 'zone' || why === 'theft') kind = 'fight';
     else kind = 'unprovoked';
-    E().kills.push({ type: g.type, name: T.name, kind: kind });
-    E().ev('kill', { kind: kind, name: T.name });
+    E().kills.push({ type: g.type, name: g.name ? T.name : T.name, who: K.nameOf(g), kind: kind });
+    E().ev('kill', { kind: kind, name: K.nameOf(g) });
     G().removeObject(g);
     // Le corps : on peut le fouiller (arme, munitions, affaires)
     var loot = U.copy(T.loot);
@@ -306,6 +316,7 @@
     if (!s.path.length) s.run = false;
     // Caché uniquement en restant dans le recoin
     s.hidden = K.isHidden(s);
+    if (!E().warnedExposed && K.exposed(s)) { E().warnedExposed = true; E().say(s, 'Un tireur… Il ne faut pas rester à découvert. Courir d\'abri en abri.', 5); }
     // Un soldat passe tout près pendant qu'on se cache : on le note au carnet
     if (!s.hidden) s.hideNoted = false;
     else if (!s.hideNoted && K.guards().some(function (g) { return g.f === s.f && g.state !== 'sleep' && Math.abs(g.x - s.x) < 140; })) { s.hideNoted = true; E().ev('hide'); }
@@ -409,7 +420,7 @@
         }
         if (sees) {
           var close = 1 - dist / T.sight;
-          g.susp += rs * (0.45 + close * 1.6) * (s.run ? 1.6 : 1) * (g.attitude === 'hostile' ? 1.3 : 0.9);
+          g.susp += T.sniper ? rs * 0.9 : rs * (0.45 + close * 1.6) * (s.run ? 1.6 : 1) * (g.attitude === 'hostile' ? 1.3 : 0.9);
           if (g.susp > 0.3 && !g.saidSus) { g.saidSus = true; sayG(g, 'suspect'); }
           if (g.susp >= 1) { spotted(g, s); return; }
           if (g.attitude === 'hostile' && g.susp > 0.5) { g.path = []; g.facing = s.x >= g.x ? 1 : -1; }
@@ -437,7 +448,7 @@
     // Deuxième fois dans la zone : plus d'avertissement
     if (g.warned >= 2) { K.provoke(g.group, 'zone', s); sayG(g, 'attack'); return true; }
     g.state = 'warn'; g.warnT = g.warned ? 3 : 5.5; g.path = [];
-    E().ev('warn', { name: K.type(g).name });
+    E().ev('warn', { name: K.nameOf(g) });
     sayG(g, g.warned ? 'warn2' : 'warn', 5);
     if (C.Audio.ready) C.Audio.sfx.alert();
     return true;
@@ -589,7 +600,7 @@
   K.spare = function (s, g) {
     sayG(g, 'spared', 4);
     E().spared.push(g.type);
-    E().ev('spare', { name: K.type(g).name });
+    E().ev('spare', { name: K.nameOf(g) });
     G().removeObject(g);
     G().markDirty();
   };
@@ -605,7 +616,7 @@
     ls.npc = ls.npc || {};
     var ns = ls.npc[g.key] = ls.npc[g.key] || {};
     var lines = T.talk || [];
-    E().ev('talk', { name: T.name });
+    E().ev('talk', { name: K.nameOf(g) });
     // Parler au soldat ivre, c'est avoir vu ce qui se passe
     if (g.group === 'brute') { ls.npc.mila = ls.npc.mila || {}; ls.npc.mila.talk = (ls.npc.mila.talk || 0) + 1; }
     if (!lines.length) { E().say(g, T.say.greet[0], 4); return; }
@@ -627,7 +638,7 @@
     ns.lastDay = E().home.day;
     g.known = true;
     E().say(g, T.trade.say, 4);
-    C.TradeUI.open(s, ns.stock, null, { name: T.name, likes: T.trade.likes, bag: true });
+    C.TradeUI.open(s, ns.stock, null, { name: K.nameOf(g), likes: T.trade.likes, bag: true });
   };
 
   // Menu contextuel d'un soldat
@@ -640,7 +651,7 @@
       alert: 'Il vous a repéré. Il tire à vue.', search: 'Il vous cherche.', warn: 'Il vous somme de partir.',
       investigate: 'Il a entendu quelque chose.', watch: 'Il vous surveille.'
     }[g.state];
-    m.title = T.name;
+    m.title = K.nameOf(g) + (g.name ? ' — ' + T.name.toLowerCase() : '');
     m.desc = st2 || (g.attitude === 'hostile' ? 'Hostile. Il tirera s\'il vous voit.' : 'Il tolère les civils… hors de sa zone.');
     if (!s) return m;
     if (g.state === 'surrender') {
@@ -664,7 +675,7 @@
     function confirmNeutral(run) {
       if (g.attitude === 'hostile') return run;
       return function () {
-        C.UI.dialog('Attaquer ?', '<p class="dialog-text">' + U.esc(T.name) + ' ne vous a pas menacé. Si vous l\'attaquez, ' + (T.villain ? 'il se défendra.' : 'tous les soldats du lieu deviendront hostiles.') + '</p>', [
+        C.UI.dialog('Attaquer ?', '<p class="dialog-text">' + U.esc(K.nameOf(g)) + ' ne vous a pas menacé. Si vous l\'attaquez, ' + (T.villain || g.group !== 'garnison' ? 'il se défendra.' : 'tous les soldats du lieu deviendront hostiles.') + '</p>', [
           { label: 'Renoncer', cls: 'ghost' },
           { label: 'Attaquer', run: run }
         ]);
@@ -798,10 +809,30 @@
         ctx.strokeStyle = 'rgba(200,70,50,0.9)'; ctx.lineWidth = 1.5; ctx.strokeRect(px, fy - 96, 114, 30);
         ctx.fillStyle = hostile ? 'rgba(200,70,50,0.95)' : 'rgba(225,200,170,0.95)';
         ctx.font = '15px "Bebas Neue", sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(hostile ? 'ILS TIRENT À VUE' : 'ZONE INTERDITE', px + 57, fy - 84);
+        ctx.fillText(hostile ? (z.signHostile || 'ILS TIRENT À VUE') : (z.sign || 'ZONE INTERDITE'), px + 57, fy - 84);
         ctx.font = '10px "Special Elite", monospace'; ctx.fillStyle = 'rgba(225,200,170,0.7)';
         ctx.fillText(z.label.toUpperCase(), px + 57, fy - 71);
       });
+      ctx.restore();
+    });
+    // Rue à découvert (tireur embusqué)
+    var exps = (C.MAPS[E().loc] || {}).exposed || [];
+    exps.forEach(function (z) {
+      var fy = C.FLOORS[z.f].y, ceil = C.FLOORS[z.f].ceil;
+      var inside = s.f === z.f && s.x >= z.x0 && s.x <= z.x1;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(z.x0, ceil, z.x1 - z.x0, fy - ceil); ctx.clip();
+      ctx.fillStyle = 'rgba(150,40,30,' + (inside ? 0.14 : 0.07) + ')'; ctx.fillRect(z.x0, ceil, z.x1 - z.x0, fy - ceil);
+      ctx.strokeStyle = 'rgba(215,80,60,' + (inside ? 0.34 : 0.2) + ')'; ctx.lineWidth = 2;
+      for (var hx = z.x0 - 200; hx < z.x1; hx += 26) { ctx.beginPath(); ctx.moveTo(hx, fy); ctx.lineTo(hx + 160, ceil); ctx.stroke(); }
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = 'rgba(215,80,60,0.85)'; ctx.lineWidth = 3; ctx.setLineDash([14, 9]);
+      ctx.beginPath(); ctx.moveTo(z.x0, fy - 2); ctx.lineTo(z.x1, fy - 2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(28,24,20,0.88)'; ctx.fillRect(z.x0 + 8, ceil + 8, 300, 30);
+      ctx.strokeStyle = 'rgba(215,80,60,0.9)'; ctx.lineWidth = 1.5; ctx.strokeRect(z.x0 + 8, ceil + 8, 300, 30);
+      ctx.font = '17px "Bebas Neue", sans-serif'; ctx.fillStyle = inside ? '#f0b39c' : '#d99a82';
+      ctx.fillText('À DÉCOUVERT — UN TIREUR SURVEILLE LA RUE', z.x0 + 18, ceil + 29);
       ctx.restore();
     });
     // Cercles de bruit
@@ -827,7 +858,20 @@
 
   // Mode combat : ce que fera le clic, écrit à côté du curseur (au premier plan)
   K.drawCursor = function (ctx) {
-    if (!E() || !E().active || E().mode !== 'combat') return;
+    if (!E() || !E().active) return;
+    // Visée du tireur : ligne et point rouges (au premier plan)
+    var s = E().s, t = performance.now() / 1000;
+    K.guards().forEach(function (g) {
+      if (!K.type(g).unseen || g.state !== 'alert' || !g.sawNow) return;
+      var k = U.clamp(1 - g.aimT / 1.6, 0, 1);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(240,50,35,' + (0.3 + 0.45 * k) + ')'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(C.WORLD.right, C.FLOORS[3].ceil); ctx.lineTo(s.x, s.y - 60); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,40,30,' + (0.5 + 0.5 * k) + ')';
+      ctx.beginPath(); ctx.arc(s.x + Math.sin(t * 7) * (6 - 5 * k), s.y - 60 + Math.cos(t * 5) * (6 - 5 * k), 3, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    });
+    if (E().mode !== 'combat') return;
     var hv = C.Render.hoverObj, m = C.Render.mouse;
     if (!hv || hv.kind !== 'guard' || hv.dead || !m) return;
     var pl = K.plan(E().s, hv);
@@ -859,6 +903,7 @@
 
   function drawGuard(ctx, g, t) {
     var T = K.type(g), mode = modeOf(g);
+    if (T.unseen) return;
     var fake = { id: g.id, look: T.look, traits: [], path: g.path, x: g.x, y: g.y, f: g.f, anim: g.anim, moral: 70, fatigue: 20, wound: g.hp < 40 ? 40 : 0, sick: 0, act: null };
     var P = C.Figure.guardPose(g, t, mode, g.state === 'surrender' ? null : T.tool);
     var hov = C.Render.hoverObj === g;
@@ -902,7 +947,7 @@
   K.drawLights = function (ctx, t) {
     if (!E() || !E().active) return;
     K.guards().forEach(function (g) {
-      if (g.state === 'sleep' || g.state === 'surrender') return;
+      if (g.state === 'sleep' || g.state === 'surrender' || K.type(g).unseen) return;
       var T = K.type(g), len = T.sight * 0.8, ox = g.x + g.facing * 16, oy = g.y - 58;
       var hostile = g.state === 'alert' || g.state === 'warn';
       var gr = ctx.createLinearGradient(ox, oy, ox + g.facing * len, oy);

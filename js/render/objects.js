@@ -41,6 +41,7 @@
   D.bounds = function (o) {
     var y = C.FLOORS[o.f].y;
     if (o.kind === 'hole') { var hs = D.holeSize(o); return { x: o.x - hs.w / 2 - 10, y: y - D.HOLE_CY - hs.h / 2 - 8, w: hs.w + 20, h: hs.h + 16 }; }
+    if (o.kind === 'guard' && C.GUARD_TYPES && C.GUARD_TYPES[o.type] && C.GUARD_TYPES[o.type].unseen) return { x: -9999, y: -9999, w: 0, h: 0 };
     if (o.kind === 'npc' && C.NPCS && C.NPCS[o.npc]) {
       var nd = C.NPCS[o.npc], nh = C.Figure.BASE * nd.look.h;
       if (nd.pose === 'lie') { var ly = o.onBed ? y - 42 : y - 9; return { x: o.x - nh * 0.58, y: ly - 22, w: nh * 1.1, h: 30 }; }
@@ -506,6 +507,25 @@
 
   D.cache = function (ctx, r, o, y) {
     var x = o.x - o.w / 2, top = y - o.h;
+    if (o.variant === 'epave') {
+      // Carcasse de voiture : caisse cabossée, vitres éclatées, jantes nues
+      var ex = o.x - o.w / 2, eh = o.h, rust = '#5d5147';
+      var body = [[ex, y - 12], [ex + 4, y - eh * 0.55], [ex + o.w * 0.22, y - eh * 0.6], [ex + o.w * 0.34, y - eh], [ex + o.w * 0.74, y - eh], [ex + o.w * 0.86, y - eh * 0.58], [ex + o.w - 2, y - eh * 0.5], [ex + o.w, y - 12]];
+      P(ctx, r, body, rust, 0.9);
+      SK.hatchPoly(ctx, r, body, { gap: 4, alpha: 0.28, angle: 1.1 });
+      SK.poly(ctx, r, body, true, { w: 1.4 });
+      var win = [[ex + o.w * 0.38, y - eh * 0.92], [ex + o.w * 0.72, y - eh * 0.92], [ex + o.w * 0.8, y - eh * 0.6], [ex + o.w * 0.3, y - eh * 0.6]];
+      P(ctx, r, win, o.searched ? '#1b1a18' : '#2a2c2e', 0.3); SK.poly(ctx, r, win, true, { w: 1 });
+      SK.line(ctx, r, ex + o.w * 0.45, y - eh * 0.9, ex + o.w * 0.52, y - eh * 0.66, { w: 0.7, passes: 1, alpha: 0.7 });
+      SK.line(ctx, r, ex + o.w * 0.56, y - eh * 0.6, ex + o.w * 0.56, y - 14, { w: 0.9, passes: 1 });
+      [ex + o.w * 0.2, ex + o.w * 0.8].forEach(function (wx) {
+        ctx.fillStyle = '#1a1917'; ctx.beginPath(); ctx.arc(wx, y - 9, 11, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#6a6c6e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(wx, y - 9, 6, 0, Math.PI * 2); ctx.stroke();
+      });
+      for (var bh = 0; bh < 5; bh++) { ctx.fillStyle = '#141312'; ctx.beginPath(); ctx.arc(ex + 20 + r.next() * (o.w - 40), y - eh * (0.2 + r.next() * 0.3), 1.8, 0, Math.PI * 2); ctx.fill(); }
+      if (o.searched) SK.poly(ctx, r, [[ex + o.w * 0.86, y - eh * 0.58], [ex + o.w + 14, y - eh * 0.9], [ex + o.w + 10, y - eh * 0.5]], false, { w: 1 });
+      return;
+    }
     if (o.variant === 'baluchon') {
       // Objets donnés, noués dans un tissu et posés par terre
       var bn = [[o.x - 20, y], [o.x - 17, y - 16], [o.x - 6, y - 24], [o.x + 8, y - 23], [o.x + 18, y - 14], [o.x + 20, y]];

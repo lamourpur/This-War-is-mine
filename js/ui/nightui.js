@@ -9,7 +9,41 @@
 
   var EQUIP = ['pied_de_biche', 'passe_partout', 'scie', 'couteau', 'hachette', 'pistolet', 'fusil', 'gilet'];
 
+  // Mise en garde selon qui occupe les lieux
+  function dangerNote(st, loc) {
+    var hostile = Object.keys(st.locations[loc.id].hostile || {}).length;
+    var tail = ' Restez hors de leur regard, cachez-vous dans les recoins sombres, évitez le bruit (double-clic = courir). En mode combat (touche C), un clic sur un ennemi l\'attaque.';
+    if (loc.id === 'carrefour') return 'Un tireur embusqué surveille la rue. Ne restez jamais à découvert : courez d\'abri en abri (double-clic), cachez-vous derrière les épaves, ou passez par le métro.';
+    if (loc.residents === 'militaires') return (loc.danger >= 3 || hostile ? 'Les soldats tirent à vue.' : 'Des soldats gardent les lieux : n\'entrez pas dans leur zone et ne volez pas sous leurs yeux.') + tail + ' Une arme et un gilet pare-balles peuvent vous sauver la vie.';
+    if (loc.residents === 'bandits') return 'Une bande armée occupe les lieux. Ils vous tomberont dessus s\'ils vous voient.' + tail + ' Emportez une arme.';
+    var map = C.MAPS[loc.id];
+    if (map && map.objects.some(function (o) { return o.kind === 'guard'; })) return (hostile ? 'Le pilleur qui traîne ici vous en veut : il se battra.' : 'Un autre pilleur fouille parfois ici. Il n\'est pas méchant, mais il défend son coin.') + ' Si ça tourne mal, cachez-vous ou fuyez.';
+    return null;
+  }
+
+  // Ce qui reste dans un lieu jouable : meubles du plan, selon leur état mémorisé
+  function mapLootLevel(st, l) {
+    var ls = st.locations[l.id], map = C.MAPS[l.id], cur = 0, init = 0;
+    map.objects.forEach(function (o) {
+      var n = 0; for (var k in (o.loot || {})) n += o.loot[k];
+      if (!n) return;
+      init += n;
+      var sv = (ls.map || {})[o.key];
+      if (sv === 'gone') return;
+      if (sv && sv.loot) { for (var k2 in sv.loot) cur += sv.loot[k2]; }
+      else if (!(sv && sv.searched)) cur += n;
+    });
+    (ls.extra || []).forEach(function (o) { for (var k in (o.loot || {})) cur += o.loot[k]; });
+    var r = init ? cur / init : 0;
+    if (ls.visits === 0) return 'Inexploré';
+    if (r > 0.6) return 'Encore beaucoup';
+    if (r > 0.3) return 'Quelques restes';
+    if (r > 0.05) return 'Presque vide';
+    return 'Vidé';
+  }
+
   function lootLevel(st, l) {
+    if (C.MAPS[l.id]) return mapLootLevel(st, l);
     var cur = 0, init = 0, k;
     var ls = st.locations[l.id];
     for (k in ls.loot) cur += ls.loot[k];
@@ -116,10 +150,8 @@
       if (loc && C.isPlayableLocation(loc.id)) {
         // Lieu jouable : c'est vous qui menez l'exploration
         scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Sac : ' + C.Explore.capacity(s) + ' de charge. Emportez de quoi aider ou échanger.</span>'));
-        if (loc.residents === 'militaires') {
-          var hostileNow = loc.danger >= 3 || Object.keys(st.locations[loc.id].hostile || {}).length;
-          scavBox.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + (hostileNow ? 'Les soldats tirent à vue. ' : 'Des soldats gardent les lieux : n\'entrez pas dans leur zone et ne volez pas sous leurs yeux. ') + 'Restez hors de leur regard, cachez-vous dans les recoins sombres, et évitez le bruit (double-clic = courir). Une arme et un gilet pare-balles peuvent vous sauver la vie.</span>'));
-        }
+        var danger = dangerNote(st, loc);
+        if (danger) scavBox.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + danger + '</span>'));
       } else {
         row.appendChild(seg('Attitude', [
           ['discret', 'Discrète', 'Moins de rencontres, moins de butin'],

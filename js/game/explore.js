@@ -55,7 +55,7 @@
     E.active = true;
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
     E.notes = []; E.effects = []; E.stolen = {}; E.helped = [];
-    E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = [];
+    E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = []; E.warnedExposed = false;
     E.mode = 'explore';          // 'explore' | 'combat' (bouton, touche C)
     E.w0 = s.wound; E.startBag = U.copy(bag);
     C.Combat.noises = []; C.Combat.shots = [];
@@ -334,7 +334,7 @@
 
   // Bulle au-dessus d'un personnage non joueur ou du survivant
   E.say = function (who, text, secs) {
-    if (!C.Render) return;
+    if (!C.Render || !text) return;
     if (who.kind === 'npc' || who.kind === 'guard') {
       C.Render.npcSay = C.Render.npcSay || {};
       C.Render.npcSay[who.uid] = { text: text, until: performance.now() + (secs || 5) * 1000 };
@@ -464,8 +464,10 @@
     if (!any) return;
     E.stolen[o.owner] = true;
     E.ev('steal', { owner: o.owner });
-    // Matériel de l'armée : grave seulement si un soldat voit faire
-    if (o.owner === 'armee') { C.Combat.witnessTheft(E.s, o.owner); return; }
+    // Matériel gardé (armée, bande) : grave seulement si quelqu'un voit faire
+    var od = C.OWNERS[o.owner] || {};
+    C.Combat.witnessTheft(E.s, o.owner);
+    if (od.military) return;
     // Les habitants réagissent sur le moment
     var npc = G().st.objects.filter(function (x) { return x.kind === 'npc' && C.NPCS[x.npc] && C.NPCS[x.npc].afterSteal; })[0];
     if (npc) E.say(npc, C.NPCS[npc.npc].afterSteal[0], 6);
