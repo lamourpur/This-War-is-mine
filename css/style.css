@@ -129,7 +129,7 @@ button { font-family: inherit; color: inherit; }
 .meters { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 6px 0 2px; }
 .meter { display: flex; align-items: center; gap: 6px; font-size: 16px; color: var(--bone-2); }
 .card.sel .meter { color: var(--ink-2); }
-.meter b { flex: 1; height: 7px; background: #3a352e; position: relative; overflow: hidden; }
+.meter b { flex: 1; height: 9px; background: #3a352e; position: relative; overflow: hidden; }
 .card.sel .meter b { background: #b9aa88; }
 .meter b span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bone-2); transition: width .4s; }
 .card.sel .meter b span { background: var(--ink-2); }

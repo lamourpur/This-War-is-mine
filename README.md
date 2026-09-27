@@ -52,6 +52,12 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
 - **Objets de valeur** : bijoux, montre en or, diamants (très rares), la meilleure monnaie de troc.
 - **Fin** : un cessez-le-feu tombe à une date aléatoire entre le jour 30 et le jour 45. Un épilogue est écrit pour chaque survivant.
 
+## Lisibilité
+
+- **Au survol d'un objet**, une étiquette donne son nom et l'action principale, par exemple « Fouiller · 30 min », « Fabriquer… » ou « Inaccessible pour l'instant ».
+- **Au-dessus de chaque survivant**, des pastilles signalent les états sérieux : faim, fatigue, blessure, maladie, moral. Elles sont orange, puis rouges et clignotantes quand c'est critique.
+- **Sur les fiches**, les barres de besoins donnent leur valeur exacte au survol (satiété, énergie, santé, moral).
+
 ## Sauvegardes
 
 - Une **sauvegarde automatique** est faite chaque matin, et il y a **3 emplacements manuels** (Échap → Sauvegarder).

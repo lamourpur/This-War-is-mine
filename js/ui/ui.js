@@ -134,8 +134,10 @@
     UI.updateCards();
   };
 
+  var METER_NAME = { hunger: 'Satiété', fatigue: 'Énergie', health: 'Santé', moral: 'Moral' };
   function meterSet(el, pct, lv) {
     el.querySelector('span').style.width = U.clamp(pct, 0, 100) + '%';
+    el.title = METER_NAME[el.dataset.k] + ' : ' + Math.round(U.clamp(pct, 0, 100)) + ' %' + (lv === 2 ? ' — critique' : lv === 1 ? ' — à surveiller' : '');
     el.classList.toggle('crit', lv === 2);
     el.classList.toggle('warn', lv === 1);
   }

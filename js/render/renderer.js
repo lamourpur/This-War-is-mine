@@ -1041,6 +1041,9 @@
 
     // Mode combat : action et chance de toucher près du curseur (au-dessus de tout)
     if (st.phase === 'explore' && C.Combat) C.Combat.drawCursor(ctx);
+    // États graves au-dessus des survivants, étiquette de l'objet survolé
+    list.forEach(function (x) { stateBadges(ctx, x, t); });
+    hoverLabel(ctx, st, t);
 
     // Vignette + grain (espace écran)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1059,6 +1062,62 @@
       ctx.globalAlpha = 1;
     }
   };
+
+  // ============================================================ lisibilité
+  // Icônes d'état au-dessus de la tête (faim, fatigue, blessure, maladie, moral)
+  // dès que l'état est sérieux : orange (niveau 2), rouge (niveau 3).
+  var BADGE_ICON = { hunger: 'hunger', fatigue: 'fatigue', wound: 'wound', sick: 'sick', moral: 'moral' };
+  function stateBadges(ctx, s, t) {
+    if (!s.alive || s.away) return;
+    var sts = C.Surv.states(s).filter(function (x) { return x.lv >= 2 && BADGE_ICON[x.k]; });
+    if (!sts.length) return;
+    var L = place(s, t), n = sts.length, size = 20, gap = 4;
+    var sel = C.UI && C.UI.selected === s.id;
+    var y0 = L.topY - (sel || R.hoverSurv === s ? 44 : 22);
+    var x0 = L.lx - (n * size + (n - 1) * gap) / 2;
+    sts.forEach(function (st2, i) {
+      var cx = x0 + i * (size + gap) + size / 2, cy = y0;
+      var col = st2.lv >= 3 ? '#d9533c' : '#e0a340';
+      var pulse = st2.lv >= 3 ? 0.75 + 0.25 * Math.sin(t * 5) : 1;
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = 'rgba(18,15,12,0.85)';
+      ctx.beginPath(); ctx.arc(cx, cy, size / 2 + 2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.translate(cx - 7.5, cy - 7.5); ctx.scale(15 / 24, 15 / 24);
+      ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      C.IconPaths(BADGE_ICON[st2.k]).forEach(function (p) { ctx.stroke(p); });
+      ctx.restore();
+    });
+  }
+
+  // Étiquette de l'objet survolé : son nom et l'action principale
+  var hoverCache = { uid: null, until: 0, lines: null };
+  function hoverLabel(ctx, st, t) {
+    var o = R.hoverObj;
+    if (!o || R.placing || (C.UI && C.UI.contextOpen && C.UI.contextOpen())) return;
+    if (o.kind === 'guard' && C.Explore && C.Explore.mode === 'combat') return;   // (étiquette de combat)
+    var now = performance.now();
+    if (hoverCache.uid !== o.uid || now > hoverCache.until) {
+      var s = C.UI.selectedSurv ? C.UI.selectedSurv() : null;
+      var m = C.Actions.menu(s, o), first = m.entries.filter(function (e) { return e.enabled; })[0];
+      var sub = !C.Nav.objectReachable(o) ? 'Inaccessible pour l\'instant' : first ? '› ' + first.label + (first.sub ? ' · ' + first.sub.replace(/<[^>]+>/g, '') : '') : (m.entries.length ? m.entries[0].reason || '' : '');
+      hoverCache = { uid: o.uid, until: now + 250, lines: [m.title || C.Game.objName(o), sub] };
+    }
+    var bb = C.ObjDraw.bounds(o), lines = hoverCache.lines;
+    ctx.save();
+    ctx.font = '19px "Bebas Neue", sans-serif';
+    var w1 = ctx.measureText(lines[0].toUpperCase()).width;
+    ctx.font = '12px "Barlow Semi Condensed", sans-serif';
+    var w2 = lines[1] ? ctx.measureText(lines[1]).width : 0;
+    var tw = Math.max(w1, w2) + 22, th = lines[1] ? 40 : 26;
+    var x = U.clamp(bb.x + bb.w / 2 - tw / 2, C.WORLD.left, C.WORLD.right - tw), y = Math.max(C.FLOORS[3].ceil - 20, bb.y - th - 10);
+    ctx.fillStyle = 'rgba(20,17,14,0.9)'; ctx.fillRect(x, y, tw, th);
+    ctx.strokeStyle = 'rgba(219,168,76,0.8)'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, tw - 1, th - 1);
+    ctx.fillStyle = '#efe6d0'; ctx.font = '19px "Bebas Neue", sans-serif'; ctx.fillText(lines[0].toUpperCase(), x + 11, y + 20);
+    if (lines[1]) { ctx.fillStyle = '#d8b777'; ctx.font = '12px "Barlow Semi Condensed", sans-serif'; ctx.fillText(lines[1], x + 11, y + 34); }
+    ctx.restore();
+  }
 
   // ============================================================ sélection
   R.pick = function (wx, wy) {
