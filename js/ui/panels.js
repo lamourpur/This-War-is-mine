@@ -65,7 +65,7 @@
     grid.appendChild(left);
 
     var right = U.el('div', 'bio-right');
-    var states = s.alive ? C.Surv.states(s).map(function (x) { return '<span class="tag l' + x.lv + '">' + x.t + '</span>'; }).join('') : '';
+    var states = s.alive ? C.Surv.states(s).map(function (x) { return '<span class="tag l' + x.lv + (x.good ? ' good' : '') + '"' + (x.tip ? ' title="' + U.esc(x.tip) + '"' : '') + '>' + (x.k === 'good' ? '★ ' : '') + x.t + '</span>'; }).join('') + (C.Surv.thriving(s) ? '<p class="thrive-note">' + U.esc(C.Surv.THRIVE_TIP) + '</p>' : '') : '';
     right.innerHTML =
       '<div class="k">Nom</div><div class="bio-name">' + U.esc(s.name) + '</div>' +
       '<div class="bio-job">' + d.age + ' ans · ' + U.esc(d.job) + '</div>' +

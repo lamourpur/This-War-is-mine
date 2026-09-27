@@ -572,6 +572,7 @@
     if (s.wound >= 60) e *= 0.7; else if (s.wound >= 30) e *= 0.85;
     if (s.sick >= 60) e *= 0.7; else if (s.sick >= 30) e *= 0.85;
     if (s.hunger >= 70) e *= 0.8;
+    if (C.Surv.thriving(s)) e *= 1.15;
     return e;
   };
 

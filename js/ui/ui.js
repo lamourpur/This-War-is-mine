@@ -35,7 +35,8 @@
     $('btn-stock').addEventListener('click', function () { UI.openStock(); });
     $('btn-log').addEventListener('click', function () { UI.openLog(); });
     $('btn-menu').addEventListener('click', function () { UI.openPause(); });
-    $('btn-place').addEventListener('click', function () { UI.startPlacing(); });
+    $('btn-place').addEventListener('click', function (e) { e.stopPropagation(); UI.openPlaceMenu(); });
+    document.addEventListener('click', function () { UI.closePlaceMenu(); });
     $('door-alert').innerHTML = I('door') + '<div><b>On frappe à la porte</b><span>Cliquez pour envoyer quelqu\'un ouvrir</span></div>';
     $('door-alert').addEventListener('click', function () {
       var door = G().objectsOf('frontdoor')[0];
@@ -158,7 +159,7 @@
       var tags = el.querySelector('.tags');
       var html = '';
       if (!s.alive) html = '<span class="tag l3">' + ({ parti: 'Parti(e)' }[s.cause] || 'Décédé(e)') + '</span>';
-      else C.Surv.states(s).forEach(function (t) { html += '<span class="tag l' + t.lv + '">' + t.t + '</span>'; });
+      else C.Surv.states(s).forEach(function (t) { html += '<span class="tag l' + t.lv + (t.good ? ' good' : '') + '"' + (t.tip ? ' title="' + U.esc(t.tip) + '"' : '') + '>' + (t.k === 'good' ? '★ ' : '') + t.t + '</span>'; });
       if (tags.innerHTML !== html) tags.innerHTML = html;
       var act = el.querySelector('.card-act');
       var txt = !s.alive ? '' : s.away ? (G().AWAY_TEXT[s.away] || 'Absent(e)') : C.Actions.label(s);
@@ -432,10 +433,33 @@
     });
   };
 
-  UI.startPlacing = function () {
+  // Liste de ce qui attend d'être installé : on choisit quoi poser
+  UI.closePlaceMenu = function () { var m = $('place-menu'); if (m) m.remove(); };
+  UI.openPlaceMenu = function () {
+    var st = G().st;
+    if ($('place-menu')) { UI.closePlaceMenu(); return; }
+    var counts = {}, order = [];
+    st.pending.forEach(function (t) { if (!counts[t]) order.push(t); counts[t] = (counts[t] || 0) + 1; });
+    if (order.length === 1) { UI.startPlacing(order[0]); return; }
+    var m = U.el('div', 'place-menu');
+    m.id = 'place-menu';
+    m.appendChild(U.el('div', 'pm-title', 'À installer'));
+    order.forEach(function (t) {
+      var free = UI.freeSlots(t).length;
+      var b = U.el('button', 'pm-item' + (free ? '' : ' off'), C.ItemArt.buildingImg(t, 40) + '<span><b>' + U.esc(C.BUILDINGS[t].name) + (counts[t] > 1 ? ' ×' + counts[t] : '') + '</b><small>' + (free ? U.esc(C.BUILDINGS[t].desc) : 'Aucun emplacement libre : dégagez de la place') + '</small></span>');
+      b.addEventListener('click', function (e) { e.stopPropagation(); UI.closePlaceMenu(); UI.startPlacing(t); });
+      m.appendChild(b);
+    });
+    document.getElementById('app').appendChild(m);
+    var r = $('btn-place').getBoundingClientRect();
+    m.style.top = Math.max(8, Math.min(window.innerHeight - m.offsetHeight - 8, r.top)) + 'px';
+    m.style.right = (window.innerWidth - r.left + 8) + 'px';
+  };
+
+  UI.startPlacing = function (type) {
     var st = G().st;
     if (!st.pending.length) return;
-    var type = st.pending[0];
+    if (!type || st.pending.indexOf(type) < 0) type = st.pending[0];
     if (!UI.freeSlots(type).length) {
       UI.toast('Aucun emplacement libre pour : ' + C.BUILDINGS[type].name + '. Dégagez de la place (gravats, meubles, pièces fermées).', 'warn');
       return;
@@ -466,7 +490,8 @@
     var fy = C.FLOORS[slot.f].y;
     for (var i = 0; i < 18; i++) C.Render.spawn({ x: slot.x + (Math.random() - 0.5) * (o.w || 60), y: fy - Math.random() * 12, vx: (Math.random() - 0.5) * 60, vy: -15 - Math.random() * 30, life: 0.9 + Math.random() * 0.6, t: 0, kind: 'dust', size: 1.5 + Math.random() * 2.5 });
     if (C.Audio.ready) C.Audio.sfx.hammer();
-    if (st.pending.length) setTimeout(UI.startPlacing, 200);
+    // Encore un exemplaire du même objet : on continue à le poser
+    if (st.pending.indexOf(type) >= 0 && UI.freeSlots(type).length) setTimeout(function () { UI.startPlacing(type); }, 200);
   };
 
   UI.onActionDone = function () {};

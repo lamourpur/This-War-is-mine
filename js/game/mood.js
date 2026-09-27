@@ -53,6 +53,7 @@
     if (G().hasTrait(s, 'cafeinomane') && st.day - s.lastCoffee >= 1 && Math.random() < 0.5) return 'say_coffee';
     if (s.moral < 35) return 'say_depressed';
     if (s.moral < 55) return 'say_sad';
+    if (C.Surv.thriving(s) && Math.random() < 0.6) return 'say_thriving';
     return 'say_ok';
   };
 

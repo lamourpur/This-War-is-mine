@@ -18,6 +18,7 @@
     if (s.fatigue >= 80) v *= 0.8;
     if (s.wound >= 60) v *= 0.7; else if (s.wound >= 30) v *= 0.88;
     if (s.hunger >= 70) v *= 0.85;
+    if (Surv.thriving(s)) v *= 1.06;
     return v;
   };
 
@@ -157,8 +158,23 @@
   };
 
   // --- Libellés d'état (comme les icônes de statut)
+  // Tous les besoins comblés : bien nourri, reposé, en bonne santé, le moral
+  // au beau fixe. Bonus : travaille plus vite, marche un peu plus vite, et sa
+  // bonne humeur remonte le moral des autres chaque matin.
+  Surv.thriving = function (s) {
+    return !!s && s.alive && !s.away && s.hunger < 20 && s.fatigue < 30 && s.wound <= 0.5 && s.sick <= 0.5 && s.moral >= 65 && !(s.grief > 0);
+  };
+  Surv.THRIVE_TIP = 'Tous ses besoins sont comblés : travaille 15 % plus vite, marche un peu plus vite, et sa bonne humeur remonte le moral des autres chaque matin.';
+  var THRIVE_TXT = ['En pleine forme', 'A la pêche', 'Le cœur léger', 'D\'humeur solide'];
+
   Surv.states = function (s) {
     var out = [];
+    if (Surv.thriving(s)) {
+      var day = (G().st && G().st.day) || 0, h = 0, id = String(s.id);
+      for (var i = 0; i < id.length; i++) h += id.charCodeAt(i);
+      out.push({ k: 'good', t: THRIVE_TXT[(h + day) % THRIVE_TXT.length], lv: 0, good: true, tip: Surv.THRIVE_TIP });
+      return out;
+    }
     if (s.hunger >= 100) out.push({ k: 'hunger', t: 'Meurt de faim', lv: 3 });
     else if (s.hunger >= 70) out.push({ k: 'hunger', t: 'Affamé(e)', lv: 3 });
     else if (s.hunger >= 45) out.push({ k: 'hunger', t: 'Très faim', lv: 2 });
@@ -181,6 +197,10 @@
     else if (s.moral < 55) out.push({ k: 'moral', t: 'Triste', lv: 1 });
 
     if (s.grief > 0) out.push({ k: 'grief', t: 'En deuil', lv: 1 });
+    // Ce qui va bien (même quand le reste va mal)
+    if (s.hunger < 10) out.push({ k: 'fed', t: 'A bien mangé', lv: 0, good: true });
+    if (s.fatigue < 10) out.push({ k: 'rested', t: 'Bien reposé(e)', lv: 0, good: true });
+    if (s.moral >= 80 && !(s.grief > 0)) out.push({ k: 'serene', t: 'Serein(e)', lv: 0, good: true });
     if (s.bandaged > 0 && s.wound > 0) out.push({ k: 'care', t: 'Pansé(e)', lv: 0 });
     return out;
   };
@@ -209,6 +229,15 @@
       report.push({ t: n + ' traîne des pieds sans son café.', k: 'bad' });
     }
     if (s.moral < 15) s.brokenDays++; else s.brokenDays = 0;
+    // Bonne humeur contagieuse
+    if (Surv.thriving(s)) {
+      var others = G().present().filter(function (b) { return b !== s && b.alive; });
+      if (others.length) {
+        others.forEach(function (b) { b.moral = Math.min(100, b.moral + 3); });
+        report.push({ t: n + ' est en pleine forme ce matin. Sa bonne humeur fait du bien à tout le monde.', k: 'good' });
+        if (C.Mood) C.Mood.think(s, 'thriving');
+      }
+    }
     if (s.hunger >= 100) {
       report.push({ t: n + ' meurt de faim. Sans nourriture aujourd\'hui, ' + (s.look && s.look.female ? 'elle' : 'il') + ' ne passera pas la nuit.', k: 'bad' });
     }
