@@ -121,5 +121,50 @@
       state: { fatigue: 50 },
       figs: [{ hair: 'buzz', build: 0.95, h: 0.99, coat: '#5c5448', pants: '#2c2a26', coatLen: 0.3, skin: '#dcbc9f', hairColor: '#b89a62', top: 'overcoat', shirt: '#6e685e' }]
     }
+    ,
+    voisin_outil: {
+      name: 'Nate, le voisin du coin',
+      face: { skin: '#c8a489', hair: '#5a4636', hairStyle: 'short', fw: 35, fh: 49, jaw: 0.9, eye: 0.9, iris: '#4a5a4a', brow: 2.4, nose: 'straight', lips: 0.9, age: 0.4, beard: 'stubble', clothes: 'work', cloth: '#6b6358', turn: 0.14 },
+      state: { fatigue: 70, moral: 30 },
+      figs: [{ hair: 'short', build: 1.0, h: 1.0, coat: '#6b6358', pants: '#34312c', coatLen: 0.05, skin: '#c8a489', hairColor: '#5a4636', beard: 'stubble', top: 'work', shirt: '#8a8276' }]
+    },
+    voisin_outil_retour: {
+      name: 'Nate et sa femme',
+      face: { skin: '#c8a489', hair: '#5a4636', hairStyle: 'short', fw: 35, fh: 49, jaw: 0.9, eye: 0.9, iris: '#4a5a4a', brow: 2.2, nose: 'straight', lips: 0.9, age: 0.4, beard: 'stubble', clothes: 'work', cloth: '#6b6358', turn: 0.14 },
+      state: { moral: 70 },
+      figs: [
+        { hair: 'short', build: 1.0, h: 1.0, coat: '#6b6358', pants: '#34312c', coatLen: 0.05, skin: '#c8a489', hairColor: '#5a4636', beard: 'stubble', top: 'work', shirt: '#8a8276' },
+        { hair: 'bun', build: 0.86, h: 0.94, coat: '#5e5448', pants: '#33302c', coatLen: 0.35, skin: '#d2b096', hairColor: '#6a4a36', female: true, lips: true, top: 'overcoat', shirt: '#7a716a' }
+      ]
+    },
+    mere_bebe: {
+      name: 'Une jeune mère',
+      face: { skin: '#d6b89e', hair: '#3a2a20', hairStyle: 'long', fw: 32, fh: 46, jaw: 0.72, eye: 1.0, iris: '#4a3a2e', brow: 1.8, nose: 'small', lips: 1.0, age: 0.22, clothes: 'overcoat', cloth: '#5a5250', scarf: '#6a4e46', turn: 0.12 },
+      state: { fatigue: 75, moral: 25 },
+      figs: [{ hair: 'long', build: 0.84, h: 0.94, coat: '#5a5250', pants: '#302d29', coatLen: 0.4, skin: '#d6b89e', hairColor: '#3a2a20', female: true, lips: true, top: 'overcoat', shirt: '#7a716a', scarf: '#6a4e46' }]
+    },
+    pere_medic: {
+      name: 'Un père désespéré',
+      face: { skin: '#c4a086', hair: '#2e2620', hairStyle: 'short', fw: 34, fh: 50, jaw: 0.88, eye: 0.86, iris: '#3b3226', brow: 2.6, nose: 'long', lips: 0.8, age: 0.45, beard: 'light', clothes: 'jacket', cloth: '#45423c', turn: 0.16 },
+      state: { fatigue: 85, moral: 20 },
+      figs: [{ hair: 'short', build: 0.98, h: 1.0, coat: '#45423c', pants: '#2c2a26', coatLen: 0.15, skin: '#c4a086', hairColor: '#2e2620', beard: 'stubble', top: 'overcoat', shirt: '#5c5448' }]
+    },
+    colporteur: {
+      name: 'Un colporteur',
+      face: { skin: '#bf9c80', hair: '#1f1a16', hairStyle: 'short', hat: 'cap', hatColor: '#2e2c29', fw: 31, fh: 48, jaw: 0.78, eye: 0.84, iris: '#3b2c22', brow: 2.2, nose: 'long', lips: 0.8, age: 0.5, beard: 'stubble', clothes: 'overcoat', cloth: '#3e3c38', squint: true, turn: 0.2 },
+      figs: [{ hair: 'short', build: 0.85, h: 0.95, coat: '#3e3c38', pants: '#2a2825', coatLen: 0.45, skin: '#bf9c80', hairColor: '#1f1a16', beard: 'stubble', top: 'overcoat', shirt: '#55504a', hat: 'cap', hatColor: '#2e2c29', bag: true }]
+    },
+    gamin_troc: {
+      name: 'Un gamin débrouillard',
+      face: { skin: '#dcbfa4', hair: '#6a4a30', hairStyle: 'short', fw: 30, fh: 42, jaw: 0.7, eye: 1.12, iris: '#4b5a6a', brow: 1.7, nose: 'small', lips: 0.95, age: 0, freckles: true, clothes: 'jacket', cloth: '#5d6a6e', turn: 0.1 },
+      state: { moral: 70 },
+      figs: [{ hair: 'short', build: 0.62, h: 0.64, coat: '#5d6a6e', pants: '#3a3632', coatLen: 0.06, skin: '#dcbfa4', hairColor: '#6a4a30', top: 'hoodie', shirt: '#7c7468', bag: true }]
+    },
+    vieux_froid: {
+      name: 'Un vieil homme transi',
+      face: { skin: '#d8c4b4', hair: '#dcd6cc', hairStyle: 'short', fw: 34, fh: 48, jaw: 0.84, eye: 0.84, iris: '#5b6b79', brow: 2.0, nose: 'wide', lips: 0.75, age: 1, beard: 'full', beardColor: '#d6d0c6', clothes: 'overcoat', cloth: '#4e4a44', scarf: '#5e4a3e', turn: 0.12 },
+      state: { sick: 40, moral: 25 },
+      figs: [{ hair: 'short', build: 0.88, h: 0.93, coat: '#4e4a44', pants: '#33302c', coatLen: 0.45, skin: '#d8c4b4', hairColor: '#dcd6cc', beard: 'full', top: 'overcoat', shirt: '#6e685e', scarf: '#5e4a3e', hat: 'beanie', hatColor: '#3a352e' }]
+    }
   };
 })(window.CQR);

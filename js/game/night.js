@@ -18,6 +18,7 @@
     st.survivors.forEach(function (s) { if (s.alive) { C.Actions.cancel(s); s.path = []; } });
     if (st.visitor) { st.visitor = null; if (C.UI) C.UI.refreshDoor(); }
     st.visitorPlan = null;
+    st.visitorQueue = [];
     var back = [];
     st.survivors.forEach(function (s) {
       if (s.alive && s.away) {
@@ -417,8 +418,16 @@
     if (st.flags.later && st.flags.later.length) {
       st.flags.later = st.flags.later.filter(function (lt) {
         if (st.day < lt.day) return true;
-        add('people', lt.text, 'bad');
-        G().moralAll(lt.moral, { bad: true, key: lt.key });
+        add('people', lt.text, lt.moral >= 0 ? 'good' : 'bad');
+        G().moralAll(lt.moral, lt.moral >= 0 ? { good: true, key: lt.key } : { bad: true, key: lt.key });
+        return false;
+      });
+    }
+    // Cadeaux promis par des visiteurs (déposés devant la porte)
+    if (st.flags.gifts && st.flags.gifts.length) {
+      st.flags.gifts = st.flags.gifts.filter(function (gf) {
+        if (st.day < gf.day) return true;
+        G().addItems(gf.items, true);
         return false;
       });
     }

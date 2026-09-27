@@ -88,9 +88,11 @@
     });
 
     // Visiteurs
+    if (!st.visitorPlan && !st.visitor && st.visitorQueue && st.visitorQueue.length) st.visitorPlan = st.visitorQueue.shift();
     if (st.visitorPlan && !st.visitor && st.minute >= st.visitorPlan.at) {
       var v = C.VISITORS[st.visitorPlan.id];
-      st.visitor = { id: st.visitorPlan.id, until: st.minute + 120, data: st.visitorPlan.data };
+      // On attend à la porte un bon moment (4 h de jeu) avant de repartir
+      st.visitor = { id: st.visitorPlan.id, until: st.minute + 240, data: st.visitorPlan.data };
       st.visitorPlan = null;
       if (C.Audio.ready) C.Audio.sfx.knock();
       G().toast('On frappe à la porte d\'entrée !', 'alert');
@@ -99,7 +101,7 @@
     }
     if (st.visitor && !st.visitor.talking && st.minute > st.visitor.until) {
       var gone = C.VISITORS[st.visitor.id];
-      if (gone && gone.onMissed) gone.onMissed(st);
+      if (gone && gone.onMissed) gone.onMissed(st, st.visitor.data || {});
       st.visitor = null;
       G().toast('Personne n\'a ouvert. Le visiteur est reparti.', 'info');
       if (C.UI) C.UI.refreshDoor();
@@ -115,33 +117,44 @@
     }
   };
 
-  World.planVisitor = function (st) {
-    var R = C.R;
-    st.visitorPlan = null;
-    // Une histoire en cours passe avant les visiteurs au hasard
-    var due = C.Story && C.Story.due(st);
-    if (due) { st.visitorPlan = { id: due.step, at: R.int(8 * 60, 15 * 60), data: due.data || {} }; return; }
-    // Franko, le marchand, repasse tous les 3 à 5 jours
-    if (C.Market && C.Market.frankoDue(st) && C.VISITORS.marchand) {
-      C.Market.frankoPlanned(st);
-      st.visitorPlan = { id: 'marchand', at: R.int(8 * 60, 13 * 60), data: C.VISITORS.marchand.init(st, R) };
-      return;
-    }
-    if (st.day < 2 || !R.chance(0.55)) return;
+  // Comme dans This War of Mine : quelqu'un frappe presque chaque jour,
+  // parfois deux personnes dans la même journée. Les histoires en cours et
+  // Franko passent en priorité.
+  function pickRandomVisitor(st, R, not) {
     var entries = [];
     for (var id in C.VISITORS) {
       var v = C.VISITORS[id];
-      if (v.story || v.scheduled) continue;
+      if (v.story || v.scheduled || id === not) continue;
       if (st.day < v.minDay) continue;
       if (v.canAppear && !v.canAppear(st)) continue;
-      entries.push([id, v.weight]);
+      entries.push([id, typeof v.weight === 'function' ? v.weight(st) : v.weight]);
     }
     var pick = R.weighted(entries);
-    if (!pick) return;
+    if (!pick) return null;
     var def = C.VISITORS[pick];
-    // Début d'histoire : une seule fois par partie
     if (def.once && C.Story) C.Story.state(st, def.once).planned = true;
-    st.visitorPlan = { id: pick, at: R.int(8 * 60, 16 * 60), data: def.init ? def.init(st, R) : {} };
+    return { id: pick, data: def.init ? def.init(st, R) : {} };
+  }
+  World.planVisitor = function (st) {
+    var R = C.R;
+    st.visitorPlan = null;
+    st.visitorQueue = [];
+    if (st.day < 2) return;
+    var first = null;
+    var due = C.Story && C.Story.due(st);
+    if (due) first = { id: due.step, data: due.data || {} };
+    else if (C.Market && C.Market.frankoDue(st) && C.VISITORS.marchand) {
+      C.Market.frankoPlanned(st);
+      first = { id: 'marchand', data: C.VISITORS.marchand.init(st, R) };
+    } else if (R.chance(0.85)) first = pickRandomVisitor(st, R);
+    if (!first) return;
+    first.at = R.int(8 * 60, 13 * 60);
+    st.visitorPlan = first;
+    // Une deuxième visite dans l'après-midi, de temps en temps
+    if (R.chance(first.id === 'marchand' || due ? 0.35 : 0.25)) {
+      var second = pickRandomVisitor(st, R, first.id);
+      if (second) { second.at = Math.min(17 * 60 + 30, first.at + R.int(180, 300)); st.visitorQueue.push(second); }
+    }
   };
 
   // Événements aléatoires de la journée (0 à 2 par jour)

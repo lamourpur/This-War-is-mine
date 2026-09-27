@@ -40,6 +40,7 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 
 ## Visiteurs
 - Marché (`js/game/market.js`, `C.Market`, chargé après `world.js`) : pénuries `C.SHORTAGES` (`items` = multiplicateurs), état `st.market` ; `Market.mult(id)` est appliqué dans `Trade.scarcity` (tous les prix de troc) ; `Market.dawn` écrit la section `market` du rapport. Franko = visiteur `marchand` (`scheduled: true`, jamais tiré au hasard), programmé par `World.planVisitor` via `Market.frankoDue` ; stock par paliers de jours dans `Market.traderStock`.
+- Planification (`World.planVisitor`) : à partir du jour 2, histoire due > Franko > visiteur au hasard (85 %), puis parfois un second (`st.visitorQueue`) ; attente 240 min ; `weight` peut être une fonction ; `onMissed(st, data)`. Cadeaux différés : `st.flags.gifts` (`{day, items}`) ajoutés à l'aube.
 `js/data/visitor_faces.js` (`C.VISITOR_PEOPLE[id]`) : `name`, `face` (fiche de portrait, enregistrée sous `v_<id>` dans `portrait.js`), `state` (blessure, maladie… sur le portrait), `figs` (silhouettes dessinées devant la porte par `drawVisitors` dans `renderer.js`), `hurt`, `armed`. Une photo `assets/portraits/pnj/<id>.jpg` remplace le dessin ; sinon le dessin passe au filtre fusain. Le réfugié utilise le portrait et la silhouette du survivant qu'il deviendra. `UI.visitorFace(v)` / `UI.visitorPortrait(v, w, h)`.
 
 ## Pièges connus
