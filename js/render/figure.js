@@ -125,7 +125,9 @@
     if (kind === 'sleep' || kind === 'sleepfloor') {
       P.kind = 'lie'; P.eyes = 'closed';
       P.legs = [{ a1: 0.05, bend: 0.12 }, { a1: -0.02, bend: 0.06 }];
-      P.arms = [{ a: 0.05, bend: 0.1 }, { a: 0.12, bend: 0.5 }];
+      var br = Math.sin(t * 1.3 + s.anim);
+      P.arms = [{ a: 0.05 + 0.02 * br, bend: 0.1 }, { a: 0.12 + 0.05 * br, bend: 0.5 + 0.06 * br }];
+      P.head = 0.03 * br;
       return P;
     }
     if (kind === 'rest' || kind === 'read') {
@@ -140,10 +142,13 @@
     if (walking) {
       P.kind = 'walk';
       var amp = s.wound >= 30 ? 0.3 : 0.44;
+      var limp = s.wound >= 30;
       P.legs = [
         { a1: amp * Math.sin(ph), bend: 0.08 + 0.8 * Math.max(0, Math.cos(ph)) },
-        { a1: amp * Math.sin(ph + Math.PI), bend: 0.08 + 0.8 * Math.max(0, Math.cos(ph + Math.PI)) }
+        { a1: amp * (limp ? 0.55 : 1) * Math.sin(ph + Math.PI), bend: limp ? 0.08 + 0.25 * Math.max(0, Math.cos(ph + Math.PI)) : 0.08 + 0.8 * Math.max(0, Math.cos(ph + Math.PI)) }
       ];
+      // Boiterie : le corps plonge sur la jambe blessée
+      if (limp) { P.lean += 0.06 + 0.07 * Math.max(0, Math.sin(ph + Math.PI)); P.brow = 'sad'; }
       P.arms = [
         { a: 0.38 * Math.sin(ph), bend: 0.25 + 0.25 * Math.max(0, Math.sin(ph)) },
         { a: -0.38 * Math.sin(ph), bend: 0.25 + 0.25 * Math.max(0, -Math.sin(ph)) }
@@ -167,6 +172,13 @@
         P.kind = 'reach'; P.lean = 0.32;
         P.legs = [{ a1: 0.25, bend: 0.35 }, { a1: -0.18, bend: 0.1 }];
         P.arms = [{ a: 0.95 + 0.25 * Math.sin(t * 5), bend: 0.25 }, { a: 1.1 + 0.25 * Math.sin(t * 5 + 2), bend: 0.2 }];
+        // Meuble bas (caisse, coffre, valise, corps) : accroupi, les mains dedans
+        var so = kind === 'search' && C.Game.obj ? C.Game.obj(a.uid) : null;
+        if (so && so.h && so.h <= 62) {
+          P.kind = 'crouch'; P.lean = 0.42; P.head = 0.2;
+          P.legs = [{ a1: 1.25, bend: 2.15 }, { a1: 0.8, bend: 1.8 }];
+          P.arms = [{ a: 1.0 + 0.3 * Math.sin(t * 6), bend: 0.4 }, { a: 1.2 + 0.3 * Math.sin(t * 6 + 1.7), bend: 0.3 }];
+        }
         P.tool = kind === 'unlock' ? (a.p && a.p.tool === 'passe_partout' ? 'pick' : 'crowbar') : null;
         break;
       case 'fuel': case 'water':
@@ -261,6 +273,8 @@
       if (tired) { P.lean += 0.06; P.head += 0.12; P.eyes = 'half'; }
       // Toux quand malade
       if (s.sick >= 30 && Math.sin(t * 0.9 + s.anim) > 0.93) { P.head += 0.35; P.lean += 0.12; P.arms[1] = { a: 0.5, bend: 2.3 }; }
+      // Frissons : bras serrés contre soi, le corps qui tremble
+      else if (F.cold && !a) { P.arms = [{ a: 0.55, bend: 2.15 }, { a: 0.5, bend: 2.2 }]; P.lean += 0.05 + 0.02 * Math.sin(t * 38 + s.anim); P.head += 0.08; P.brow = 'sad'; }
     }
     if (s.fatigue >= 55 && P.eyes === 'open') P.eyes = 'half';
     return P;

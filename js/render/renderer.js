@@ -664,6 +664,8 @@
       p.t += dt;
       p.x += p.vx * dt; p.y += p.vy * dt;
       if (p.kind === 'dust') p.vy += 30 * dt;
+      if (p.kind === 'chip') p.vy += 220 * dt;
+      if (p.kind === 'paper') { p.vy += 25 * dt; p.vx *= 0.97; }
       if (p.kind === 'blood') { p.vy += 420 * dt; if (p.floorY == null) p.floorY = C.FLOORS.reduce(function (b, fl) { return fl.y >= p.y && (b == null || fl.y < b) ? fl.y : b; }, null); if (p.floorY != null && p.y > p.floorY) { p.y = p.floorY; p.vx = 0; p.vy = 0; } }
       if (p.kind === 'smoke' || p.kind === 'steam') { p.vx += (Math.random() - 0.5) * 6 * dt; p.size += dt * 5; }
       if (p.t >= p.life) list.splice(i, 1);
@@ -671,6 +673,14 @@
     // Émissions
     var spd = C.Main ? C.Main.speed : 1;
     if (spd === 0) return;
+    // Quintes de toux visibles
+    st.survivors.forEach(function (s) {
+      if (!s.alive || s.away || s.sick < 30 || s.act || s.path.length) return;
+      if (Math.sin(R.time * 0.9 + s.anim) > 0.93 && Math.random() < dt * 6) {
+        var Hh = C.Figure.height(s);
+        R.spawn({ x: s.x + (s.facing || 1) * Hh * 0.09, y: s.y - Hh * 0.8, vx: (s.facing || 1) * 30, vy: 6, life: 0.5, t: 0, kind: 'breath', size: 1.6 });
+      }
+    });
     st.survivors.forEach(function (s) {
       if (!s.alive || s.away || !s.act || s.act.phase !== 'work') return;
       var k = s.act.kind;
@@ -679,6 +689,15 @@
       }
       if ((k === 'craft' || k === 'upgrade' || k === 'board' || k === 'doorup') && Math.random() < dt * 5) {
         R.spawn({ x: s.x + s.facing * 16, y: s.y - 34, vx: (Math.random() - 0.5) * 80, vy: -30 - Math.random() * 60, life: 0.35, t: 0, kind: 'spark', size: 1.2 });
+      }
+      // Copeaux de bois qui tombent (marteau, scie)
+      if ((k === 'craft' || k === 'upgrade' || k === 'board' || k === 'doorup' || k === 'dismantle' || k === 'cut') && Math.random() < dt * 6) {
+        R.spawn({ x: s.x + s.facing * (14 + Math.random() * 12), y: s.y - 30 - Math.random() * 12, vx: s.facing * (10 + Math.random() * 40), vy: -40 - Math.random() * 40, life: 0.9, t: 0, kind: 'chip', size: 1.4 + Math.random() * 1.6, rot: Math.random() * 6 });
+      }
+      // Fouille : poussière et vieux papiers qui s'échappent du meuble
+      if ((k === 'search' || k === 'collect') && Math.random() < dt * 3) {
+        var so = C.Game.obj(s.act.uid);
+        if (so) R.spawn({ x: so.x + (Math.random() - 0.5) * (so.w || 40) * 0.6, y: C.FLOORS[so.f].y - (so.h || 50) * (0.3 + Math.random() * 0.6), vx: (Math.random() - 0.5) * 40, vy: -10 - Math.random() * 20, life: 1 + Math.random() * 0.6, t: 0, kind: Math.random() < 0.3 ? 'paper' : 'dust', size: 1.5 + Math.random() * 2, rot: Math.random() * 6 });
       }
       if (k === 'cook' && Math.random() < dt * 4) {
         var o = C.Game.obj(s.act.uid);
@@ -719,6 +738,7 @@
     else if (R.snowCover) R.snowCover = Math.max(0, R.snowCover - dt * Math.max(spd, 0.2) * (st.weather.out > 2 ? 0.004 : 0.0008));
     // Souffle qui fume quand il fait froid
     var cold = st.phase === 'explore' ? st.weather.out < 4 : (C.World.shelterTemp ? C.World.shelterTemp(st) < 5 : false);
+    if (C.Figure) C.Figure.cold = cold;
     if (cold) {
       st.survivors.forEach(function (x) {
         if (!x.alive || x.away) return;
@@ -806,6 +826,14 @@
         case 'rain':
           ctx.strokeStyle = 'rgba(200,200,205,0.35)'; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - 2, p.y + 12); ctx.stroke(); break;
+        case 'chip':
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot + p.t * 9);
+          ctx.fillStyle = 'rgba(150,120,82,' + Math.min(1, a * 1.5) + ')'; ctx.fillRect(-p.size, -p.size * 0.35, p.size * 2, p.size * 0.7);
+          ctx.restore(); break;
+        case 'paper':
+          ctx.save(); ctx.translate(p.x + Math.sin(p.t * 5) * 4, p.y); ctx.rotate(p.rot + Math.sin(p.t * 4) * 0.8);
+          ctx.fillStyle = 'rgba(214,206,186,' + (a * 0.85) + ')'; ctx.fillRect(-p.size * 1.3, -p.size, p.size * 2.6, p.size * 2);
+          ctx.restore(); break;
         case 'rainfg':
           ctx.strokeStyle = 'rgba(205,210,220,0.12)'; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.len * 0.06, p.y + p.len); ctx.stroke(); break;

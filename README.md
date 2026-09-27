@@ -37,6 +37,7 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
   - **Leonard Price**, vieux professeur : *santé fragile*, se fatigue et tombe malade plus facilement, mais *grand lecteur* ;
   - **Owen Fletcher**, mécanicien : *économe*, fabrique avec un quart de matériaux en moins.
 - **Biographies qui se remplissent** : dans le dossier de chaque survivant, « Son histoire » raconte à la première personne ce qu'il a vécu, jour après jour : l'arrivée, ses nuits dehors, les morts, les visites, les raids repoussés, la faim, le moral brisé puis retrouvé, ceux qu'il a tués.
+- **Gestes** : on fouille accroupi devant les meubles bas, et poussière et vieux papiers s'en échappent. Copeaux et sciure volent à l'établi. Les dormeurs respirent. Les malades toussent, avec un souffle visible. Par grand froid, les survivants frissonnent, bras serrés contre eux. Un blessé boite.
 - **Personnages** : silhouettes articulées dessinées au crayon (marche, posture selon le moral et la fatigue, toux quand ils sont malades), vêtements et accessoires propres à chacun, et outils en main selon l'action.
 - **Refuge** : gravats à déblayer, meubles à fouiller ou à démonter, portes à forcer, grille à scier, trous à barricader. Les zones inaccessibles restent dans l'ombre.
 - **Établi (3 niveaux)** : outils (pelle, pied-de-biche, passe-partout, scie, hachette, couteau), munitions, filtres. Stations : lit, poêle, chauffage, collecteur d'eau de pluie, piège à rats, fauteuil, potager, jardin d'herbes, distillerie, atelier d'herbes, radio.
