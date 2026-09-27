@@ -939,3 +939,8 @@ body.skipping #tb-clock { color: var(--amber); }
 .bag-sum .bs-items i { position: absolute; right: -2px; bottom: -3px; font: 700 11px var(--f-ui); font-style: normal; color: var(--bone); text-shadow: 0 1px 2px #000; }
 .bag-sum .bs-items small { font: 13px var(--f-ui); color: #8a8170; }
 @media (max-width: 1100px) { .pack-wrap { grid-template-columns: 1fr 1fr; } .pack-wrap .loot-mid { display: none; } .pack-intel { grid-column: 1 / -1; } }
+
+/* Biographie : ce que le survivant a vécu */
+.bio-story { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; padding-right: 6px; margin-bottom: 10px; }
+.bio-story .bs { font-family: var(--f-note); font-size: 14px; line-height: 1.45; color: var(--ink-2); border-left: 2px solid #b8a98a; padding-left: 8px; }
+.bio-story .bs span { display: block; font: 700 11px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; color: #8a7d65; }

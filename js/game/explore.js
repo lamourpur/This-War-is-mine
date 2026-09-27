@@ -20,7 +20,7 @@
 
   // Sac en cases, comme dans This War of Mine : 10 cases (14 avec le trait
   // « grand sac »), chaque case contient une pile d'un seul objet (C.stackOf).
-  E.capacity = function (s) { return 10 + (s && G().hasTrait(s, 'grand_sac') ? 4 : 0); };
+  E.capacity = function (s) { return 10 + (s && G().hasTrait(s, 'grand_sac') ? 4 : 0) + (s && G().hasTrait(s, 'costaud') ? 3 : 0); };
   // Nombre de cases occupées (nom historique : weight)
   E.weight = function (inv) { var w = 0; for (var k in inv) if (inv[k] > 0) w += Math.ceil(inv[k] / C.stackOf(k)); return w; };
   E.slots = E.weight;

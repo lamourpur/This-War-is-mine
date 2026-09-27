@@ -13,6 +13,8 @@ vera.jpg  Rachel Donovan      tomas.jpg  Frank Doyle
 ilija.jpg Tyler Brooks        nada.jpg   Martha Jenkins
 goran.jpg Vince Carver        lena.jpg   Emily Parker
 emir.jpg  Marcus Reed         mira.jpg   Eleanor Hayes
+jade.jpg  Jade Morgan         ben.jpg    Ben Mercer
+leonard.jpg Leonard Price     owen.jpg   Owen Fletcher
 
 En jeu (js/render/portrait.js), l'état du personnage s'ajoute par-dessus :
 fatigue (cernes), moral en berne (image refroidie), maladie (teint verdâtre,

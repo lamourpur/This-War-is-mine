@@ -175,6 +175,8 @@
       st.pendingExp = ex.exp;
       var gotN = ex.exp ? ex.exp.gainedN : 0;
       if (gotN >= 6) { C.Mood.think(scav, 'scav_good'); scav.moral = Math.min(100, scav.moral + 2); }
+      var lname = C.locationDef(plan.scav.loc).name;
+      C.Surv.bio(scav, 'Nuit dehors : ' + lname + '. ' + (gotN >= 6 ? 'Je suis rentré(e) le sac plein.' : gotN ? 'Je n\'ai rapporté que ' + gotN + ' objet' + (gotN > 1 ? 's' : '') + '.' : 'Je suis rentré(e) les mains vides.') + (ex.exp && ex.exp.wound >= 20 ? ' Blessé(e), mais vivant(e).' : ''));
       st.lastScavLoc = plan.scav.loc;
       scav.fatigue = Math.min(100, scav.fatigue + 35);
       C.Surv.feedHunger(scav, 12, 10);
@@ -216,6 +218,7 @@
         add('home', 'Des pillards ont tenté d\'entrer cette nuit. ' + (guards.length ? guards.map(first).join(' et ') + (guards.length > 1 ? ' les ont' : ' les a') + ' repoussés.' : 'Les barricades ont tenu.'), 'good');
         guards.forEach(function (g) {
           g.moral = Math.min(100, g.moral + 3); C.Mood.think(g, 'repelled');
+          C.Surv.bio(g, 'Des pillards ont tenté d\'entrer cette nuit. Je montais la garde : on les a repoussés.');
           if (R.chance(0.25)) { g.wound = Math.min(100, g.wound + R.int(8, 20)); add('home', first(g) + ' a été légèrement blessé(e) dans l\'affrontement.', 'bad'); }
         });
       } else {
@@ -254,6 +257,7 @@
     if (temp < 8) {
       var add = (8 - temp) * 0.025 * 10 * k;
       if (G().hasTrait(s, 'endurant')) add *= 0.6;
+      if (G().hasTrait(s, 'fragile')) add *= 1.35;
       s.sick = Math.min(100, s.sick + add);
     } else if (s.sick > 0 && temp >= 10 && s.hunger < 45) s.sick = Math.max(0, s.sick - 3);
   }

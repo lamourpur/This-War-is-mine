@@ -12,6 +12,17 @@
 
   var Surv = C.Surv = {};
 
+  // Biographie : ce que le survivant a vécu, à la première personne, jour
+  // après jour (comme les fiches du jeu d'origine qui se remplissent)
+  Surv.bio = function (s, t) {
+    if (!s || !t) return;
+    var st = G().st;
+    s.story = s.story || [];
+    var fe = s.look && s.look.female ? 'e' : '';
+    s.story.push({ d: st ? st.day : 1, t: t.replace(/\(e\)/g, fe) });
+    if (s.story.length > 40) s.story.shift();
+  };
+
   Surv.speed = function (s) {
     var v = 95;
     if (G().hasTrait(s, 'rapide')) v *= 1.35;
@@ -19,6 +30,7 @@
     if (s.wound >= 60) v *= 0.7; else if (s.wound >= 30) v *= 0.88;
     if (s.hunger >= 70) v *= 0.85;
     if (Surv.thriving(s)) v *= 1.06;
+    if (G().hasTrait(s, 'lent')) v *= 0.84;
     return v;
   };
 
@@ -58,6 +70,7 @@
     else frate = 1.0;
     if (frate > 0) {
       if (G().hasTrait(s, 'endurant')) frate *= 0.75;
+      if (G().hasTrait(s, 'fragile')) frate *= 1.2;
       if (s.sick >= 30) frate *= 1.25;
     }
     s.fatigue = U.clamp(s.fatigue + frate * h, 0, 100);
@@ -74,6 +87,7 @@
       var k = (8 - env.temp) * 0.025;
       if (inBed) k *= 0.6;
       if (G().hasTrait(s, 'endurant')) k *= 0.6;
+      if (G().hasTrait(s, 'fragile')) k *= 1.35;
       s.sick = Math.min(100, s.sick + k * h);
     } else if (s.sick > 0 && env.temp >= 10 && s.hunger < 45) {
       s.sick = Math.max(0, s.sick - 0.12 * h * (sleeping ? 1.6 : 1));
@@ -150,6 +164,10 @@
     }[cause] || s.name + ' est mort(e).';
     if (!opts.quiet) G().log(txt, 'death');
     var n = s.name.split(' ')[0];
+    G().alive().forEach(function (o) {
+      if (o === s) return;
+      Surv.bio(o, cause === 'parti' ? n + ' est parti(e) sans se retourner. Je n\'ai pas su le(la) retenir.'.replace('le(la)', s.look && s.look.female ? 'la' : 'le') : n + ' est mort(e). ' + (cause === 'faim' ? 'De faim. Nous n\'avons pas su le(la) nourrir.' : cause === 'pillage' ? 'Il(elle) n\'est jamais revenu(e) de la nuit.' : cause === 'suicide' ? 'Personne n\'a rien vu venir.' : 'Je n\'arrive pas à y croire.').replace(/le\(la\)/g, s.look && s.look.female ? 'la' : 'le').replace(/Il\(elle\)/g, s.look && s.look.female ? 'Elle' : 'Il').replace(/\(e\)/g, s.look && s.look.female ? 'e' : ''));
+    });
     if (cause === 'parti') {
       G().moralAll(-8, { key: 'left', vars: { n: n } });
     } else {
@@ -235,6 +253,7 @@
       report.push({ t: n + ' traîne des pieds sans son café.', k: 'bad' });
     }
     if (s.moral < 15) s.brokenDays++; else s.brokenDays = 0;
+    if (s.hunger < 60) s.bioStarve = false;
     // Bonne humeur contagieuse
     if (Surv.thriving(s)) {
       var others = G().present().filter(function (b) { return b !== s && b.alive; });
@@ -245,6 +264,7 @@
       }
     }
     if (s.hunger >= 100) {
+      if (!s.bioStarve) { s.bioStarve = true; Surv.bio(s, 'La faim me tord le ventre. Je n\'ai presque plus la force de marcher.'); }
       report.push({ t: n + ' meurt de faim. Sans nourriture aujourd\'hui, ' + (s.look && s.look.female ? 'elle' : 'il') + ' ne passera pas la nuit.', k: 'bad' });
     }
   };

@@ -13,7 +13,8 @@
 
   var TRAIT_ICON = {
     cuisinier: 'hunger', negociateur: 'trade', rapide: 'ff', grand_sac: 'pack', bricoleur: 'hammer', combattant: 'shield',
-    soigneur: 'health', empathique: 'moral', fumeur: 'c_confort', cafeinomane: 'c_confort', lecteur: 'journal', endurant: 'star', cynique: 'skull'
+    soigneur: 'health', empathique: 'moral', fumeur: 'c_confort', cafeinomane: 'c_confort', lecteur: 'journal', endurant: 'star', cynique: 'skull',
+    discret: 'moon', costaud: 'pack', lent: 'clock', fragile: 'sick', econome: 'wrench'
   };
   UI.traitBadge = function (t) {
     return '<span class="trait" title="' + U.esc(C.TRAITS[t].desc) + '">' + I(TRAIT_ICON[t] || 'star') + C.TRAITS[t].name + '</span>';
@@ -73,6 +74,8 @@
       '<div class="bio-mood"><b>' + (s.alive ? C.Surv.moralLabel(s) : 'Hors du refuge') + '</b>' + states + '</div>' +
       '<h3>' + I('star') + 'Traits</h3><div class="traits">' + s.traits.map(UI.traitBadge).join('') + '</div>' +
       '<div style="margin-top:10px">' + s.traits.map(function (t) { return '<div class="bio-trait"><b>' + C.TRAITS[t].name + '.</b> ' + C.TRAITS[t].desc + '</div>'; }).join('') + '</div>' +
+      '<h3>' + I('journal') + 'Son histoire</h3>' +
+      '<div class="bio-story">' + ((s.story || []).slice().reverse().map(function (x) { return '<div class="bs"><span>Jour ' + x.d + '</span>' + U.esc(x.t) + '</div>'; }).join('') || '<div class="bs">Rien encore.</div>') + '</div>' +
       '<h3>' + I('journal') + 'Pensées</h3>';
     var th = U.el('div', 'thoughts');
     var list = (s.thoughts || []).slice().reverse();
@@ -113,16 +116,17 @@
       var el = U.el('div', 'recipe' + (locked ? ' locked' : ''));
       var desc = r.build ? C.BUILDINGS[r.build].desc : r.upgradeWB ? 'Débloque de nouvelles recettes.' : C.ITEMS[Object.keys(r.give)[0]].desc;
       var owned = r.build ? G().countBuilt(r.build) + G().st.pending.filter(function (x) { return x === r.build; }).length : null;
-      var cost = Object.keys(r.cost).map(function (k) {
-        var ok = G().count(k) >= r.cost[k];
-        return '<span class="chip ' + (ok ? 'ok' : 'ko') + '">' + C.ItemArt.img(k, 22) + r.cost[k] + ' ' + C.ItemArt.shortName(k) + ' <small>(' + G().count(k) + ')</small></span>';
+      var rc = C.craftCost(r, s);
+      var cost = Object.keys(rc).map(function (k) {
+        var ok = G().count(k) >= rc[k];
+        return '<span class="chip ' + (ok ? 'ok' : 'ko') + '">' + C.ItemArt.img(k, 22) + rc[k] + (rc[k] < r.cost[k] ? '<s>' + r.cost[k] + '</s>' : '') + ' ' + C.ItemArt.shortName(k) + ' <small>(' + G().count(k) + ')</small></span>';
       }).join('');
       var time = r.time * (s && G().hasTrait(s, 'bricoleur') ? 0.65 : 1);
       var art = r.give ? C.ItemArt.img(Object.keys(r.give)[0], 56) : C.ItemArt.buildingImg(r.build || 'workbench', 56);
       el.innerHTML = '<div class="recipe-top"><span class="inv-art' + (r.give ? '' : ' bld') + '">' + art + '</span><h4>' + C.craftName(r) + (owned ? ' <small>· ' + owned + ' déjà</small>' : '') + '</h4></div><div class="rdesc">' + desc + '</div><div class="rcost">' + cost + '</div>' +
         '<div class="rfoot"><span class="rtime">' + (locked ? I('alert') + 'Établi niveau ' + r.lvl + ' requis' : I('clock') + U.fmtDur(time)) + '</span></div>';
       var btn = U.el('button', 'btn small', 'Fabriquer');
-      btn.disabled = locked || !G().has(r.cost);
+      btn.disabled = locked || !G().has(rc);
       btn.addEventListener('click', function () {
         var who2 = G().surv(sel.value);
         if (!who2) return;
@@ -339,6 +343,7 @@
         var res = c.run(ctx);
         finishVisitor();
         if (res) { G().log(res, 'info'); UI.dialog(def.title, '<p class="dialog-text quote">' + res + '</p>', [{ label: 'Continuer' }]); }
+        if (!c.trade) { var cl = String(typeof c.label === 'function' ? c.label(ctx) : c.label); C.Surv.bio(s, 'On a frappé à la porte : ' + def.title.charAt(0).toLowerCase() + def.title.slice(1) + '. Nous avons choisi : ' + cl.charAt(0).toLowerCase() + cl.slice(1) + '.'); }
       });
       ch.appendChild(b);
     });

@@ -209,7 +209,7 @@
         if (o.level < r.lvl) return 'Établi niveau ' + r.lvl + ' requis.';
         if (r.upgradeWB && o.level !== r.upgradeWB - 1) return 'Déjà amélioré.';
       },
-      cost: function (s, o, p) { return findCraft(p.rid).cost; },
+      cost: function (s, o, p) { return C.craftCost(findCraft(p.rid), s); },
       dur: function (s, o, p) { return findCraft(p.rid).time * (G().hasTrait(s, 'bricoleur') ? 0.65 : 1); },
       label2: function (s, o, p) { return C.craftName(findCraft(p.rid)); },
       done: function (s, o, p) {

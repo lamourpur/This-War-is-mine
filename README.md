@@ -31,6 +31,12 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
 - **Survivants désœuvrés** : après un quart d'heure sans rien faire, un survivant s'occupe tout seul. Épuisé, il va dormir, dans un lit libre ou sinon par terre. Fatigué ou abattu, il s'installe dans le fauteuil s'il est libre. Sinon, il s'assoit par terre, s'adosse au mur ou fait quelques pas. Tout ordre du joueur passe avant.
 - **Besoins comblés** : les fiches montrent aussi ce qui va bien (« A bien mangé », « Bien reposé(e) », « Serein(e) »). Quand un survivant a tous ses besoins comblés (rassasié, reposé, ni blessé ni malade, bon moral), il est **en pleine forme**, avec une étiquette ★ « En pleine forme », « A la pêche », « Le cœur léger »… Il travaille alors 15 % plus vite et marche un peu plus vite. Chaque matin, sa bonne humeur remonte le moral des autres (+3), et il le dit.
 - **À installer** : quand plusieurs constructions attendent d'être posées, le bouton ouvre leur liste (avec le nombre d'exemplaires et un emplacement libre ou non), et l'on choisit laquelle installer.
+- **12 survivants possibles**, dont 4 nouveaux inspirés du jeu d'origine :
+  - **Jade Morgan**, cambrioleuse repentie : *discrète*, deux fois moins de bruit, repérée moins vite ;
+  - **Ben Mercer**, déménageur : *costaud*, +3 cases de sac et frappe plus fort, mais *lent* ;
+  - **Leonard Price**, vieux professeur : *santé fragile*, se fatigue et tombe malade plus facilement, mais *grand lecteur* ;
+  - **Owen Fletcher**, mécanicien : *économe*, fabrique avec un quart de matériaux en moins.
+- **Biographies qui se remplissent** : dans le dossier de chaque survivant, « Son histoire » raconte à la première personne ce qu'il a vécu, jour après jour : l'arrivée, ses nuits dehors, les morts, les visites, les raids repoussés, la faim, le moral brisé puis retrouvé, ceux qu'il a tués.
 - **Personnages** : silhouettes articulées dessinées au crayon (marche, posture selon le moral et la fatigue, toux quand ils sont malades), vêtements et accessoires propres à chacun, et outils en main selon l'action.
 - **Refuge** : gravats à déblayer, meubles à fouiller ou à démonter, portes à forcer, grille à scier, trous à barricader. Les zones inaccessibles restent dans l'ombre.
 - **Établi (3 niveaux)** : outils (pelle, pied-de-biche, passe-partout, scie, hachette, couteau), munitions, filtres. Stations : lit, poêle, chauffage, collecteur d'eau de pluie, piège à rats, fauteuil, potager, jardin d'herbes, distillerie, atelier d'herbes, radio.

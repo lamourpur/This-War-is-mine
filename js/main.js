@@ -83,6 +83,7 @@
   Main.startNew = function (ids) {
     C.Menus.close();
     G().newGame(ids);
+    G().st.survivors.forEach(function (s) { C.Surv.bio(s, 'La guerre m\'a pris ma maison. Nous nous sommes réfugiés dans cette bâtisse éventrée. Je ne connais pas vraiment les autres. Il faudra apprendre à se faire confiance.'); });
     enterGame();
     Main.setSpeed(0);
     C.Menus.intro();

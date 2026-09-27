@@ -445,7 +445,7 @@
       if (s.path.length && s.run) r = 230;
       var a = s.act;
       if (a && a.phase === 'work') r = Math.max(r, K.WORK_NOISE[a.kind === 'unlock' && a.p && a.p.tool === 'passe_partout' ? 'pick' : a.kind] || 0);
-      if (r) K.noise(s.f, s.x, r, 'work');
+      if (r) K.noise(s.f, s.x, r * (G().hasTrait(s, 'discret') ? 0.5 : 1), 'work');
     }
     if (!s.path.length) s.run = false;
     // Caché uniquement en restant dans le recoin
@@ -567,7 +567,7 @@
         }
         if (sees) {
           var close = 1 - dist / T.sight;
-          g.susp += T.sniper ? rs * 0.9 : rs * (0.45 + close * 1.6) * (s.run ? 1.6 : 1) * (g.attitude === 'hostile' ? 1.3 : 0.9);
+          g.susp += T.sniper ? rs * 0.9 : rs * (0.45 + close * 1.6) * (s.run ? 1.6 : 1) * (g.attitude === 'hostile' ? 1.3 : 0.9) * (G().hasTrait(s, 'discret') ? 0.7 : 1);
           if (g.susp > 0.3 && !g.saidSus) { g.saidSus = true; sayG(g, 'suspect'); }
           if (g.susp >= 1) { spotted(g, s); return; }
           if (g.attitude === 'hostile' && g.susp > 0.5) { g.path = []; g.facing = s.x >= g.x ? 1 : -1; }
@@ -719,7 +719,7 @@
       K.noise(s.f, s.x, 240, 'fight');
       var hitP = 0.72 + (G().hasTrait(s, 'combattant') ? 0.15 : 0) - (s.wound >= 60 ? 0.2 : 0) - (s.fatigue >= 80 ? 0.1 : 0);
       if (chance(hitP)) {
-        var dmg = rand(def.dmg[0], def.dmg[1]) * (G().hasTrait(s, 'combattant') ? 1.25 : 1);
+        var dmg = rand(def.dmg[0], def.dmg[1]) * (G().hasTrait(s, 'combattant') ? 1.25 : 1) * (G().hasTrait(s, 'costaud') ? 1.2 : 1);
         K.hurtGuard(g, dmg, s, 'melee');
       } else if (C.Render.pop) C.Render.pop(s, [], 'Raté', null);
       if (g.dead || g.state === 'flee') C.Actions.cancel(s);
@@ -947,6 +947,8 @@
       }
       notes.push({ t: txt, k: 'bad' });
       G().st.stats.killed++;
+      var who = k.who || ('un ' + k.name.toLowerCase());
+      C.Surv.bio(s, { surrender: 'J\'ai tué ' + who + ' qui s\'était rendu. Il suppliait. Je n\'arrive pas à me le pardonner.', asleep: 'J\'ai tué ' + who + ' pendant son sommeil. Il n\'a jamais su ce qui lui arrivait.', villain: 'J\'ai tué ' + who + '. Il le méritait. Je crois.', unprovoked: 'J\'ai tué ' + who + '. Il ne m\'avait rien fait.' }[k.kind] || 'J\'ai tué ' + who + '. C\'était lui ou moi.');
       effects.push(function () {
         s.moral = Math.max(0, s.moral - (G().hasTrait(s, 'cynique') ? self * 0.3 : self));
         C.Mood.think(s, 'killed_self');

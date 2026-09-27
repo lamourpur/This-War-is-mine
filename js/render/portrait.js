@@ -37,7 +37,11 @@
       beard: 'stubble', clothes: 'work', cloth: '#3f4843', build: 1.32, neck: 1.35, turn: 0.1 },
     // Eleanor Hayes — institutrice retraitée, 61 ans : chignon gris, lunettes rondes, rides, perles
     mira: { skin: '#dcc1ab', hair: '#bcb4a8', hairStyle: 'bun', fw: 33, fh: 46, jaw: 0.76, eye: 0.95, iris: '#5b6b79', brow: 1.7, nose: 'straight', lips: 0.85, age: 0.88,
-      glasses: true, clothes: 'cardigan', cloth: '#6a5f5b', scarf: '#7d6064', earrings: true, turn: 0.12 }
+      glasses: true, clothes: 'cardigan', cloth: '#6a5f5b', scarf: '#7d6064', earrings: true, turn: 0.12 },
+    jade: { skin: '#d4b89e', hair: '#2a1f18', hairStyle: 'long', fw: 32, fh: 46, jaw: 0.74, eye: 1.0, iris: '#4a3a2e', brow: 1.8, nose: 'small', lips: 1.0, age: 0.25, clothes: 'hoodie', cloth: '#3a3a3c', turn: 0.14 },
+    ben: { skin: '#c0a088', hair: '#1d1915', hairStyle: 'short', fw: 41, fh: 49, jaw: 1.05, eye: 0.82, iris: '#3b3226', brow: 3.0, nose: 'broken', lips: 0.85, age: 0.5, beard: 'stubble', clothes: 'work', cloth: '#4a4640', turn: 0.12 },
+    leonard: { skin: '#d6c2b0', hair: '#9a948a', hairStyle: 'buzz', fw: 35, fh: 48, jaw: 0.86, eye: 0.84, iris: '#5b6b79', brow: 1.8, nose: 'long', lips: 0.8, age: 0.95, glasses: true, clothes: 'cardigan', cloth: '#57524a', turn: 0.12 },
+    owen: { skin: '#c4a58a', hair: '#2a2420', hairStyle: 'short', fw: 37, fh: 48, jaw: 0.95, eye: 0.86, iris: '#4a5a4a', brow: 2.6, nose: 'straight', lips: 0.9, age: 0.45, beard: 'light', clothes: 'work', cloth: '#4a4d4a', turn: 0.14 }
   };
 
   // ------------------------------------------------------------ outils de dessin

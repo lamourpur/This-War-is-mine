@@ -35,6 +35,10 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - Tolérance : types `tolerant` (pilleur, squatteur) : traverser leur zone ne fait qu'avertir ; ils n'attaquent que si l'on s'y attarde (arrêté ou en train de fouiller), qu'on les frôle ou qu'on les vole. Textes du carnet selon `Combat.catOf(g)` (`mil` / `bandit` / `civ` / `sniper`), `nounOf`, `whoOf` (« Ray », « un soldat ») ; corps : `label` « Corps de Ray ».
 - Types armés supplémentaires (`maps_ville.js`) : `bandit` (couteau, `mdmg`), `bandit_arme` (pistolet), `pilleur` (neutre, zone « chasse gardée », `name` propre sur l'objet), `tireur` (`sniper`/`fixed`/`unseen` : ne voit que les zones `exposed` du plan, ne bouge pas, invisible). Contenants gardés : `owner: 'bande'` (comme l'armée) ou `'pilleur'`.
 
+## Survivants
+- 12 dans `C.SURVIVOR_POOL` (+ fiche de portrait `SPEC` dans `portrait.js` et photo `assets/portraits/<id>.jpg`). Traits récents : `discret` (bruit ×0,5, repéré moins vite), `costaud` (+3 cases, coups ×1,2), `lent` (vitesse ×0,84), `fragile` (fatigue ×1,2, froid ×1,35), `econome` (`C.craftCost(r, s)`).
+- Biographie : `C.Surv.bio(s, texte)` → `s.story` (affichée dans le dossier) ; `(e)` accordé au genre.
+
 ## Histoires
 `js/data/stories.js` : les étapes sont des visiteurs (`C.VISITORS`). Le début porte `once: '<id>'` et `canAppear`, les étapes suivantes `story: true` (jamais tirées au hasard). `C.Story.next(st, step, jours)` programme la suite, `C.Story.news(st, jours, texte, moral, clé)` annonce une nouvelle au matin, et `onMissed(st)` se déclenche si personne n'ouvre. État dans `st.story` / `st.storyQueue`.
 

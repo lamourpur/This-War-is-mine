@@ -118,8 +118,10 @@
       choices: [
         { label: 'L\'accueillir', run: function (ctx) {
             var d = C.survivorDef(ctx.v.data.recruit);
-            G().addSurvivor(d.id);
+            var ns = G().addSurvivor(d.id);
             G().moralAll(5, { good: true, key: 'accepted' });
+            var nw = ns || G().st.survivors.filter(function (x) { return (x.defId || x.id) === d.id; })[0];
+            if (nw) C.Surv.bio(nw, 'J\'ai frappé à leur porte, sans rien. Ils m\'ont ouvert. Je ne l\'oublierai pas.');
             return d.name + ' pose son maigre baluchon dans un coin. Le refuge compte une personne de plus.';
           } },
         { label: 'Refuser', run: function () {

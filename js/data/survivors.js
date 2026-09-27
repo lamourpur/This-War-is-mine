@@ -17,7 +17,12 @@
     cafeinomane: { name: 'Accro au café',    desc: 'Perd du moral sans café pendant deux jours.' },
     lecteur:     { name: 'Grand lecteur',    desc: 'La lecture lui remonte énormément le moral.' },
     endurant:    { name: 'Endurant',         desc: 'Se fatigue moins vite et résiste mieux au froid.' },
-    cynique:     { name: 'Cynique',          desc: 'Les actes discutables le touchent peu… les bonnes actions aussi.' }
+    cynique:     { name: 'Cynique',          desc: 'Les actes discutables le touchent peu… les bonnes actions aussi.' },
+    discret:     { name: 'Discrète',         desc: 'Fait deux fois moins de bruit en exploration ; on la repère moins vite.' },
+    costaud:     { name: 'Costaud',          desc: 'Porte davantage (+3 cases de sac) et frappe plus fort.' },
+    lent:        { name: 'Lent',             desc: 'Se déplace nettement moins vite.' },
+    fragile:     { name: 'Santé fragile',    desc: 'Se fatigue plus vite et tombe plus facilement malade avec le froid.' },
+    econome:     { name: 'Économe',          desc: 'Fabrique en utilisant moins de matériaux.' }
   };
 
   // look : paramètres du dessin (silhouette)
@@ -53,8 +58,32 @@
     { id: 'mira', name: 'Eleanor Hayes', age: 61, job: 'Institutrice à la retraite',
       bio: 'Elle a appris à lire à la moitié du quartier. Elle garde un livre dans chaque poche et un mot gentil pour chacun.',
       traits: ['empathique', 'lecteur'],
-      look: { hair: 'shoulder', hat: null, build: 0.94, h: 0.89, coat: '#5b554c', pants: '#34312d', coatLen: 0.22, scarf: '#6e5a5a', hairColor: '#5c4333', skin: '#b4a89b', smile: true, brow: 'thin', lips: true, female: true, top: 'cardigan', shirt: '#8c8478' } }
+      look: { hair: 'shoulder', hat: null, build: 0.94, h: 0.89, coat: '#5b554c', pants: '#34312d', coatLen: 0.22, scarf: '#6e5a5a', hairColor: '#5c4333', skin: '#b4a89b', smile: true, brow: 'thin', lips: true, female: true, top: 'cardigan', shirt: '#8c8478' } },
+    { id: 'jade', name: 'Jade Morgan', age: 29, job: 'Cambrioleuse repentie',
+      bio: 'Elle ouvrait les appartements des beaux quartiers sans laisser de trace. Deux ans de prison, puis la guerre. Elle marche sans faire de bruit, par habitude.',
+      traits: ['discret', 'fumeur'],
+      look: { hair: 'long', hat: null, build: 0.82, h: 0.95, coat: '#3a3a3c', pants: '#27282a', coatLen: 0.05, hairColor: '#2a1f18', skin: '#b8a490', nose: 'small', brow: 'thin', lips: true, female: true, top: 'hoodie', shirt: '#55534e' } },
+    { id: 'ben', name: 'Ben Mercer', age: 47, job: 'Déménageur',
+      bio: 'Vingt ans à monter des pianos dans les escaliers. Il porte ce que deux hommes ne soulèvent pas, mais il n\'a jamais su se presser.',
+      traits: ['costaud', 'lent'],
+      look: { hair: 'short', hat: null, build: 1.32, h: 1.07, coat: '#4a4640', pants: '#2c2b28', coatLen: 0.04, beard: 'stubble', hairColor: '#1d1915', skin: '#a08b77', brow: 'heavy', nose: 'broken', top: 'work', shirt: '#5e584e' } },
+    { id: 'leonard', name: 'Leonard Price', age: 66, job: 'Professeur de mathématiques',
+      bio: 'Quarante ans de tableau noir au lycée du quartier. Il a le cœur fragile et les mains qui tremblent, mais personne ne raconte mieux une histoire le soir.',
+      traits: ['fragile', 'lecteur'],
+      look: { hair: 'buzz', hat: null, build: 0.9, h: 0.96, coat: '#57524a', pants: '#33302c', coatLen: 0.25, hairColor: '#9a948a', skin: '#c2ae9c', brow: 'thin', glasses: true, top: 'cardigan', shirt: '#8a8276' } },
+    { id: 'owen', name: 'Owen Fletcher', age: 44, job: 'Mécanicien',
+      bio: 'Il tenait un petit garage au bord du fleuve. Il ne jette jamais rien : une vis, un bout de fil, tout finit par servir.',
+      traits: ['econome', 'cafeinomane'],
+      look: { hair: 'short', hat: null, build: 1.05, h: 1.0, coat: '#4a4d4a', pants: '#2a2c2e', coatLen: 0.02, hairColor: '#2a2420', skin: '#a8927c', brow: 'heavy', top: 'work', shirt: '#5a5c56' } }
   ];
+
+  // Coût d'une recette pour ce survivant (économe : un quart de matériaux en moins)
+  C.craftCost = function (r, s) {
+    if (!s || !C.Game.hasTrait(s, 'econome')) return r.cost;
+    var c = {};
+    for (var k in r.cost) c[k] = r.cost[k] > 1 ? Math.max(1, Math.floor(r.cost[k] * 0.75)) : r.cost[k];
+    return c;
+  };
 
   C.survivorDef = function (id) {
     for (var i = 0; i < C.SURVIVOR_POOL.length; i++) if (C.SURVIVOR_POOL[i].id === id) return C.SURVIVOR_POOL[i];

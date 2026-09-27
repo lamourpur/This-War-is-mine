@@ -104,7 +104,7 @@
         s.moral = Math.max(0, s.moral - 3);
         if (Math.random() < 0.5) M.think(s, 'say_grief', { n: s.griefFor });
       }
-      if (s.moral >= 35 && s.wasBroken) { s.wasBroken = false; M.think(s, 'recovered'); }
+      if (s.moral >= 35 && s.wasBroken) { s.wasBroken = false; M.think(s, 'recovered'); C.Surv.bio(s, 'Le pire est passé. Je recommence à dormir la nuit.'); }
     });
 
     // Conséquences d'un moral brisé
@@ -114,6 +114,7 @@
       var n = first(s);
       if (s.brokenDays <= 1) {
         M.think(s, 'broken');
+        C.Surv.bio(s, 'Je n\'en peux plus. Je ne sais plus pourquoi je me lève le matin.');
         report.push({ t: n + ' est brisé(e). Sans soutien — une conversation, du réconfort —, ' + n + ' pourrait ne pas tenir.', k: 'bad' });
         return;
       }
