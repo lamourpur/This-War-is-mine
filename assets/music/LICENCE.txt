@@ -1,0 +1,16 @@
+Musique — Freesound (https://freesound.org), licence CC0 1.0
+(domaine public, aucune attribution requise). Fichiers = aperçus MP3.
+Page d'origine : https://freesound.org/s/<numéro>/
+
+jour_piano.mp3     623426  Melancholic piano music (ZHRØ)            — jour
+jour_balkans.mp3   669489  Piano Improv. ethnic balkans (EKVelika)   — jour
+hiver_cordes.mp3   839571  Contemplative String Loop (CVLTIV8R)      — hiver
+hiver_cordes2.mp3  414442  Sweeping Sad Strings (BuytheField)        — hiver
+soir_guitare.mp3   467936  sad_melody, guitare (sofialomba)          — soir
+soir_guitare2.mp3  571269  On the edge, guitare (geeen)              — soir
+nuit_drone.mp3     865550  Dark Atmospheric Drone (kkenny101)        — exploration
+nuit_pad.mp3       244196  Dark ambient drone sound (martinbeltov)   — exploration
+theme_guerre.mp3   507206  Sad War Music 01 (Magmi.Soundtracks)      — menu, fin de partie
+
+Lecture : js/core/audio.js (A.setMood, choisi dans main.js selon le moment).
+Si les fichiers manquent, le piano synthétique d'origine est joué.

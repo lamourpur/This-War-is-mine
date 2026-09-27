@@ -59,6 +59,7 @@
   UI.openNight = function () {
     var st = G().st;
     C.Main.setSpeed(0);
+    if (UI.hint) setTimeout(function () { UI.hint('dusk'); }, 600);
     var present = G().present();
     var plan = { explicitBeds: true, roles: {}, scav: { loc: null, stance: 'normal', prio: 'equilibre', equip: [], ammo: 0, bag: {} } };
     // Les lits vont d'abord aux plus fatigués (on peut changer)

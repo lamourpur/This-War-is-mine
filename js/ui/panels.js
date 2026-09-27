@@ -281,32 +281,11 @@
     }
     check('Grain de pellicule', 'grain', true);
     check('Pause quand on frappe', 'autoPauseVisitor', false);
+    check('Conseils de première fois', 'hints', false);
     UI.modal(p);
   };
 
-  // ------------------------------------------------ aide
-  UI.openHelp = function () {
-    var p = UI.panel('Comment survivre', 'Le manuel du refuge', { dark: true, wide: true });
-    p.body.innerHTML = '<div class="help-grid">' +
-      '<h3>' + I('user') + 'Contrôles</h3>' +
-      '<div><b>Clic</b> sur un survivant ou son dossier : le sélectionner.</div><div><b>Clic</b> sur un objet : ce que le survivant sélectionné peut faire.</div>' +
-      '<div><b>Clic</b> sur le sol : déplacer le survivant. <b>Clic droit</b> : fermer / annuler.</div><div><b>Clic sur un autre survivant</b> : lui parler, le réconforter, le soigner.</div>' +
-      '<div><kbd>Espace</kbd> pause · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> vitesses</div><div><kbd>Tab</kbd> survivant suivant · <kbd>I</kbd> réserve · <kbd>J</kbd> journal · <kbd>Échap</kbd> menu</div>' +
-      '<h3>' + I('sun') + 'Le jour</h3>' +
-      '<div>De 6 h à 20 h, personne ne sort : on fouille, on déblaie, on fabrique, on cuisine, on se repose.</div><div>Gravats et portes fermées cachent des pièces entières : ressources et place pour construire.</div>' +
-      '<div>L\'<b>établi</b> fabrique outils et meubles. Une construction terminée doit ensuite être <b>installée</b>.</div><div>Le bouton <b>Besoins</b> d\'un dossier : manger, se soigner, boire un café, fumer…</div>' +
-      '<h3>' + I('moral') + 'Le moral</h3>' +
-      '<div>Chaque survivant a ses <b>pensées</b> (bouton <b>Fiche</b>) : elles racontent comment il vit ce que fait le groupe.</div><div>Le confort du refuge (lits, fauteuil, radio, poêle, trous bouchés, chauffage l\'hiver) joue chaque jour sur le moral.</div>' +
-      '<div>Un survivant <b>déprimé</b> travaille mal et refuse parfois. <b>Brisé</b>, il refuse tout et, sans réconfort, peut partir… ou ne pas tenir.</div><div>Les morts laissent les autres <b>en deuil</b>. Les survivants cyniques sont moins touchés par les actes discutables.</div>' +
-      '<h3>' + I('moon') + 'La nuit</h3>' +
-      '<div>À 20 h, chacun dort, monte la garde ou part piller (un seul par nuit).</div><div>Un lit repose mieux que le sol. Gardes, armes, trous barricadés et porte renforcée protègent des raids.</div>' +
-      '<div>Le pillage rapporte de quoi survivre, mais les lieux dangereux blessent… ou tuent. Voler des civils pèse lourd.</div><div>Un pied-de-biche, un passe-partout ou une scie ouvrent les réserves verrouillées.</div>' +
-      '<h3>' + I('health') + 'Survivre</h3>' +
-      '<div><b>Faim</b> : mangez chaque jour, les repas chauds nourrissent le mieux. <b>Fatigue</b> : dormez, sinon tout ralentit.</div><div><b>Santé</b> : bandages pour les blessures, médicaments pour la maladie. Le froid rend malade.</div>' +
-      '<div><b>Hiver</b> : il arrive vers le milieu de la guerre. Chauffage, bois en réserve, trous bouchés.</div><div><b>But</b> : tenir jusqu\'au cessez-le-feu. Personne ne sait quand il viendra.</div>' +
-      '</div>';
-    UI.modal(p);
-  };
+  // ------------------------------------------------ aide : js/ui/help.js
 
   // ------------------------------------------------ visiteurs
   UI.openVisitor = function (s) {

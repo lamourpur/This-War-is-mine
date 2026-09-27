@@ -1,7 +1,7 @@
 /* =========================================================
    Audio entièrement synthétisé (Web Audio) — aucun fichier
    Ambiance : vent, pluie, tirs et obus lointains
-   Musique  : piano mélancolique génératif
+   Musique  : morceaux CC0 selon le moment (assets/music), piano génératif en secours
    Effets   : clics, coups à la porte, outils, cuisine…
    ========================================================= */
 (function (C) {
@@ -381,7 +381,8 @@
       }
     }
     // Musique
-    if (A.musicOn) {
+    stepMusic(dt);
+    if (A.musicOn && synthMusicWanted() && !(M.duck > 0.5)) {
       if (now >= A.nextNote) {
         if (Math.random() < 0.28) {
           chordIdx = (chordIdx + (Math.random() < 0.6 ? 1 : 0)) % CHORDS.length;
@@ -410,6 +411,77 @@
     A.musicOn = on;
     if (on && A.ready) A.nextNote = A.ctx.currentTime + 0.5;
   };
+
+  // ============================================================ musique enregistrée
+  // Morceaux CC0 (Freesound) dans assets/music, choisis selon le moment,
+  // comme dans le jeu d'origine : piano le jour, guitare le soir, cordes en
+  // hiver, nappes sombres pendant l'exploration. Un morceau, puis un silence,
+  // puis un autre. Joués par des éléments <audio> (marche aussi en file://).
+  // Tant qu'aucun morceau n'est prêt, le piano synthétique prend le relais.
+  var MOODS = {
+    menu: ['theme_guerre'],
+    day: ['jour_piano', 'jour_balkans'],
+    winter: ['hiver_cordes', 'hiver_cordes2', 'jour_piano'],
+    evening: ['soir_guitare', 'soir_guitare2'],
+    explore: ['nuit_drone', 'nuit_pad'],
+    sad: ['theme_guerre']
+  };
+  var M = A.music = { mood: null, el: null, name: null, vol: 0, gap: 0, ok: {}, failed: {}, last: {}, duck: 0 };
+  function musicUrl(n) { return 'assets/music/' + n + '.mp3'; }
+  function pickTrack(mood) {
+    var list = (MOODS[mood] || []).filter(function (n) { return !M.failed[n]; });
+    if (!list.length) return null;
+    var fresh = list.filter(function (n) { return n !== M.last[mood]; });
+    var n = (fresh.length ? fresh : list)[Math.floor(Math.random() * (fresh.length ? fresh : list).length)];
+    M.last[mood] = n;
+    return n;
+  }
+  function startTrack(n) {
+    var el = new Audio(musicUrl(n));
+    el.preload = 'auto'; el.volume = 0;
+    el.addEventListener('error', function () { M.failed[n] = true; if (M.el === el) { M.el = null; M.gap = 0.5; } });
+    el.addEventListener('ended', function () { if (M.el === el) { M.el = null; M.gap = 25 + Math.random() * 45; } });
+    el.addEventListener('playing', function () { M.ok[n] = true; });
+    var p = el.play();
+    if (p && p.catch) p.catch(function () { if (M.el === el) { M.el = null; M.gap = 2; } });
+    M.el = el; M.name = n; M.vol = 0;
+  }
+  // Moment actuel : menu, day, winter, evening, explore, sad ; null = silence
+  A.setMood = function (mood) {
+    if (mood === M.mood) return;
+    var prev = M.mood;
+    M.mood = mood;
+    if (M.el) { M.fading = M.el; M.fadeVol = M.el.volume; M.el = null; }
+    // Au changement de moment, la musique suivante vient vite ; après un
+    // silence voulu (null), on laisse respirer un peu.
+    M.gap = prev == null ? 1.5 : 3;
+  };
+  // Baisse le volume (guitare jouée au refuge, radio…) : 0..1
+  A.duckMusic = function (k) { M.duck = k; };
+  A.musicPlaying = function () { return !!(M.el && M.ok[M.name]); };
+  function stepMusic(dt) {
+    var want = A.musicOn ? A.vol.master * A.vol.music * 0.8 * (1 - M.duck) : 0;
+    if (M.fading) {
+      M.fadeVol -= dt * 0.35;
+      if (M.fadeVol <= 0) { M.fading.pause(); M.fading = null; } else M.fading.volume = Math.max(0, Math.min(1, M.fadeVol));
+    }
+    if (M.el) {
+      // Fondu d'entrée lent, fondu de sortie sur les 4 dernières secondes
+      var d = M.el.duration, left = d && isFinite(d) ? d - M.el.currentTime : 99;
+      var target = want * Math.max(0, Math.min(1, left / 4));
+      M.vol += (target - M.vol) * Math.min(1, dt * (target > M.vol ? 0.5 : 2));
+      M.el.volume = Math.max(0, Math.min(1, M.vol));
+    } else if (A.musicOn && M.mood && !(MOODS[M.mood] || []).every(function (n) { return M.failed[n]; })) {
+      M.gap -= dt;
+      if (M.gap <= 0) { var n = pickTrack(M.mood); if (n) startTrack(n); M.gap = 5; }
+    }
+  }
+  // Le piano synthétique ne joue que si aucun morceau n'a pu être lu
+  function synthMusicWanted() {
+    if (!M.mood) return !Object.keys(M.ok).length && A.musicOn;
+    var list = MOODS[M.mood] || [];
+    return list.length && list.every(function (n) { return M.failed[n]; });
+  }
 
   C.Audio = A;
 })(window.CQR);

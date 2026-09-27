@@ -45,6 +45,7 @@
     var nego = G().hasTrait(s, 'negociateur');
     var likes = opts.likes || {};
     var who = opts.name || 'Le marchand';
+    if (C.UI.hint) setTimeout(function () { C.UI.hint('trade'); }, 400);
     var mine = {}, theirs = {};
     // Ce que le marchand recherche, il le paie plus cher
     function buyP(id, n2) { return Math.max(1, Math.round(Trade.buyPrice(id, n2) * (likes[id] || 1))); }

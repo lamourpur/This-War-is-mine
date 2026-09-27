@@ -215,6 +215,7 @@
       }
       if (!st.visitor) visitorSeen = false;
       C.UI.tick(dt);
+      if (C.UI.hintTick) C.UI.hintTick(dt);
     } else if (Main.mode === 'menu' && st) {
       st.survivors.forEach(function (s) { s.anim += dt; });
     }
@@ -223,6 +224,7 @@
     // Guitare : on la prend (ou la repose) → le décor change
     var guitarOn = !!(inGame && st.phase !== 'explore' && st.survivors.some(function (s) { return s.alive && s.act && s.act.kind === 'guitar' && s.act.phase === 'work'; }));
     if (guitarOn !== !!Main.guitarOn) { Main.guitarOn = guitarOn; if (inGame) C.Game.markDirty(); }
+    musicMood(inGame ? st : null, guitarOn);
     C.Audio.update(dt, {
       guitar: guitarOn,
       fire: inGame && st.objects.some(function (o) { return o.kind === 'heater' && o.fuel > 0; }),
@@ -230,6 +232,22 @@
       war: true, onShell: function () { if (C.Render.shellGlow) C.Render.shellGlow(); if (Math.random() < 0.6) C.Render.shake(2 + Math.random() * 4); } });
     C.Render.frame(dt, t);
     requestAnimationFrame(loop);
+  }
+
+  // Musique selon le moment : menu, jour (cordes en hiver), soir, exploration.
+  // La guitare jouée au refuge couvre la musique ; la radio la baisse.
+  function musicMood(st, guitarOn) {
+    var A = C.Audio, mood = 'menu';
+    if (!A.setMood) return;
+    if (st) {
+      if (st.phase === 'over') mood = 'sad';
+      else if (st.phase === 'explore') mood = 'explore';
+      else if (st.phase === 'night' || st.phase === 'dusk' || st.minute >= 18 * 60) mood = 'evening';
+      else mood = C.World.isWinter(st) ? 'winter' : 'day';
+    } else if (Main.mode === 'game') mood = null;
+    A.setMood(mood);
+    var radio = st && st.phase !== 'explore' && st.survivors.some(function (s) { return s.alive && s.act && s.act.kind === 'music' && s.act.phase === 'work'; });
+    A.duckMusic(guitarOn ? 1 : radio ? 0.6 : 0);
   }
 
   var WORK_SOUND = { clear: 'dig', dismantle: 'saw', cut: 'saw', board: 'hammer', doorup: 'hammer', search: 'search', unlock: 'search', cook: 'cook', read: 'page' };

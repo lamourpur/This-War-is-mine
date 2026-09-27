@@ -18,16 +18,16 @@
   <div id="hud" class="hidden">
     <!-- Bandeau d'état (rempli par ui.js) -->
     <div id="topbar">
-      <div class="tb-day"><span class="tb-k">Jour</span><span id="tb-day">1</span></div>
+      <div class="tb-day" title="Jour de siège — Personne ne sait quand viendra le cessez-le-feu."><span class="tb-k">Jour</span><span id="tb-day">1</span></div>
       <div class="tb-clock">
-        <div class="tb-time"><span id="tb-clock">06:00</span><span id="tb-phase" class="tb-k">Matin</span></div>
+        <div class="tb-time" title="Heure — La journée va de 6 h à 20 h. À 20 h, on prépare la nuit."><span id="tb-clock">06:00</span><span id="tb-phase" class="tb-k">Matin</span></div>
         <div id="tb-track"><div id="tb-fill"></div><div id="tb-sun"></div></div>
       </div>
       <div class="tb-speed" id="tb-speed"></div>
-      <div class="tb-weather"><span id="tb-wico"></span><div><span id="tb-weather">—</span><span id="tb-season" class="tb-k">—</span></div></div>
+      <div class="tb-weather" title="Météo et saison — La pluie remplit le collecteur ; l'hiver apporte froid et maladie."><span id="tb-wico"></span><div><span id="tb-weather">—</span><span id="tb-season" class="tb-k">—</span></div></div>
       <div class="tb-temps">
-        <div class="tb-temp" title="Température extérieure"><span class="tb-k">Dehors</span><span id="tb-out">—</span></div>
-        <div class="tb-temp" title="Température dans le refuge"><span class="tb-k">Refuge</span><span id="tb-in">—</span></div>
+        <div class="tb-temp" title="Dehors — Température extérieure."><span class="tb-k">Dehors</span><span id="tb-out">—</span></div>
+        <div class="tb-temp" title="Refuge — Température intérieure : sous 10 °C, on tombe malade. Chauffage et trous bouchés."><span class="tb-k">Refuge</span><span id="tb-in">—</span></div>
       </div>
     </div>
 
@@ -106,6 +106,7 @@
 <script src="js/ui/citymap.js"></script>
 <script src="js/ui/nightui.js"></script>
 <script src="js/ui/menus.js"></script>
+<script src="js/ui/help.js"></script>
 <!-- Démarrage -->
 <script src="js/main.js"></script>
 </body>

@@ -138,9 +138,15 @@
   };
 
   var METER_NAME = { hunger: 'Satiété', fatigue: 'Énergie', health: 'Santé', moral: 'Moral' };
+  var METER_TIP = {
+    hunger: 'Manger via « Besoins » ; un repas cuisiné nourrit mieux.',
+    fatigue: 'Dormir : un lit repose mieux que le sol. Épuisé, on travaille lentement.',
+    health: 'Blessures : bandages. Maladie : médicaments, chaleur, dormir dans un lit.',
+    moral: 'Parler, réconforter, confort du refuge, café, tabac, musique. Les actes du groupe comptent.'
+  };
   function meterSet(el, pct, lv) {
     el.querySelector('span').style.width = U.clamp(pct, 0, 100) + '%';
-    el.title = METER_NAME[el.dataset.k] + ' : ' + Math.round(U.clamp(pct, 0, 100)) + ' %' + (lv === 2 ? ' — critique' : lv === 1 ? ' — à surveiller' : '');
+    el.title = METER_NAME[el.dataset.k] + ' : ' + Math.round(U.clamp(pct, 0, 100)) + ' % — ' + (lv === 2 ? 'Critique. ' : lv === 1 ? 'À surveiller. ' : '') + METER_TIP[el.dataset.k];
     el.classList.toggle('crit', lv === 2);
     el.classList.toggle('warn', lv === 1);
   }

@@ -7,10 +7,11 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - Nouveau fichier JS → l'ajouter dans `index.html` au bon endroit (data avant game, game avant ui, `maps.js` après `dayevents.js`, `explore.js` après `night.js`).
 - Textes du jeu en français ; noms des personnages américains (ids internes : vera, tomas, ilija, nada, goran, lena, emir, mira).
 - Retours d'action **dans la scène** (`C.Render.pop(s, gains|tag, …, 'warn')`, bulles), jamais de message en bas de l'écran.
+- Aide (`js/ui/help.js`) : tout `title` devient une info-bulle thémée (« Titre — détail ») ; `UI.hint(clé)` = note de première fois (`HINTS`, vues dans localStorage `cqr-hints`, option `hints`), déclenchées dans `UI.hintTick` ; manuel `UI.openHelp(page)` en onglets (`PAGES`).
 - UI « dossier de survie » : polices Bebas Neue / Barlow Semi Condensed / Special Elite, papier vieilli, icônes SVG (`js/ui/icons.js`), barres de défilement thémées.
 
 ## Architecture
-- `js/core/` utilitaires, audio (fichiers CC0 + synthèse de secours), sauvegardes (localStorage + export .sav).
+- `js/core/` utilitaires, audio (fichiers CC0 + synthèse de secours ; musique `assets/music` par moment : `Audio.setMood('menu'|'day'|'winter'|'evening'|'explore'|'sad')`, choisi par `musicMood` dans `main.js`, `Audio.duckMusic`), sauvegardes (localStorage + export .sav).
 - `js/data/` objets (`C.ITEMS` : w = poids, v = valeur de troc), constructions, survivants, lieux de pillage, événements, plan du refuge (`shelter.js`), plans explorables et PNJ (`maps.js` : `C.MAPS`, `C.NPCS`).
 - `js/game/` état (`C.Game.st`), déplacements (`nav.js`), actions et menus contextuels (`actions.js`), besoins/moral, monde, nuit (`night.js`, `Night.resolve`), exploration jouable (`explore.js`).
 - `js/render/` monde 1600×900, 4 étages (sol y 800/630/460/290). Couche statique reconstruite quand `C.Render.dirty` (`G().markDirty()`), couche dynamique chaque frame. `sketch.js` = trait crayonné, `objects.js` = meubles, `figure.js` = personnages articulés, `portrait.js` = portraits (photos `assets/portraits/<id>.jpg` + surcouches d'état), `itemart.js` = icônes d'objets, `textures.js` / `props.js` = ressources CC0 peintes dans les contours.
