@@ -470,7 +470,7 @@
       h = U.el('div', '', '');
       h.id = 'explore-hud';
       h.innerHTML = '<div class="xh-loc"><span class="tb-k">Exploration</span><b></b></div>' +
-        '<div class="xh-bag"><span class="tb-k">Sac</span><div class="bm-bar"><i></i></div><em></em></div>' +
+        '<div class="xh-bag"><span class="tb-k">Sac (cases)</span><div class="bm-bar"><i></i></div><em></em></div>' +
         '<div class="xh-mode" title="Mode exploration / mode combat (touche C)">' +
           '<button class="xh-m" data-m="explore">' + I('speech') + '<span>Exploration</span></button>' +
           '<button class="xh-m" data-m="combat">' + I('skull') + '<span>Combat</span></button>' +

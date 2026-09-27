@@ -102,9 +102,15 @@
       mid.appendChild(offerBox(theirs, sellP, function (id) { theirs[id]--; if (!theirs[id]) delete theirs[id]; render(); }));
       // Sac : un échange qui alourdit le sac doit tenir dans la place libre ;
       // un échange qui l'allège passe toujours (même si le sac déborde déjà)
-      var gain = wsum(theirs) - wsum(mine);
-      var over = opts.bag && C.Explore && C.Explore.active && gain > 0 ? gain - Math.max(0, C.Explore.room()) : 0;
-      var verdict = !give && !take ? 'Choisissez quoi échanger.' : over > 0 ? 'Le sac serait trop lourd (' + over + ' de trop).' : diff >= 0 ? (diff > take * 0.5 && take > 0 ? '« Marché conclu ! » (il y gagne)' : '« Ça me va. »') : '« Ce n\'est pas assez. »';
+      var over = 0;
+      if (opts.bag && C.Explore && C.Explore.active) {
+        var inv0 = G().st.inventory, inv1 = U.copy(inv0), k1;
+        for (k1 in mine) inv1[k1] = (inv1[k1] || 0) - mine[k1];
+        for (k1 in theirs) inv1[k1] = (inv1[k1] || 0) + theirs[k1];
+        var before = C.Explore.slots(inv0), after = C.Explore.slots(inv1), cap = C.Explore.capacity(s);
+        over = after > before ? after - Math.max(cap, before) : 0;
+      }
+      var verdict = !give && !take ? 'Choisissez quoi échanger.' : over > 0 ? 'Le sac serait trop plein (' + over + ' case' + (over > 1 ? 's' : '') + ' de trop).' : diff >= 0 ? (diff > take * 0.5 && take > 0 ? '« Marché conclu ! » (il y gagne)' : '« Ça me va. »') : '« Ce n\'est pas assez. »';
       mid.appendChild(U.el('div', '', '<div class="lab">Vous recevez</div><b class="trade-verdict">' + take + ' ¤</b>'));
       mid.appendChild(U.el('div', 'trade-say' + (over > 0 ? ' bad' : ''), verdict));
       wrap.appendChild(mid);

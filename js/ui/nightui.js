@@ -149,7 +149,7 @@
       var row = U.el('div', 'opt-row');
       if (loc && C.isPlayableLocation(loc.id)) {
         // Lieu jouable : c'est vous qui menez l'exploration
-        scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Sac : ' + C.Explore.capacity(s) + ' de charge. Emportez de quoi aider ou échanger.</span>'));
+        scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Sac : ' + C.Explore.capacity(s) + ' cases (l\'équipement en prend). Emportez de quoi aider ou échanger.</span>'));
         var danger = dangerNote(st, loc);
         if (danger) scavBox.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + danger + '</span>'));
       } else {

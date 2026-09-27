@@ -71,8 +71,7 @@
       if (from === 'cache') {
         n = Math.min(n, o.loot[id] || 0); if (!n) return;
         if (inBag) {
-          var w = C.ITEMS[id] ? C.ITEMS[id].w : 1;
-          var fit = Math.floor(C.Explore.room() / w);
+          var fit = C.Explore.canTake(id);
           if (fit <= 0) { flashFull(); return; }
           n = Math.min(n, fit);
         }
@@ -119,6 +118,17 @@
 
     function fill(grid, from, entries) {
       grid.innerHTML = '';
+      // Sac : une case par pile, et les cases vides jusqu'à la capacité
+      if (from === 'stock' && inBag) {
+        var cap = C.Explore.capacity(s), used = 0;
+        entries.forEach(function (en) {
+          var st = C.stackOf(en[0]), left = en[1];
+          while (left > 0) { var n = Math.min(st, left); var sl = slot(from, en[0], n); if (n >= st) sl.classList.add('full-stack'); sl.querySelector('.q').textContent = n + '/' + st; grid.appendChild(sl); left -= n; used++; }
+        });
+        for (var j = used; j < cap; j++) grid.appendChild(U.el('div', 'loot-slot empty'));
+        if (used > cap) Array.prototype.slice.call(grid.children, cap).forEach(function (c) { c.classList.add('over'); });
+        return;
+      }
       entries.forEach(function (en) { grid.appendChild(slot(from, en[0], en[1])); });
       for (var i = entries.length; i < Math.max(SLOTS, entries.length + (entries.length % 4 ? 4 - entries.length % 4 : 0)); i++) grid.appendChild(U.el('div', 'loot-slot empty'));
     }
@@ -133,7 +143,7 @@
       takeAll.disabled = !ce.length;
       if (meter) {
         var cap = C.Explore.capacity(s), wgt = C.Explore.weight(st.inventory);
-        meter.innerHTML = '<span>Charge</span><div class="bm-bar"><i style="width:' + Math.min(100, wgt / cap * 100) + '%"></i></div><b>' + wgt + ' / ' + cap + '</b>';
+        meter.innerHTML = '<span>Cases</span><div class="bm-bar"><i style="width:' + Math.min(100, wgt / cap * 100) + '%"></i></div><b>' + wgt + ' / ' + cap + '</b>';
         meter.classList.toggle('heavy', wgt >= cap);
       }
       fitRows(left.grid); fitRows(right.grid);

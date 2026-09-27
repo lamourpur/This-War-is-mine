@@ -17,6 +17,21 @@
     ['valeur', 'Objets de valeur']
   ];
 
+  // Taille de pile dans une case du sac (comme dans This War of Mine).
+  // Outils, armes et gilet : une case chacun.
+  C.STACK = {
+    eau: 5, legumes: 5, viande: 3, conserve: 3, repas: 3, sucre: 5,
+    bois: 5, composants: 10, pieces_meca: 5, pieces_elec: 5, carburant: 3, filtre: 3, engrais: 5, herbes: 10, tabac: 5, livres: 5,
+    bandage: 5, medicaments: 5, remede: 5,
+    cafe: 5, cigarettes: 10, alcool: 3,
+    munitions: 20, bijoux: 10, montre: 5, diamants: 5
+  };
+  C.stackOf = function (id) {
+    if (C.STACK[id]) return C.STACK[id];
+    var it = C.ITEMS[id];
+    return it && (it.tool || it.weapon || it.armor || it.cat === 'outils') ? 1 : 5;
+  };
+
   C.ITEMS = {
     // --- Vivres
     eau:        { name: 'Eau',            cat: 'vivres', w: 1, v: 4,  ico: '≈', desc: 'Eau potable. Indispensable pour cuisiner, distiller et fabriquer des remèdes.' },

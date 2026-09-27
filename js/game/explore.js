@@ -18,10 +18,26 @@
 
   var E = C.Explore = { active: false };
 
-  // Capacité du sac (poids) : 12, 18 avec le trait « grand sac »
-  E.capacity = function (s) { return 12 + (s && G().hasTrait(s, 'grand_sac') ? 6 : 0); };
-  E.weight = function (inv) { var w = 0; for (var k in inv) w += (inv[k] || 0) * (C.ITEMS[k] ? C.ITEMS[k].w : 1); return w; };
+  // Sac en cases, comme dans This War of Mine : 10 cases (14 avec le trait
+  // « grand sac »), chaque case contient une pile d'un seul objet (C.stackOf).
+  E.capacity = function (s) { return 10 + (s && G().hasTrait(s, 'grand_sac') ? 4 : 0); };
+  // Nombre de cases occupées (nom historique : weight)
+  E.weight = function (inv) { var w = 0; for (var k in inv) if (inv[k] > 0) w += Math.ceil(inv[k] / C.stackOf(k)); return w; };
+  E.slots = E.weight;
   E.room = function () { return E.active ? E.capacity(E.s) - E.weight(G().st.inventory) : Infinity; };
+  // Combien d'exemplaires de cet objet peuvent encore entrer (piles entamées comprises)
+  E.canTake = function (id) {
+    if (!E.active) return Infinity;
+    var inv = G().st.inventory, have = inv[id] || 0, st = C.stackOf(id);
+    var free = Math.max(0, E.room());
+    return Math.max(0, (Math.ceil(have / st) + free) * st - have);
+  };
+  // Le sac tiendrait-il avec ces objets en plus ?
+  E.fits = function (items) {
+    var inv = U.copy(G().st.inventory);
+    for (var k in items) inv[k] = (inv[k] || 0) + items[k];
+    return E.weight(inv) <= E.capacity(E.s);
+  };
 
   function locState(home, id) {
     var ls = home.locations[id];
@@ -373,7 +389,7 @@
   // transfert s'ouvre : on prend ce qui rentre, le reste attend qu'on fasse de
   // la place (il reste là, même à la visite suivante).
   E.give = function (s, o, items, label) {
-    if (E.weight(items) <= E.room()) {
+    if (E.fits(items)) {
       G().addItems(items);
       if (C.Render.pop) C.Render.pop(s, Object.keys(items).map(function (k) { return { item: k, n: items[k] }; }));
       return true;
