@@ -30,6 +30,8 @@
     killed_villain_cyn: ['Un salaud de moins.'],
     abandoned: ['On a laissé cette fille avec ce soldat. On a baissé les yeux.', 'Je l\'entends encore appeler à l\'aide.'],
     abandoned_cyn: ['Pas nos affaires. On a assez de soucis.'],
+    death_neighbor: ['Le père d\'Emma… on aurait pu faire quelque chose.', 'Encore un voisin de moins. La rue se vide.'],
+    death_neighbor_cyn: ['On ne peut pas sauver tout le quartier.'],
     horvat: ['Les Whitaker sont morts. C\'est à cause de nous.', 'On les a tués aussi sûrement qu\'avec une balle.'],
     horvat_cyn: ['Ils n\'auraient pas tenu l\'hiver de toute façon.'],
     killed_self: ['J\'ai tué quelqu\'un. Je revois ses yeux chaque fois que je ferme les miens.', 'Je n\'aurais jamais cru pouvoir faire ça.'],

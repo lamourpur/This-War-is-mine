@@ -98,6 +98,8 @@
       if (C.UI) C.UI.refreshDoor();
     }
     if (st.visitor && !st.visitor.talking && st.minute > st.visitor.until) {
+      var gone = C.VISITORS[st.visitor.id];
+      if (gone && gone.onMissed) gone.onMissed(st);
       st.visitor = null;
       G().toast('Personne n\'a ouvert. Le visiteur est reparti.', 'info');
       if (C.UI) C.UI.refreshDoor();
@@ -116,10 +118,14 @@
   World.planVisitor = function (st) {
     var R = C.R;
     st.visitorPlan = null;
+    // Une histoire en cours passe avant les visiteurs au hasard
+    var due = C.Story && C.Story.due(st);
+    if (due) { st.visitorPlan = { id: due.step, at: R.int(8 * 60, 15 * 60), data: due.data || {} }; return; }
     if (st.day < 2 || !R.chance(0.55)) return;
     var entries = [];
     for (var id in C.VISITORS) {
       var v = C.VISITORS[id];
+      if (v.story) continue;
       if (st.day < v.minDay) continue;
       if (v.canAppear && !v.canAppear(st)) continue;
       entries.push([id, v.weight]);
@@ -127,6 +133,8 @@
     var pick = R.weighted(entries);
     if (!pick) return;
     var def = C.VISITORS[pick];
+    // Début d'histoire : une seule fois par partie
+    if (def.once && C.Story) C.Story.state(st, def.once).planned = true;
     st.visitorPlan = { id: pick, at: R.int(8 * 60, 16 * 60), data: def.init ? def.init(st, R) : {} };
   };
 

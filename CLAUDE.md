@@ -27,6 +27,9 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - **Tous les lieux sont jouables** (pas de pillage automatique pour le joueur ; `scavenge()` de `night.js` ne sert plus qu'au bot). Plans : `maps.js` (lieux civils), `military.js` (entrepôt, avant-poste), `maps_ville.js` (chantier, supermarché, immeuble, boulangerie, garage, villa, carrefour).
 - Types armés supplémentaires (`maps_ville.js`) : `bandit` (couteau, `mdmg`), `bandit_arme` (pistolet), `pilleur` (neutre, zone « chasse gardée », `name` propre sur l'objet), `tireur` (`sniper`/`fixed`/`unseen` : ne voit que les zones `exposed` du plan, ne bouge pas, invisible). Contenants gardés : `owner: 'bande'` (comme l'armée) ou `'pilleur'`.
 
+## Histoires
+`js/data/stories.js` : les étapes sont des visiteurs (`C.VISITORS`). Le début porte `once: '<id>'` et `canAppear`, les étapes suivantes `story: true` (jamais tirées au hasard). `C.Story.next(st, step, jours)` programme la suite, `C.Story.news(st, jours, texte, moral, clé)` annonce une nouvelle au matin, et `onMissed(st)` se déclenche si personne n'ouvre. État dans `st.story` / `st.storyQueue`.
+
 ## Pièges connus
 - `file://` : canvas « tainted » → `ItemArt.buildingUrl` désactive textures/props ; audio en HTMLAudio au lieu de Web Audio.
 - Toute modif de décor statique doit appeler `markDirty()` sinon rien ne se redessine.
