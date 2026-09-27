@@ -26,6 +26,7 @@
     window.addEventListener('resize', R.resize);
   };
 
+  var STATIC_MAX_W = 2200;
   R.resize = function () {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var cw = Math.floor(window.innerWidth * dpr), ch = Math.floor(window.innerHeight * dpr);
@@ -42,8 +43,13 @@
     var extra = Math.max(0, (cw - leftUI - rightUI - 20 * dpr) - houseW * R.scale);
     R.ox = leftUI + 10 * dpr - C.WORLD.left * R.scale + extra / 2;
     R.oy = Math.max(70 * dpr - 40 * R.scale, (ch - H * R.scale) / 2 + 20 * dpr);
-    R.staticCanvas.width = Math.ceil(W * R.scale);
-    R.staticCanvas.height = Math.ceil(H * R.scale);
+    // Le décor (couche statique) est plafonné en résolution : sur un écran
+    // Retina/4K, le reconstruire en pleine définition prenait près d'une
+    // demi-seconde (saccade à chaque fouille, porte, mort…). Le trait crayonné
+    // supporte très bien un léger agrandissement.
+    R.sScale = Math.min(R.scale, STATIC_MAX_W / W);
+    R.staticCanvas.width = Math.ceil(W * R.sScale);
+    R.staticCanvas.height = Math.ceil(H * R.sScale);
     R.dirty = true;
   };
 
@@ -58,7 +64,7 @@
   function buildStatic() {
     var st = C.Game.st;
     var c = R.staticCanvas, ctx = c.getContext('2d');
-    ctx.setTransform(R.scale, 0, 0, R.scale, 0, 0);
+    ctx.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
     var r = SK.rng(st.seed % 100000 + 7);
     C.Nav.computeRegions();
 
@@ -1000,7 +1006,7 @@
       R.shakeT -= dt;
       sx = (Math.random() - 0.5) * R.shakeAmt * R.shakeT * 2; sy = (Math.random() - 0.5) * R.shakeAmt * R.shakeT * 2;
     }
-    ctx.drawImage(R.staticCanvas, R.ox + sx * s, R.oy + sy * s);
+    ctx.drawImage(R.staticCanvas, R.ox + sx * s, R.oy + sy * s, R.staticCanvas.width * s / R.sScale, R.staticCanvas.height * s / R.sScale);
     ctx.setTransform(s, 0, 0, s, R.ox + sx * s, R.oy + sy * s);
 
     updateParticles(dt, st);

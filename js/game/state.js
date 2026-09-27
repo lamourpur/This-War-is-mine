@@ -153,13 +153,19 @@
       for (var k in cost) if (Game.count(k) < cost[k]) m.push(k);
       return m;
     },
+    // La réserve se voit dans le décor du refuge (couche statique). En
+    // exploration, le sac n'est dessiné nulle part : pas de reconstruction
+    // du décor à chaque munition tirée ou objet ramassé (sinon saccades).
+    invDirty: function () {
+      if (!(C.Explore && C.Explore.active)) Game.markDirty();
+    },
     addItems: function (items, silent) {
       var inv = Game.st.inventory;
       for (var k in items) {
         if (!items[k]) continue;
         inv[k] = (inv[k] || 0) + items[k];
       }
-      Game.markDirty();
+      Game.invDirty();
       if (!silent && C.UI) C.UI.refreshStockBadge && C.UI.refreshStockBadge();
     },
     removeItems: function (items) {
@@ -168,7 +174,7 @@
         inv[k] = Math.max(0, (inv[k] || 0) - items[k]);
         if (!inv[k]) delete inv[k];
       }
-      Game.markDirty();
+      Game.invDirty();
     },
     foodCount: function () {
       return Game.count('conserve') + Game.count('repas') + Game.count('legumes') + Game.count('viande');
