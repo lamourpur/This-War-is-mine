@@ -1240,6 +1240,22 @@
       if (Math.random() < dt * 3) R.spawn({ x: cx + (Math.random() - 0.5) * 20, y: bb.y + 10, vx: 0, vy: -14, life: 2, t: 0, kind: 'smoke', size: 2.5 });
     });
 
+    // Quelque chose à récupérer (piège, collecteur, potager, alambic)
+    if (st.phase !== 'explore') st.objects.forEach(function (o) {
+      if (!READY_ICON[o.kind] || o.broken || !C.Actions.collectable(o)) return;
+      var bb = C.ObjDraw.bounds(o);
+      var cx = bb.x + bb.w / 2, cy = bb.y - 14 + Math.sin(t * 2.4 + o.x) * 2.5;
+      ctx.save();
+      ctx.globalAlpha = 0.8 + 0.2 * Math.sin(t * 3 + o.x);
+      ctx.fillStyle = 'rgba(18,15,12,0.85)';
+      ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#b8c98a'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.translate(cx - 8, cy - 8); ctx.scale(16 / 24, 16 / 24);
+      ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      C.IconPaths(READY_ICON[o.kind]).forEach(function (p) { ctx.stroke(p); });
+      ctx.restore();
+    });
+
     holeFx(ctx, st, t, dt);
 
     // Visiteurs devant la porte d'entrée
@@ -1338,6 +1354,7 @@
   // ============================================================ lisibilité
   // Icônes d'état au-dessus de la tête (faim, fatigue, blessure, maladie, moral)
   // dès que l'état est sérieux : orange (niveau 2), rouge (niveau 3).
+  var READY_ICON = { rattrap: 'hunger', collector: 'rain', garden: 'hunger', herbgarden: 'health', still: 'star' };
   var BADGE_ICON = { hunger: 'hunger', fatigue: 'fatigue', wound: 'wound', sick: 'sick', moral: 'moral' };
   function stateBadges(ctx, s, t) {
     if (!s.alive || s.away) return;

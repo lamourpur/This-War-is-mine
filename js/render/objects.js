@@ -822,6 +822,17 @@
     box(ctx, r, x, y - 20, 48, 20, WOOD, 4);
     for (var i = 0; i < 6; i++) SK.line(ctx, r, x + 30 + i * 3, y - 20, x + 30 + i * 3, y, { w: 0.6, passes: 1 });
     SK.poly(ctx, r, [[x + 4, y - 20], [x + 14, y - 30], [x + 26, y - 20]], false, { w: 1 });
+    // Un rat pris dans le piège : corps gris, queue qui pend
+    if (o.catch > 0) {
+      ctx.save();
+      ctx.fillStyle = '#35302b'; ctx.strokeStyle = '#1a1714'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(x + 15, y - 24, 10, 5.5, -0.1, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 7, y - 27); ctx.lineTo(x - 1, y - 22); ctx.lineTo(x + 7, y - 20); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + 7, y - 28, 2.4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      SK.line(ctx, r, x + 23, y - 22, x + 30, y - 14, { w: 0.9, passes: 1 });
+      SK.line(ctx, r, x + 30, y - 14, x + 28, y - 4, { w: 0.8, passes: 1 });
+    }
   };
 
   function plants(ctx, r, x, y, w, n, h, leafy) {

@@ -201,9 +201,12 @@
   // Mise à jour de l'aube : jardins, pièges, eau de pluie nocturne
   World.dawnStations = function (st, report, nightRain) {
     st.objects.forEach(function (o) {
-      if (o.kind === 'rattrap' && !o.catch && C.R.chance(0.5)) {
-        o.catch = 1;
-        report.push({ t: 'Un rat s\'est fait prendre dans le piège.', k: 'good' });
+      // Le piège prend un rat une nuit sur deux ; il peut en garder deux
+      // avant qu'on le relève (clic sur le piège, « Relever le piège »)
+      if (o.kind === 'rattrap' && (o.catch || 0) < 2 && C.R.chance(0.5)) {
+        o.catch = (o.catch || 0) + 1;
+        report.push({ t: o.catch > 1 ? 'Deux rats attendent dans le piège : il faut le relever.' : 'Un rat s\'est fait prendre dans le piège. Il faut aller le relever.', k: 'good' });
+        if (C.Game.markDirty) C.Game.markDirty();
       }
       if ((o.kind === 'garden' || o.kind === 'herbgarden') && o.watered > 0) {
         var need = C.Actions.growNeed(o);
