@@ -230,6 +230,11 @@
       }
       var hit = C.Render.pick(w.x, w.y);
       C.Render.mouse = w;
+      // Mode combat : le soldat le plus proche du pointeur est la cible
+      if (C.Explore && C.Explore.active && C.Explore.mode === 'combat' && !(hit && (hit.surv || (hit.obj && hit.obj.kind === 'guard')))) {
+        var tg = C.Combat.guardAt(w.x, w.y);
+        if (tg) hit = { obj: tg };
+      }
       C.Render.hoverObj = hit && hit.obj ? hit.obj : null;
       C.Render.hoverSurv = hit && hit.surv ? hit.surv : null;
       cv.classList.toggle('pointer', !!hit);
@@ -257,10 +262,11 @@
         if (C.Audio.ready) C.Audio.sfx.click();
         return;
       }
-      // Mode combat : un clic sur un soldat l'attaque directement
-      if (hit && hit.obj && hit.obj.kind === 'guard' && st.phase === 'explore' && C.Explore.mode === 'combat') {
+      // Mode combat : un clic sur (ou tout près d') un soldat l'attaque directement
+      if (st.phase === 'explore' && C.Explore.mode === 'combat') {
+        var tg = hit && hit.obj && hit.obj.kind === 'guard' ? hit.obj : C.Combat.guardAt(w.x, w.y);
         var fighter = C.UI.selectedSurv();
-        if (fighter) { C.Combat.quickAttack(fighter, hit.obj, e.clientX, e.clientY); return; }
+        if (tg && fighter) { C.Combat.quickAttack(fighter, tg, e.clientX, e.clientY); return; }
       }
       if (hit && hit.obj) {
         if (st.phase === 'dusk' && hit.obj.kind !== 'stock') {

@@ -618,10 +618,24 @@
     }
     if (a.kind === 'shoot') {
       var gd = K.GUNS[a.p.weapon];
-      s.facing = g.x >= s.x ? 1 : -1;
       var d = Math.abs(g.x - s.x);
-      if (g.f !== s.f || !onFloor(s) || d > gd.range || !C.Nav.clear(s.f, s.x, g.x)) { C.Render.pop(s, [], 'Plus en ligne de mire', 'warn'); C.Actions.cancel(s); return; }
-      if (a.phase === 'walk') { a.phase = 'work'; a.cd = 0.55; s.path = []; }
+      var inSight = g.f === s.f && onFloor(s) && d <= gd.range * 0.95 && C.Nav.clear(s.f, s.x, g.x);
+      // Pas en ligne de mire : on se met en position (comme dans le jeu d'origine)
+      if (!inSight) {
+        if (a.phase === 'work') { a.phase = 'walk'; a.repath = 0; }
+        a.repath = (a.repath || 0) - rs;
+        if (!s.path.length || a.repath <= 0) {
+          a.repath = 0.5;
+          var sd = s.f === g.f ? (s.x < g.x ? -1 : 1) : (g.facing > 0 ? -1 : 1);
+          var keep = Math.min(gd.range * 0.6, s.f === g.f ? Math.max(60, d - 40) : 220);
+          var p2 = C.Nav.findPath({ f: s.f, x: s.x }, { f: g.f, x: U.clamp(g.x + sd * keep, C.WORLD.walkMin, C.WORLD.walkMax) });
+          if (!p2) { C.Render.pop(s, [], 'Impossible de le viser d\'ici', 'warn'); C.Actions.cancel(s); return; }
+          if (onFloor(s) || !s.path.length) s.path = p2;
+        }
+        return;
+      }
+      s.facing = g.x >= s.x ? 1 : -1;
+      if (a.phase === 'walk') { a.phase = 'work'; a.cd = a.fired ? 0.25 : 0.55; s.path = []; }
       a.cd -= rs;
       if (a.cd > 0) return;
       if (G().count('munitions') <= 0) { C.Render.pop(s, [], 'Plus de munitions', 'warn'); C.Actions.cancel(s); return; }
@@ -765,7 +779,7 @@
     if (K.isGun(held)) {
       var gun = held, gd = K.GUNS[gun], d = Math.abs(g.x - s.x);
       if (g.f !== s.f || d > gd.range || !C.Nav.clear(s.f, s.x, g.x)) {
-        return { kind: 'warn', label: g.f !== s.f ? 'Pas au même étage' : d > gd.range ? 'Trop loin pour tirer' : 'Pas de ligne de mire' };
+        return { kind: 'shoot', p: { weapon: gun, tool: gd.tool }, label: 'Tirer (' + gd.name + ')', sub: 'se met en position · ' + G().count('munitions') + ' mun.' };
       }
       {
         var pH = Math.min(0.95, gd.acc * (1 - 0.45 * d / gd.range) * (G().hasTrait(s, 'combattant') ? 1.15 : 1) * (unaware ? 1.25 : 1) * (s.wound >= 60 ? 0.8 : 1));
@@ -776,11 +790,25 @@
     if (unaware && md.stealth === 'kill' && g.f === s.f) return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: 'Attaque furtive (' + md.name + ')', sub: 'le tue sur le coup' };
     return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: (unaware ? 'Attaque furtive (' : 'Frapper (') + md.name + ')', sub: unaware ? 'coup par surprise' : 'corps à corps' };
   };
+  // Mode combat : soldat visé sous le pointeur, avec de la marge (cible mobile)
+  K.guardAt = function (wx, wy) {
+    var best = null, bd = 48;
+    K.guards().forEach(function (g) {
+      if (g.dead || (K.type(g) && K.type(g).unseen)) return;
+      var fl = C.FLOORS[g.f];
+      if (wy < fl.ceil - 10 || wy > fl.y + 12) return;
+      var dx = Math.abs(wx - g.x);
+      if (dx < bd) { bd = dx; best = g; }
+    });
+    return best;
+  };
   K.quickAttack = function (s, g, sx, sy) {
     var pl = K.plan(s, g);
     if (!pl) return;
     if (pl.kind === 'menu') { C.UI.openContext(g, sx, sy); return; }
     if (pl.kind === 'warn') { C.Render.pop(s, [], pl.label, 'warn'); if (C.Audio.ready) C.Audio.sfx.deny(); return; }
+    // Clics répétés sur la même cible : on ne recommence pas la visée
+    if (s.act && s.act.uid === g.uid && s.act.kind === pl.kind && s.act.p && s.act.p.weapon === pl.p.weapon) return;
     C.Actions.start(s, g, pl.kind, pl.p);
   };
   // Arme tenue en mode combat (pour le dessin)
@@ -853,14 +881,18 @@
       edges.forEach(function (e) {
         ctx.strokeStyle = 'rgba(200,70,50,0.7)'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(e.x, fy); ctx.lineTo(e.x, fy - 70); ctx.stroke();
-        var px = e.d > 0 ? e.x + 4 : e.x - 118;
-        ctx.fillStyle = 'rgba(28,24,20,0.85)'; ctx.fillRect(px, fy - 96, 114, 30);
-        ctx.strokeStyle = 'rgba(200,70,50,0.9)'; ctx.lineWidth = 1.5; ctx.strokeRect(px, fy - 96, 114, 30);
+        // Panneau à la largeur du texte (police de secours comprise)
+        var t1 = hostile ? (z.signHostile || 'ILS TIRENT À VUE') : (z.sign || 'ZONE INTERDITE'), t2 = z.label.toUpperCase();
+        ctx.font = '15px "Bebas Neue", sans-serif'; var pw = ctx.measureText(t1).width;
+        ctx.font = '10px "Special Elite", monospace'; pw = Math.max(114, pw + 14, ctx.measureText(t2).width + 14);
+        var px = e.d > 0 ? e.x + 4 : e.x - 4 - pw;
+        ctx.fillStyle = 'rgba(28,24,20,0.85)'; ctx.fillRect(px, fy - 96, pw, 30);
+        ctx.strokeStyle = 'rgba(200,70,50,0.9)'; ctx.lineWidth = 1.5; ctx.strokeRect(px, fy - 96, pw, 30);
         ctx.fillStyle = hostile ? 'rgba(200,70,50,0.95)' : 'rgba(225,200,170,0.95)';
         ctx.font = '15px "Bebas Neue", sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(hostile ? (z.signHostile || 'ILS TIRENT À VUE') : (z.sign || 'ZONE INTERDITE'), px + 57, fy - 84);
+        ctx.fillText(t1, px + pw / 2, fy - 84);
         ctx.font = '10px "Special Elite", monospace'; ctx.fillStyle = 'rgba(225,200,170,0.7)';
-        ctx.fillText(z.label.toUpperCase(), px + 57, fy - 71);
+        ctx.fillText(t2, px + pw / 2, fy - 71);
       });
       ctx.restore();
     });

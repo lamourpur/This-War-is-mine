@@ -132,7 +132,6 @@
         var gd = C.Combat.GUNS[p.weapon];
         if (!gd) return 'Pas d\'arme à feu.';
         if (G().count('munitions') < 1) return 'Plus de munitions.';
-        if (o.f !== s.f || Math.abs(o.x - s.x) > gd.range || !C.Nav.clear(s.f, s.x, o.x)) return 'Pas de ligne de mire.';
       }
     },
     hide: {
