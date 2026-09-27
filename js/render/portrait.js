@@ -608,6 +608,7 @@
   Object.keys(C.VISITOR_PEOPLE || {}).forEach(function (id) {
     var vp = C.VISITOR_PEOPLE[id];
     if (vp.face) SPEC['v_' + id] = vp.face;
+    if ((C.VISITOR_PHOTOS || []).indexOf(id) < 0) return;
     var im = new Image();
     im.onload = function () { PHOTOS['v_' + id] = im; };
     im.onerror = function () {};

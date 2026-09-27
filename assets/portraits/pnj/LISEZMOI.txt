@@ -1,7 +1,8 @@
 Portraits des visiteurs du refuge (facultatif)
 
-Déposez ici une photo par visiteur pour remplacer son portrait dessiné.
-Le jeu la charge automatiquement (même en ouvrant index.html directement).
+Déposez ici une photo par visiteur pour remplacer son portrait dessiné,
+puis ajoutez son identifiant à la liste C.VISITOR_PHOTOS en haut de
+js/data/visitor_faces.js, par exemple : C.VISITOR_PHOTOS = ['blesse', 'emma_1'];
 Format conseillé : JPG, buste cadré comme les portraits des survivants
 (visage dans le tiers supérieur), retravaillé au fusain, environ 400 × 480.
 

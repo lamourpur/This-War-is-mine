@@ -17,6 +17,10 @@
   var SOLDIER = { hair: 'buzz', build: 1.05, h: 1.02, coat: '#4d5140', pants: '#3c3f31', coatLen: 0.12, skin: '#a8917a', hairColor: '#2e2822', beard: 'stubble', brow: 'heavy', top: 'work', shirt: '#5b5e4a', hat: 'helmet', hatColor: '#4a4e3c', bag: true };
   function soldier(over) { var o = {}; for (var k in SOLDIER) o[k] = SOLDIER[k]; for (k in over || {}) o[k] = over[k]; return o; }
 
+  // Visiteurs qui ont une photo dans assets/portraits/pnj/<id>.jpg
+  // (ajouter l'identifiant ici après avoir déposé le fichier)
+  C.VISITOR_PHOTOS = [];
+
   C.VISITOR_PEOPLE = {
     marchand: {
       name: 'Le marchand',
