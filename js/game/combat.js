@@ -37,7 +37,9 @@
     poings: { name: 'poings', tool: null, dmg: [6, 12], time: 1.0, stealth: 30 }
   };
   K.GUNS = {
+    fusil_assaut: { name: 'fusil d\'assaut', tool: 'rifle', dmg: [40, 58], acc: 0.84, range: 680, time: 0.6, loud: 1.2 },
     fusil: { name: 'fusil', tool: 'rifle', dmg: [55, 80], acc: 0.86, range: 620, time: 1.7 },
+    fusil_pompe: { name: 'fusil à pompe', tool: 'rifle', dmg: [70, 110], acc: 0.9, range: 300, time: 1.6, loud: 1.3 },
     pistolet: { name: 'pistolet', tool: 'pistol', dmg: [34, 50], acc: 0.8, range: 500, time: 1.1 }
   };
   var REACH = 46;
@@ -49,7 +51,9 @@
   };
   K.bestGun = function () {
     if (G().count('munitions') <= 0) return null;
+    if (G().count('fusil_assaut') > 0) return 'fusil_assaut';
     if (G().count('fusil') > 0) return 'fusil';
+    if (G().count('fusil_pompe') > 0) return 'fusil_pompe';
     if (G().count('pistolet') > 0) return 'pistolet';
     return null;
   };
@@ -60,7 +64,7 @@
   K.MELEE_ORDER = ['hachette', 'couteau', 'pied_de_biche', 'pelle'];
   K.weapons = function () {
     var out = [];
-    ['fusil', 'pistolet'].forEach(function (id) {
+    ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet'].forEach(function (id) {
       if (G().count(id) > 0) out.push({ id: id, gun: true, name: K.GUNS[id].name, ok: G().count('munitions') > 0, why: G().count('munitions') > 0 ? '' : 'pas de munitions' });
     });
     K.MELEE_ORDER.forEach(function (id) { if (G().count(id) > 0) out.push({ id: id, name: K.MELEE[id].name, ok: true }); });
@@ -341,6 +345,7 @@
   // ------------------------------------------------------------ tir et coups
   function hitSurvivor(s, dmg, from) {
     if (G().count('gilet') > 0) dmg *= 0.55;
+    if (G().count('casque') > 0) dmg *= 0.82;
     s.wound = Math.min(100, s.wound + dmg);
     s.hurtT = 0.35;
     E().ev('hit', { dmg: Math.round(dmg) });
@@ -755,7 +760,7 @@
       var pH = gd.acc * (1 - 0.45 * d / gd.range) * (g.path.length ? 0.8 : 1) * (G().hasTrait(s, 'combattant') ? 1.15 : 1) * (surprised ? 1.25 : 1) * (s.wound >= 60 ? 0.8 : 1);
       var hit = chance(Math.min(0.95, pH));
       shotFx(s.x + s.facing * 34, s.y - 64, g.x + (hit ? 0 : rand(-30, 30)), g.y - rand(40, 70), hit);
-      K.noise(s.f, s.x, 1100, 'shot');
+      K.noise(s.f, s.x, 1100 * (gd.loud || 1), 'shot');
       if (hit) K.hurtGuard(g, rand(gd.dmg[0], gd.dmg[1]) * (surprised ? 1.3 : 1), s, g.state === 'surrender' ? 'execute' : 'shot');
       else { K.provoke(g.group, 'shot_at', s); }
       if (g.dead || g.state === 'flee' || g.state === 'surrender') C.Actions.cancel(s);
@@ -851,8 +856,9 @@
     }
     m.entries.push(entry(lbl, sub, null, confirmNeutral(start('attack', { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) })), mw === 'poings' ? null : mw));
     var gun = K.isGun(held) ? held : K.bestGun();
-    if (gun || G().count('pistolet') || G().count('fusil')) {
-      var gd = K.GUNS[gun || (G().count('fusil') ? 'fusil' : 'pistolet')];
+    var anyGun = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet'].filter(function (x) { return G().count(x) > 0; })[0];
+    if (gun || anyGun) {
+      var gd = K.GUNS[gun || anyGun];
       var d = Math.abs(g.x - s.x);
       var why = !gun ? 'Plus de munitions' : g.f !== s.f ? 'Pas au même étage' : d > gd.range ? 'Trop loin' : !C.Nav.clear(s.f, s.x, g.x) ? 'Pas de ligne de mire' : null;
       m.entries.push(entry('Tirer (' + gd.name + ')', G().count('munitions') + ' munition' + (G().count('munitions') > 1 ? 's' : '') + ' · très bruyant', why, confirmNeutral(start('shoot', { weapon: gun, tool: gd.tool })), gun || 'pistolet'));

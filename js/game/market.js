@@ -24,7 +24,7 @@
       start: 'Plus aucun convoi de vivres n\'entre en ville. La nourriture vaut de l\'or au marché noir.',
       end: 'Les distributions de vivres ont repris. La nourriture retrouve un prix à peu près normal.',
       radio: 'Le blocus se resserre : aucun convoi alimentaire n\'a pu entrer en ville cette semaine.' },
-    { id: 'munitions', minDay: 9, items: { munitions: 2.3, pistolet: 1.8, fusil: 1.8, gilet: 1.6 },
+    { id: 'munitions', minDay: 9, items: { munitions: 2.3, pistolet: 1.8, fusil: 1.8, fusil_pompe: 1.8, fusil_assaut: 1.8, gilet: 1.6, casque: 1.5 },
       start: 'Les combats se rapprochent du quartier. Tout le monde cherche des armes et des munitions.',
       end: 'Le front s\'est éloigné. Les munitions ne s\'arrachent plus.',
       radio: 'De violents combats sont signalés aux abords de la vieille ville. La population est invitée à rester à l\'abri.' },
@@ -119,7 +119,9 @@
     { day: 0, items: ['conserve', 'eau', 'legumes', 'bois', 'composants', 'bandage', 'cafe', 'cigarettes', 'sucre', 'tabac', 'livres', 'herbes', 'engrais', 'pied_de_biche', 'passe_partout', 'couteau', 'pelle'] },
     { day: 6, items: ['pieces_meca', 'pieces_elec', 'medicaments', 'munitions', 'carburant', 'filtre', 'alcool', 'hachette', 'scie'] },
     { day: 10, items: ['pistolet', 'munitions', 'medicaments', 'filtre'] },
-    { day: 15, items: ['fusil', 'gilet', 'munitions', 'repas'] }
+    { day: 12, items: ['fusil_pompe', 'casque'] },
+    { day: 15, items: ['fusil', 'gilet', 'munitions', 'repas'] },
+    { day: 22, items: ['fusil_assaut'] }
   ];
   M.traderStock = function (st, R) {
     var pool = [], rare = [];

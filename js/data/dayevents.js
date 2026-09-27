@@ -72,7 +72,7 @@
 
     rats: {
       weight: 3, minDay: 3, icon: 'hunger', title: 'Des rats dans la réserve',
-      cond: function (st) { return G().count('legumes') + G().count('viande') + G().count('repas') > 1 || G().countBuilt('rattrap'); },
+      cond: function (st) { return !(st.flags.catUntil > st.day) && (G().count('legumes') + G().count('viande') + G().count('repas') > 1 || G().countBuilt('rattrap')); },
       run: function () {
         var trap = G().objectsOf('rattrap')[0];
         if (trap) {
@@ -236,7 +236,7 @@
             return loot(ctx, 'Ils ne se laissent pas impressionner. L\'un d\'eux passe par une fenêtre et repart avec : ');
           } },
         { label: 'Tirer un coup en l\'air', req: { munitions: 1 },
-          reqFn: function () { return G().count('munitions') > 0 && (G().count('pistolet') > 0 || G().count('fusil') > 0); }, reqText: 'une arme à feu et 1 munition',
+          reqFn: function () { return G().count('munitions') > 0 && ['pistolet', 'fusil', 'fusil_pompe', 'fusil_assaut'].some(function (x) { return G().count(x) > 0; }); }, reqText: 'une arme à feu et 1 munition',
           run: function () {
             G().removeItems({ munitions: 1 });
             if (C.Audio.ready) C.Audio.sfx.gun();
@@ -289,6 +289,93 @@
             return first(ctx.s) + ' enfile son manteau et se glisse dehors.';
           } },
         { label: 'Rester à l\'abri', run: function () { return 'Vous éteignez la radio.'; } }
+      ]
+    },
+
+    // ---------------------------------------------------------------- nouveaux événements
+    chat: {
+      weight: 2, minDay: 4, icon: 'moral', title: 'Un chat errant',
+      cond: function (st) { return !(st.flags.catUntil > st.day); },
+      run: function (ctx) {
+        ctx.st.flags.catUntil = ctx.st.day + 6;
+        G().moralAll(3, { good: true });
+        var s = anyone(); if (s) C.Mood.say(s, 'Regardez qui est là… Viens, minou.');
+        return { text: 'Un chat maigre s\'est glissé par un trou du mur. Il a décidé de rester. Les rats n\'ont qu\'à bien se tenir, et chacun trouve une excuse pour le caresser.' };
+      }
+    },
+    dispute: {
+      weight: 2, minDay: 4, icon: 'moral', title: 'Une dispute',
+      cond: function () { var l = G().present(); return l.length >= 2 && l.some(function (s) { return s.moral < 50; }); },
+      run: function () {
+        var l = R().shuffle(G().present().slice()), a = l[0], b = l[1];
+        var calm = G().present().filter(function (s) { return G().hasTrait(s, 'empathique') && s !== a && s !== b; })[0];
+        var k = calm ? 1 : 4;
+        a.moral = Math.max(0, a.moral - k); b.moral = Math.max(0, b.moral - k);
+        C.Mood.say(a, R().pick(['C\'est toujours moi qui fais tout, ici !', 'Tu crois que je ne t\'ai pas vu manger en douce ?', 'Arrête de me donner des ordres !']));
+        setTimeout(function () { C.Mood.say(b, R().pick(['Parce que toi, tu fais quelque chose ?', 'Tu n\'es pas mon chef.', 'Laisse-moi tranquille.'])); }, 1600);
+        return { text: first(a) + ' et ' + first(b) + ' se sont disputés pour une histoire de ration. Les voix ont porté dans toute la maison.' + (calm ? ' ' + first(calm) + ' a fini par les calmer.' : ' Personne n\'a osé s\'en mêler.') };
+      }
+    },
+    gel: {
+      weight: 3, minDay: 2, icon: 'cold', title: 'Le collecteur a gelé',
+      cond: function (st) { return C.World.isWinter(st) && G().countBuilt('collector') > 0; },
+      run: function () {
+        G().objectsOf('collector').forEach(function (o) { o.water = 0; });
+        G().markDirty();
+        return { text: 'Cette nuit, l\'eau du collecteur a gelé d\'un bloc et fendu le tonneau de glace. Ce qu\'il contenait est perdu.' };
+      }
+    },
+    passant: {
+      weight: 2, minDay: 5, icon: 'alert', title: 'Un passant touché',
+      text: function () { return 'Un coup de feu claque dans la rue. Un homme s\'effondre juste devant la maison, touché à la jambe. Il rampe vers votre porte en appelant à l\'aide.<br><br><i>Le tireur est peut-être encore là.</i>'; },
+      choices: [
+        { label: function (ctx) { return ctx.s ? 'Envoyer ' + first(ctx.s) + ' le tirer à l\'intérieur' : 'Le tirer à l\'intérieur'; }, run: function (ctx) {
+            var s = ctx.s, txt = '';
+            if (s && R().chance(0.3)) { s.wound = Math.min(95, s.wound + R().int(18, 32)); txt = 'Une balle siffle : ' + first(s) + ' est touché(e) en le traînant. '; }
+            G().moralAll(6, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            if (G().count('bandage') > 0 && R().chance(0.8)) {
+              G().removeItems({ bandage: 1 }); G().addItems({ conserve: 1, cigarettes: 2 });
+              return txt + 'On lui fait un pansement serré. Au crépuscule, il repart en boitant et laisse ce qu\'il avait : 1 conserve, 2 cigarettes.';
+            }
+            return txt + 'Sans bandage, on ne peut que le serrer contre soi pendant qu\'il perd son sang. Il meurt avant midi.';
+          } },
+        { label: 'Rester à l\'abri', run: function (ctx) {
+            G().moralAll(-6, { bad: true, key: 'refused' }); ctx.st.stats.refused++;
+            return 'Ses appels faiblissent, puis s\'arrêtent. Personne ne parle pendant un long moment.';
+          } }
+      ]
+    },
+    obus: {
+      weight: 2, minDay: 6, icon: 'alert', title: 'Un obus non explosé',
+      text: function () { return 'Un obus a traversé le toit sans exploser. Il est planté dans le plancher, à moitié enfoncé, et ne bouge plus.<br><br><i>Désamorcé, il donnerait de la poudre et du métal. Mal désamorcé…</i>'; },
+      choices: [
+        { label: function (ctx) { return ctx.s ? first(ctx.s) + ' tente de le désamorcer' : 'Tenter de le désamorcer'; }, run: function (ctx) {
+            var tinker = G().present().some(function (s) { return G().hasTrait(s, 'bricoleur') || G().hasTrait(s, 'econome'); });
+            if (R().chance(tinker ? 0.85 : 0.6)) {
+              G().addItems({ composants: 3, pieces_meca: 1, munitions: 4 });
+              G().moralAll(2, { good: true });
+              return 'Des mains qui tremblent, une heure sans respirer… Le détonateur vient. De quoi récupérer : 3 composants, 1 pièce mécanique, 4 munitions.';
+            }
+            var s = ctx.s || anyone();
+            if (C.Render) C.Render.shake(12);
+            if (C.Audio.ready) C.Audio.sfx.shell(1);
+            if (s) s.wound = Math.min(95, s.wound + R().int(30, 45));
+            G().moralAll(-4, { key: 'shelling' });
+            return 'Un déclic de trop. L\'explosion souffle la pièce. ' + (s ? first(s) + ' est grièvement blessé(e).' : '');
+          } },
+        { label: 'Le laisser et condamner la pièce', run: function () {
+            G().moralAll(-2, {});
+            return 'On pose des planches autour. Tout le monde fait un détour pour ne pas passer à côté.';
+          } }
+      ]
+    },
+    eau_voisins: {
+      weight: 2, minDay: 3, icon: 'hunger', title: 'Les voisins ont soif',
+      cond: function () { return G().countBuilt('collector') > 0 && G().count('eau') >= 2; },
+      text: function () { return 'Une famille de l\'immeuble voisin a vu votre collecteur. Le père tend deux bouteilles vides.<br>« Il n\'y a plus d\'eau aux bornes. Juste de quoi tenir aujourd\'hui… »'; },
+      choices: [
+        { label: 'Leur donner 2 eau', req: { eau: 2 }, run: function (ctx) { G().removeItems({ eau: 2 }); G().moralAll(5, { good: true, key: 'helped' }); ctx.st.stats.helped++; return 'Ils repartent en serrant les bouteilles pleines. « On n\'oubliera pas. »'; } },
+        { label: 'Refuser', run: function (ctx) { G().moralAll(-3, { bad: true, key: 'refused' }); ctx.st.stats.refused++; return 'Le père hoche la tête et s\'en va. Il y a des jours où il faut penser aux siens.'; } }
       ]
     }
   };

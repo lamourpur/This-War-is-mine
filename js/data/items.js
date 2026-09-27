@@ -74,7 +74,10 @@
     hachette:   { name: 'Hachette',       cat: 'armes', w: 2, v: 14, ico: '⚔', weapon: 1.5, tool: true, desc: 'Arme de mêlée. Démonte aussi les meubles plus vite.' },
     pistolet:   { name: 'Pistolet',       cat: 'armes', w: 2, v: 35, ico: '⌐', weapon: 3, ammo: true, desc: 'Arme à feu. Nécessite des munitions.' },
     fusil:      { name: 'Fusil de chasse',cat: 'armes', w: 3, v: 55, ico: '═', weapon: 4, ammo: true, desc: 'Arme à feu puissante. Nécessite des munitions.' },
+    fusil_pompe: { name: 'Fusil à pompe',  cat: 'armes', w: 3, v: 60, ico: '╤', weapon: 4.5, ammo: true, desc: 'Dévastateur de près, inutile de loin. Très bruyant. Nécessite des munitions.' },
+    fusil_assaut: { name: 'Fusil d\'assaut', cat: 'armes', w: 3, v: 90, ico: '╦', weapon: 5, ammo: true, desc: 'Arme militaire : tire vite et loin. Rare. Nécessite des munitions.' },
     munitions:  { name: 'Munitions',      cat: 'armes', w: 1, v: 3,  ico: '⁞', desc: 'Cartouches et balles.' },
+    casque:     { name: 'Casque militaire', cat: 'armes', w: 2, v: 25, ico: '◓', armor: true, desc: 'Protège la tête : un peu moins de blessures au combat. Se porte avec le gilet.' },
     gilet:      { name: 'Gilet pare-balles', cat: 'armes', w: 3, v: 40, ico: '⛨', armor: true, desc: 'Réduit fortement les blessures lors du pillage.' },
 
     // --- Valeurs
@@ -95,7 +98,7 @@
   // Pluriels des noms donnés au singulier
   var PLURAL = {
     conserve: 'conserves', bandage: 'bandages', filtre: 'filtres', montre: 'montres en or', couteau: 'couteaux',
-    pistolet: 'pistolets', fusil: 'fusils de chasse', pelle: 'pelles', hachette: 'hachettes', scie: 'scies à métaux',
+    pistolet: 'pistolets', fusil: 'fusils de chasse', fusil_pompe: 'fusils à pompe', fusil_assaut: 'fusils d\'assaut', casque: 'casques militaires', pelle: 'pelles', hachette: 'hachettes', scie: 'scies à métaux',
     pied_de_biche: 'pieds-de-biche', gilet: 'gilets pare-balles', remede: 'remèdes aux plantes', repas: 'repas chauds'
   };
   // « 3 bois », « 1 livre », « 2 livres », « 2 conserves »

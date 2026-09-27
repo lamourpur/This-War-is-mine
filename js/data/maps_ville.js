@@ -242,7 +242,7 @@
       { key: 'cuisine', kind: 'cache', variant: 'etagere', label: 'Cuisine', f: 1, x: 1320, w: 70, h: 104, loot: { conserve: 2, viande: 2, cafe: 1 } },
       { key: 'cave_vins', kind: 'cache', variant: 'etagere', label: 'Cave à vins', f: 0, x: 420, w: 70, h: 104, loot: { alcool: 1, cafe: 1 } },
       { key: 'porte_coffre', kind: 'door', f: 0, x: 800, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
-      { key: 'coffre_fort', kind: 'cache', variant: 'coffre', label: 'Coffre-fort de l\'industriel', f: 0, x: 1050, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 4, pistolet: 1, munitions: 6 } },
+      { key: 'coffre_fort', kind: 'cache', variant: 'coffre', label: 'Coffre-fort de l\'industriel', f: 0, x: 1050, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 4, fusil_pompe: 1, munitions: 6 } },
       { key: 'recoin_cave', kind: 'hide', f: 0, x: 1250, w: 46, h: 108 },
       { key: 'bibliotheque', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 420, w: 70, h: 124, work: 90, loot: { bois: 3, livres: 5 } },
       { key: 'recoin_etage', kind: 'hide', f: 2, x: 700, w: 46, h: 108 },
