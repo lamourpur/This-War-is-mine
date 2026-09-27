@@ -116,47 +116,136 @@
   ];
 
   // ------------------------------------------------------------ Entrepôt du port (soldats neutres)
+  // Plan libre (js/render/layout.js), comme dans le jeu d'origine : une cour
+  // grillagée, un grand hangar à sheds avec mezzanine et pont roulant, une
+  // annexe en briques sur trois niveaux et son toit, un sous-sol. Deux façons
+  // d'atteindre l'armurerie : l'escalier du poste de garde (un soldat y dort),
+  // ou le trou dans la dalle du hangar, puis la chaufferie encombrée de ferraille.
   C.MAPS.entrepot = {
-    theme: { walls: ['plaster2', 'plaster', 'brickPlaster', 'plaster2'], dirt: 0.34, military: true },
-    stairs: STAIRS,
-    walls: [{ f: 0, x: 800 }, { f: 1, x: 780 }, { f: 2, x: 900 }, { f: 3, x: 620 }],
-    windows: [{ f: 1, x: 560, broken: true }, { f: 1, x: 1000 }, { f: 2, x: 460, broken: true }, { f: 2, x: 1060 }, { f: 3, x: 330, broken: true }, { f: 3, x: 1010, broken: true }, { f: 0, x: 420, vent: true }, { f: 0, x: 1020, vent: true }],
+    id: 'entrepot', layout: true,
+    theme: { dirt: 0.34, military: true },
+    world: { W: 3000, H: 1010, left: 40, right: 2960, ground: 820, walkMin: 60, walkMax: 2940, view: 1500 },
+    start: { f: 0, x: 140 },
+    floors: [
+      { name: 'Cour et hangar', y: 820, ceil: 200, x0: 50, x1: 2200, ground: true, thick: 28,
+        segs: [{ x0: 50, x1: 780, out: true }, { x0: 780, x1: 2200, tex: 'hangarFloor' }] },
+      { name: 'Sous-sol', y: 985, ceil: 848, x0: 1880, x1: 2880, thick: 25, tex: 'concrete' },
+      { name: 'Mezzanine', y: 640, ceil: 200, x0: 1480, x1: 2200, catwalk: true, support: 820 },
+      { name: 'Poste de garde', y: 820, ceil: 656, x0: 2200, x1: 2880, ground: true, thick: 28, tex: 'concrete' },
+      { name: 'Dortoir', y: 640, ceil: 476, x0: 2200, x1: 2880 },
+      { name: 'Bureaux', y: 460, ceil: 298, x0: 2200, x1: 2880 },
+      { name: 'Toit de l\'annexe', y: 282, ceil: 40, x0: 2195, x1: 2885, out: true, noSlab: true },
+      { name: 'Pont roulant', y: 400, ceil: 200, x0: 830, x1: 1440, catwalk: true, hang: 250 }
+    ],
+    rooms: [
+      { x0: 780, x1: 2200, top: 200, bottom: 820, wall: 'corrugated', tone: '#6f6a60', tile: 200, columns: 240, bracing: true, truss: 50, rail: 392,
+        lamps: [960, 1320, 1680, 2040], racks: [{ x0: 930, x1: 1260, h: 330, levels: 3 }, { x0: 1560, x1: 1890, h: 160, levels: 2 }],
+        sign: { t: 'DÉPÔT 7 — ACCÈS RÉSERVÉ À L\'ARMÉE', x: 1600, y: 480, size: 24 } },
+      { x0: 2200, x1: 2880, top: 656, bottom: 820, wall: 'precast', tone: '#7a756a' },
+      { x0: 2200, x1: 2880, top: 476, bottom: 640, wall: 'paintedConcrete', tone: '#817b6e' },
+      { x0: 2200, x1: 2880, top: 298, bottom: 460, wall: 'factory', tone: '#7d776b' },
+      { x0: 1880, x1: 2880, top: 848, bottom: 985, wall: 'concrete', tone: '#66625a', border: true }
+    ],
+    shells: [
+      { x0: 780, x1: 2200, top: 200, bottom: 820, wall: 'corrugated', roof: 'saw', roofH: 80, broken: [2],
+        gaps: { left: [{ y0: 590, y1: 820, shutter: 36 }], right: [{ y0: 700, y1: 820 }, { y0: 520, y1: 640 }] } },
+      { x0: 2200, x1: 2880, top: 296, bottom: 985, wall: 'factoryBrick', roof: 'flat', left: false }
+    ],
+    fences: [{ f: 0, x0: 60, x1: 770, h: 120 }],
+    things: [
+      { kind: 'truck', f: 0, x: 250 },
+      { kind: 'forklift', f: 0, x: 1110, flip: true }
+    ],
+    lights: [
+      { kind: 'brasero', x: 690, y: 778, r: 190 },
+      { kind: 'lamp', x: 960, y: 330, r: 230, a: 0.7 }, { kind: 'lamp', x: 1680, y: 330, r: 230, a: 0.8 }, { kind: 'lamp', x: 2040, y: 330, r: 230, a: 0.8 },
+      { kind: 'lamp', x: 2400, y: 680, r: 150 }, { kind: 'lamp', x: 2650, y: 322, r: 150 },
+      { kind: 'searchlight', x: 800, y: 186, a0: 2.3, spread: 0.32, speed: 0.3, len: 900 }
+    ],
+    backdrop: { far: 'city', mid: ['cranes', 'containers', 'chimneys'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 1300 }, b: { f: 2, x: 1520 }, type: 'metal' },
+      { a: { f: 0, x: 2192 }, b: { f: 3, x: 2212 }, type: 'link' },
+      { a: { f: 2, x: 2192 }, b: { f: 4, x: 2212 }, type: 'link' },
+      { a: { f: 3, x: 2300 }, b: { f: 4, x: 2460 } },
+      { a: { f: 4, x: 2280 }, b: { f: 5, x: 2440 } },
+      { a: { f: 3, x: 2800 }, b: { f: 1, x: 2650 } },
+      { a: { f: 5, x: 2850 }, b: { f: 6, x: 2850 }, type: 'ladder' },
+      { a: { f: 0, x: 860 }, b: { f: 7, x: 860 }, type: 'ladder' },
+      { a: { f: 0, x: 1920 }, b: { f: 1, x: 1920 }, type: 'hole', w: 70 }
+    ],
+    walls: [{ f: 3, x: 2560, tex: 'precast' }, { f: 4, x: 2560 }, { f: 5, x: 2540 }],
+    windows: [
+      { f: 0, x: 900, y: 214, w: 150, h: 60, kind: 'strip', broken: true }, { f: 0, x: 1150, y: 214, w: 150, h: 60, kind: 'strip' },
+      { f: 0, x: 1400, y: 214, w: 150, h: 60, kind: 'strip', broken: true }, { f: 0, x: 1650, y: 214, w: 150, h: 60, kind: 'strip' },
+      { f: 0, x: 1900, y: 214, w: 150, h: 60, kind: 'strip', broken: true },
+      { f: 3, x: 2700, broken: true }, { f: 4, x: 2400, boarded: true }, { f: 4, x: 2760 }, { f: 5, x: 2380, broken: true }, { f: 5, x: 2700 },
+      { f: 1, x: 2350, vent: true }, { f: 1, x: 2750, vent: true }
+    ],
     // Zones gardées : y entrer sous les yeux d'un soldat du groupe = avertissement
     zones: [
-      { id: 'depot', f: 1, x0: 790, x1: 1460, group: 'garnison', label: 'Dépôt de l\'armée' },
-      { id: 'armurerie', f: 0, x0: 140, x1: 1460, group: 'garnison', label: 'Armurerie' },
-      { id: 'chambre', f: 2, x0: 910, x1: 1460, group: 'brute', label: 'Chambre du soldat' }
+      { id: 'depot', f: 0, x0: 1460, x1: 2200, group: 'garnison', label: 'Dépôt de l\'armée' },
+      { id: 'depot_haut', f: 2, x0: 1560, x1: 2200, group: 'garnison', label: 'Mezzanine du dépôt' },
+      { id: 'armurerie', f: 1, x0: 2200, x1: 2880, group: 'garnison', label: 'Armurerie' },
+      { id: 'chambre', f: 4, x0: 2560, x1: 2880, group: 'brute', label: 'Chambre du soldat' }
     ],
     decor: [
-      { f: 1, x: 250, p: 'wooden_barrels_01', h: 30 }, { f: 1, x: 1240, p: 'old_military_crate', h: 30 }, { f: 1, x: 900, p: 'metal_jerrycan', h: 28 },
-      { f: 0, x: 900, p: 'ammo_box', h: 16 }, { f: 0, x: 240, p: 'metal_tool_chest', h: 26 },
-      { f: 2, x: 400, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 2, x: 1400, p: 'wine_bottles_01', h: 20 },
-      { f: 3, x: 480, p: 'old_tyre', h: 26 }, { f: 3, x: 1420, p: 'propane_tank', h: 40 }
+      { f: 0, x: 420, p: 'street_lamp_01', h: 210 }, { f: 0, x: 690, p: 'barrel_stove', h: 44 }, { f: 0, x: 470, p: 'metal_jerrycan_green', h: 26 },
+      { f: 0, x: 745, p: 'barrel_03', h: 46 }, { f: 0, x: 808, p: 'portable_searchlight', h: 34, dy: 630 },
+      { f: 0, x: 1240, p: 'hand_truck', h: 62 }, { f: 0, x: 1380, p: 'portable_generator', h: 44 }, { f: 0, x: 1530, p: 'plastic_crate_02', h: 22 },
+      { f: 0, x: 1690, p: 'wooden_crate_01', h: 40 }, { f: 0, x: 1850, p: 'industrial_storage_cart', h: 60 },
+      { f: 2, x: 1560, p: 'wooden_military_crate', h: 28 }, { f: 2, x: 2150, p: 'small_lpg_tank', h: 34 },
+      { f: 7, x: 1000, p: 'old_tyre', h: 24 },
+      { f: 3, x: 2650, p: 'utility_box_01', h: 72 }, { f: 3, x: 2470, p: 'metal_toolbox', h: 20 },
+      { f: 4, x: 2340, p: 'vintage_suitcase', h: 22 },
+      { f: 5, x: 2330, p: 'metal_office_desk', h: 44 }, { f: 5, x: 2310, p: 'vintage_radio_transceiver', h: 22, dy: 44 },
+      { f: 6, x: 2296, p: 'portable_searchlight', h: 40 }, { f: 6, x: 2700, p: 'old_tyre', h: 24 },
+      { f: 1, x: 2010, p: 'propane_tank', h: 40 }, { f: 1, x: 2760, p: 'wooden_military_crate', h: 30 }, { f: 1, x: 2250, p: 'ammo_box', h: 16 }
     ],
     objects: [
-      { key: 'exit', kind: 'exit', f: 1, x: 175, w: 44, h: 104 },
-      { key: 'caisse_quai', kind: 'cache', variant: 'caisse', f: 1, x: 330, w: 78, h: 48, loot: { bois: 4, composants: 3, sucre: 1 } },
-      { key: 'ferraille', kind: 'rubble', f: 1, x: 540, w: 90, h: 40, work: 60, loot: { composants: 3, pieces_meca: 1 } },
-      { key: 'recoin_quai', kind: 'hide', f: 1, x: 640, w: 46, h: 108 },
-      { key: 'maddox', kind: 'guard', type: 'intendant', f: 1, x: 730, facing: -1, attitude: 'neutral', group: 'garnison' },
-      { key: 'caisses_armee', kind: 'cache', variant: 'caisse', label: 'Caisse de l\'armée', f: 1, x: 980, w: 78, h: 48, owner: 'armee', loot: { conserve: 3, eau: 2, cafe: 1 } },
-      { key: 'recoin_depot', kind: 'hide', f: 1, x: 1090, w: 46, h: 108 },
-      { key: 'soldat_depot', kind: 'guard', type: 'soldat', f: 1, x: 1250, facing: -1, attitude: 'neutral', group: 'garnison', patrol: [860, 1400] },
-      { key: 'rations', kind: 'cache', variant: 'etagere', label: 'Rations de l\'armée', f: 1, x: 1330, w: 70, h: 104, owner: 'armee', loot: { conserve: 2, medicaments: 1, bandage: 2 } },
-      { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 0, x: 420, w: 60, h: 48, owner: 'armee', locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 8, gilet: 1, casque: 1 } },
-      { key: 'lit_camp', kind: 'bed', f: 0, x: 690, metal: true, deco: true },
-      { key: 'soldat_cave', kind: 'guard', type: 'soldat', f: 0, x: 690, facing: 1, attitude: 'neutral', group: 'garnison', sleep: true },
-      { key: 'caisse_munitions', kind: 'cache', variant: 'caisse', label: 'Caisse de munitions', f: 0, x: 1000, w: 78, h: 48, owner: 'armee', loot: { munitions: 6, pieces_elec: 2 } },
-      { key: 'recoin_cave', kind: 'hide', f: 0, x: 1130, w: 46, h: 108 },
-      { key: 'bureau', kind: 'cache', variant: 'armoire', f: 2, x: 560, w: 58, h: 112, loot: { cafe: 1, tabac: 2, livres: 2 } },
-      { key: 'classeur', kind: 'cache', variant: 'etagere', f: 2, x: 760, w: 70, h: 104, loot: { composants: 2, pieces_elec: 1 } },
-      { key: 'recoin_bureau', kind: 'hide', f: 2, x: 850, w: 46, h: 108 },
-      { key: 'brute', kind: 'guard', type: 'brute', f: 2, x: 1060, facing: 1, attitude: 'neutral', group: 'brute' },
-      { key: 'mila', kind: 'npc', npc: 'mila', f: 2, x: 1130, w: 50, h: 70, facing: -1 },
-      { key: 'paquetage', kind: 'cache', variant: 'valise', label: 'Paquetage de Holt', f: 2, x: 1330, w: 62, h: 36, owner: 'armee', loot: { alcool: 1, cigarettes: 3 } },
-      { key: 'etagere_toit', kind: 'cache', variant: 'etagere', f: 3, x: 380, w: 70, h: 104, loot: { livres: 2, filtre: 1 } },
-      { key: 'caisse_toit', kind: 'cache', variant: 'caisse', f: 3, x: 760, w: 78, h: 48, loot: { carburant: 2, pieces_meca: 2 } },
-      { key: 'valise_toit', kind: 'cache', variant: 'valise', f: 3, x: 1100, w: 62, h: 36, loot: { tabac: 2, cigarettes: 2 } }
+      // Cour
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'caisse_quai', kind: 'cache', variant: 'caisse', f: 0, x: 360, w: 78, h: 48, loot: { bois: 4, composants: 3, sucre: 1 } },
+      { key: 'epave_cour', kind: 'cache', variant: 'epave', label: 'Voiture calcinée', f: 0, x: 555, w: 170, h: 70, loot: { pieces_meca: 1, carburant: 1 } },
+      { key: 'recoin_quai', kind: 'hide', variant: 'sacs', label: 'Sacs de sable', f: 0, x: 640, w: 90, h: 60 },
+      { key: 'maddox', kind: 'guard', type: 'intendant', f: 0, x: 730, facing: -1, attitude: 'neutral', group: 'garnison' },
+      // Hangar
+      { key: 'palettes_hangar', kind: 'cache', variant: 'palettes', label: 'Palettes', f: 0, x: 1000, w: 90, h: 92, loot: { bois: 3, sucre: 1 } },
+      { key: 'recoin_depot', kind: 'hide', variant: 'palettes', label: 'Derrière les palettes', f: 0, x: 1420, w: 80, h: 92 },
+      { key: 'caisses_armee', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de l\'armée', f: 0, x: 1600, w: 90, h: 50, owner: 'armee', loot: { conserve: 3, eau: 2, cafe: 1 } },
+      { key: 'soldat_depot', kind: 'guard', type: 'soldat', f: 0, x: 1780, facing: -1, attitude: 'neutral', group: 'garnison', patrol: [1480, 2150] },
+      { key: 'rations', kind: 'cache', variant: 'rayonnage', label: 'Rations de l\'armée', f: 0, x: 1760, w: 100, h: 110, owner: 'armee', loot: { conserve: 2, medicaments: 1, bandage: 2 } },
+      { key: 'conteneur_depot', kind: 'cache', variant: 'conteneur', label: 'Conteneur', color: '#5f6452', f: 0, x: 2080, w: 200, h: 110, owner: 'armee', loot: { conserve: 2, eau: 2, bois: 2 } },
+      // Mezzanine
+      { key: 'recoin_bureau', kind: 'hide', variant: 'palettes', label: 'Derrière les palettes', f: 2, x: 1640, w: 70, h: 92 },
+      { key: 'sentinelle', kind: 'guard', type: 'soldat', f: 2, x: 1900, facing: 1, attitude: 'neutral', group: 'garnison', patrol: [1600, 2150] },
+      { key: 'bureau_mezz', kind: 'cache', variant: 'bureau_metal', label: 'Bureau du magasinier', f: 2, x: 1880, w: 120, h: 50, loot: { cafe: 1, tabac: 1, livres: 1 } },
+      { key: 'casiers_mezz', kind: 'cache', variant: 'casiers', label: 'Casiers', f: 2, x: 2060, w: 88, h: 110, loot: { composants: 2, pieces_elec: 1 } },
+      // Pont roulant (par l'échelle)
+      { key: 'caisse_toit', kind: 'cache', variant: 'caisse', label: 'Caisse sur le pont roulant', f: 7, x: 1150, w: 78, h: 48, loot: { carburant: 2, pieces_meca: 2 } },
+      { key: 'etagere_toit', kind: 'cache', variant: 'bac', label: 'Bac oublié', f: 7, x: 1340, w: 76, h: 40, loot: { livres: 2, filtre: 1 } },
+      // Annexe : poste de garde
+      { key: 'casiers_poste', kind: 'cache', variant: 'casiers', label: 'Casiers des soldats', f: 3, x: 2440, w: 110, h: 110, loot: { cigarettes: 2, bandage: 1 } },
+      { key: 'recoin_poste', kind: 'hide', f: 3, x: 2620, w: 46, h: 108 },
+      // Sous-sol : chaufferie (par le trou) puis armurerie
+      { key: 'chaufferie', kind: 'cache', variant: 'boite_outils', label: 'Caisse à outils', f: 1, x: 2070, w: 70, h: 36, loot: { composants: 2, pieces_meca: 1 } },
+      { key: 'ferraille', kind: 'rubble', label: 'Ferraille effondrée', f: 1, x: 2150, w: 90, h: 44, work: 60, block: true, loot: { composants: 3, pieces_meca: 1 } },
+      { key: 'caisse_munitions', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de munitions', f: 1, x: 2300, w: 90, h: 50, owner: 'armee', loot: { munitions: 6, pieces_elec: 2 } },
+      { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 1, x: 2420, w: 60, h: 48, owner: 'armee', locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 8, gilet: 1, casque: 1 } },
+      { key: 'lit_camp', kind: 'bed', f: 1, x: 2530, metal: true, deco: true },
+      { key: 'soldat_cave', kind: 'guard', type: 'soldat', f: 1, x: 2530, facing: 1, attitude: 'neutral', group: 'garnison', sleep: true },
+      { key: 'recoin_cave', kind: 'hide', f: 1, x: 2800, w: 46, h: 108 },
+      // Dortoir et chambre de Holt
+      { key: 'lits_dortoir', kind: 'bed', f: 4, x: 2380, metal: true, deco: true },
+      { key: 'porte_chambre', kind: 'door', label: 'Porte de la chambre', f: 4, x: 2560, w: 30, h: 112 },
+      { key: 'brute', kind: 'guard', type: 'brute', f: 4, x: 2660, facing: 1, attitude: 'neutral', group: 'brute' },
+      { key: 'mila', kind: 'npc', npc: 'mila', f: 4, x: 2760, w: 50, h: 70, facing: -1 },
+      { key: 'paquetage', kind: 'cache', variant: 'valise', label: 'Paquetage de Holt', f: 4, x: 2845, w: 62, h: 36, owner: 'armee', loot: { alcool: 1, cigarettes: 3 } },
+      // Bureaux, radio
+      { key: 'bureau', kind: 'cache', variant: 'armoire', f: 5, x: 2620, w: 58, h: 112, loot: { cafe: 1, tabac: 2, livres: 2 } },
+      { key: 'classeur', kind: 'cache', variant: 'etagere', f: 5, x: 2740, w: 70, h: 104, loot: { composants: 2, pieces_elec: 1 } },
+      // Toit
+      { key: 'valise_toit', kind: 'cache', variant: 'valise', f: 6, x: 2520, w: 62, h: 36, loot: { tabac: 2, cigarettes: 2 } }
     ]
   };
 

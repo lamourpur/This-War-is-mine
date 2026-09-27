@@ -139,6 +139,15 @@
       return P;
     }
 
+    // Échelle, trou dans le plancher : on grimpe (mains et pieds alternés)
+    var wp0 = walking ? s.path[0] : null;
+    if (wp0 && Math.abs(wp0.x - s.x) < 2 && Math.abs(wp0.y - s.y) > 3) {
+      var cp = Math.sin(s.y * 0.16);
+      P.kind = 'climb'; P.lean = -0.04; P.head = -0.25;
+      P.legs = [{ a1: 0.5 + 0.45 * cp, bend: 0.5 + 0.6 * Math.max(0, cp) }, { a1: 0.5 - 0.45 * cp, bend: 0.5 + 0.6 * Math.max(0, -cp) }];
+      P.arms = [{ a: 2.6 + 0.35 * cp, bend: 0.5 }, { a: 2.6 - 0.35 * cp, bend: 0.5 }];
+      return P;
+    }
     if (walking) {
       P.kind = 'walk';
       var amp = s.wound >= 30 ? 0.3 : 0.44;

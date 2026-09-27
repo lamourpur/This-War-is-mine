@@ -9,6 +9,15 @@
 
   var Nav = C.Nav = {};
 
+  // Étendue de chaque niveau : le refuge a des étages de mur à mur ; un plan
+  // d'exploration peut avoir des niveaux partiels (mezzanine, cour, quai),
+  // chacun avec ses bords x0 / x1.
+  Nav.x0 = function (f) { var fl = C.FLOORS[f]; return fl && fl.x0 != null ? fl.x0 : C.WORLD.left; };
+  Nav.x1 = function (f) { var fl = C.FLOORS[f]; return fl && fl.x1 != null ? fl.x1 : C.WORLD.right; };
+  Nav.minX = function (f) { var fl = C.FLOORS[f]; return fl && fl.x0 != null ? fl.x0 + 22 : C.WORLD.walkMin; };
+  Nav.maxX = function (f) { var fl = C.FLOORS[f]; return fl && fl.x1 != null ? fl.x1 - 22 : C.WORLD.walkMax; };
+  Nav.clampX = function (f, x) { return C.util.clamp(x, Nav.minX(f), Nav.maxX(f)); };
+
   function barriersOn(f) {
     return C.Game.st.objects.filter(function (o) { return o.f === f && C.Game.isBlocking(o); });
   }
@@ -92,7 +101,7 @@
     }
     var best = null, bestLen = Infinity;
     cands.forEach(function (x) {
-      x = C.util.clamp(x, C.WORLD.walkMin, C.WORLD.walkMax);
+      x = Nav.clampX(o.f, x);
       var p = Nav.findPath(from, { f: o.f, x: x });
       if (!p) return;
       var len = 0, cur = from;
@@ -107,12 +116,12 @@
     var regions = [];
     C.FLOORS.forEach(function (fl, f) {
       var xs = barriersOn(f).map(function (o) { return o; }).sort(function (a, b) { return a.x - b.x; });
-      var start = C.WORLD.left;
+      var start = Nav.x0(f);
       xs.forEach(function (b) {
         regions.push({ f: f, x0: start, x1: b.x, reach: false, id: regions.length });
         start = b.x;
       });
-      regions.push({ f: f, x0: start, x1: C.WORLD.right, reach: false, id: regions.length });
+      regions.push({ f: f, x0: start, x1: Nav.x1(f), reach: false, id: regions.length });
     });
     function regionAt(f, x) {
       for (var i = 0; i < regions.length; i++) {
@@ -121,7 +130,8 @@
       }
       return null;
     }
-    var startR = regionAt(1, 220);
+    var ns = C.NAV_START || { f: 1, x: 220 };
+    var startR = regionAt(ns.f, ns.x);
     var queue = startR ? [startR] : [];
     if (startR) startR.reach = true;
     while (queue.length) {

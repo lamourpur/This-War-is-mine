@@ -222,7 +222,7 @@
   // ------------------------------------------------------------ déplacements
   function goTo(g, f, x) {
     if (K.type(g).fixed) { g.path = []; return; }
-    x = freeSpot(g, f, U.clamp(x, C.WORLD.walkMin, C.WORLD.walkMax));
+    x = freeSpot(g, f, C.Nav.clampX(f, x));
     var p = C.Nav.findPath({ f: g.f, x: g.x }, { f: f, x: x });
     g.path = p || [];
   }
@@ -246,7 +246,7 @@
     if (!taken.length) return x;
     var side = g.f === f ? (g.x <= x ? -1 : 1) : (g.uid % 2 ? -1 : 1);
     function ok(v) {
-      if (v < C.WORLD.walkMin || v > C.WORLD.walkMax) return false;
+      if (v < C.Nav.minX(f) || v > C.Nav.maxX(f)) return false;
       for (var i = 0; i < taken.length; i++) if (Math.abs(taken[i] - v) < GAP) return false;
       return v === x || C.Nav.clear(f, x, v);
     }
@@ -279,12 +279,12 @@
         if (near) {
           var nd = sv.x >= near.x ? 1 : -1, other = near === a ? b : a;
           // n'avance que si ça l'éloigne vraiment de son camarade
-          var nx0 = U.clamp(near.x + nd * push, C.WORLD.walkMin, C.WORLD.walkMax);
+          var nx0 = C.Nav.clampX(near.f, near.x + nd * push);
           if ((nx0 - other.x) * nd > (near.x - other.x) * nd - 0.01 && Math.abs(nx0 - sv.x) > 60 && C.Nav.clear(near.f, near.x, nx0)) { near.x = nx0; near.facing = nd; continue; }
         }
         push /= 2;
         [[a, -dir], [b, dir]].forEach(function (pr) {
-          var o = pr[0], nx = U.clamp(o.x + pr[1] * push, C.WORLD.walkMin, C.WORLD.walkMax);
+          var o = pr[0], nx = C.Nav.clampX(o.f, o.x + pr[1] * push);
           if (C.Nav.clear(o.f, o.x, nx)) o.x = nx;
         });
       }
@@ -401,7 +401,7 @@
     if (g.hp < g.maxHp * 0.3 && !g.gaveUp && chance(0.55)) {
       g.gaveUp = true;
       g.state = 'flee'; g.fleeT = rand(2.5, 4);
-      var away = s && s.x < g.x ? C.WORLD.walkMax : C.WORLD.walkMin;
+      var away = s && s.x < g.x ? C.Nav.maxX(g.f) : C.Nav.minX(g.f);
       goTo(g, g.f, away);
       sayG(g, 'surrender', 4);
     }
@@ -425,7 +425,7 @@
     var loot = U.copy(T.loot);
     if (T.weapon) loot[T.weapon] = 1;
     if (g.ammo > 0) loot.munitions = (loot.munitions || 0) + Math.min(g.ammo, 6);
-    G().spawnObject({ key: g.key + '_corps', kind: 'cache', variant: 'corps', label: 'Corps ' + (g.name ? 'de ' + g.name : 'du ' + K.nounOf(g)), gtype: g.type, f: g.f, x: U.clamp(g.x, C.WORLD.walkMin + 30, C.WORLD.walkMax - 30), w: 90, h: 26, facing: g.facing, loot: loot, dead: true });
+    G().spawnObject({ key: g.key + '_corps', kind: 'cache', variant: 'corps', label: 'Corps ' + (g.name ? 'de ' + g.name : 'du ' + K.nounOf(g)), gtype: g.type, f: g.f, x: U.clamp(g.x, C.Nav.minX(g.f) + 30, C.Nav.maxX(g.f) - 30), w: 90, h: 26, facing: g.facing, loot: loot, dead: true });
     G().markDirty();
     // Le reste du groupe apprend la mort d'un camarade (s'il l'entend ou le voit)
     if (how !== 'stealth') K.provoke(g.group, 'attack', s);
@@ -697,7 +697,7 @@
         if (!s.path.length || a.repath <= 0) {
           a.repath = 0.4;
           var side = s.f === g.f ? (s.x < g.x ? -1 : 1) : (g.facing > 0 ? -1 : 1);
-          var p = C.Nav.findPath({ f: s.f, x: s.x }, { f: g.f, x: U.clamp(g.x + side * (REACH - 10), C.WORLD.walkMin, C.WORLD.walkMax) });
+          var p = C.Nav.findPath({ f: s.f, x: s.x }, { f: g.f, x: C.Nav.clampX(g.f, g.x + side * (REACH - 10)) });
           if (!p) { C.Render.pop(s, [], 'Impossible de l\'atteindre', 'warn'); C.Actions.cancel(s); return; }
           if (onFloor(s) || !s.path.length) s.path = p;
         }
@@ -742,7 +742,7 @@
           a.repath = 0.5;
           var sd = s.f === g.f ? (s.x < g.x ? -1 : 1) : (g.facing > 0 ? -1 : 1);
           var keep = Math.min(gd.range * 0.6, s.f === g.f ? Math.max(60, d - 40) : 220);
-          var p2 = C.Nav.findPath({ f: s.f, x: s.x }, { f: g.f, x: U.clamp(g.x + sd * keep, C.WORLD.walkMin, C.WORLD.walkMax) });
+          var p2 = C.Nav.findPath({ f: s.f, x: s.x }, { f: g.f, x: C.Nav.clampX(g.f, g.x + sd * keep) });
           if (!p2) { C.Render.pop(s, [], 'Impossible de le viser d\'ici', 'warn'); C.Actions.cancel(s); return; }
           if (onFloor(s) || !s.path.length) s.path = p2;
         }
@@ -978,7 +978,7 @@
       var hostile = ((E().home.locations[E().loc] || {}).hostile || {})[z.group];
       var any = K.guards().some(function (g) { return g.group === z.group && !g.dead; });
       if (!any) return;
-      var fy = C.FLOORS[z.f].y, ceil = C.FLOORS[z.f].ceil, x0 = Math.max(z.x0, C.WORLD.left + 4), x1 = Math.min(z.x1, C.WORLD.right - 4);
+      var fy = C.FLOORS[z.f].y, ceil = C.FLOORS[z.f].ceil, x0 = Math.max(z.x0, C.Nav.x0(z.f) + 4), x1 = Math.min(z.x1, C.Nav.x1(z.f) - 4);
       var inside = s.f === z.f && s.x >= z.x0 && s.x <= z.x1;
       var pulse = inside ? 0.75 + 0.25 * Math.sin(t * 6) : 1;
       // Voile rouge sur la pièce, plus marqué quand on y est
@@ -992,8 +992,8 @@
       ctx.setLineDash([]);
       // Frontière : poteau et panneau à l'entrée de la zone
       var edges = [];
-      if (z.x0 > C.WORLD.left + 20) edges.push({ x: x0, d: 1 });
-      if (z.x1 < C.WORLD.right - 20) edges.push({ x: x1, d: -1 });
+      if (z.x0 > C.Nav.x0(z.f) + 20) edges.push({ x: x0, d: 1 });
+      if (z.x1 < C.Nav.x1(z.f) - 20) edges.push({ x: x1, d: -1 });
       if (!edges.length) edges.push({ x: x0 + 40, d: 1 });
       edges.forEach(function (e) {
         ctx.strokeStyle = 'rgba(200,70,50,0.7)'; ctx.lineWidth = 2;

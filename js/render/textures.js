@@ -11,7 +11,12 @@
     wallpaper: 'decrepit_wallpaper', peeling: 'peeling_painted_wall', plaster: 'worn_cracked_plaster',
     plaster2: 'damaged_plaster', brick: 'broken_brick_wall', brickPlaster: 'red_brick_plaster_patch_02',
     rubble: 'rubble', debris: 'concrete_debris', floor: 'old_wooden_floor_02', planks: 'weathered_planks',
-    planks2: 'worn_planks', rust: 'rusty_metal_sheet', cabinet: 'wood_cabinet_worn_long'
+    planks2: 'worn_planks', rust: 'rusty_metal_sheet', cabinet: 'wood_cabinet_worn_long',
+    // Lieux industriels et extérieurs
+    corrugated: 'rusty_corrugated_iron', corrugated2: 'corrugated_iron_02', factory: 'factory_wall',
+    hangarFloor: 'hangar_concrete_floor', concrete: 'dirty_concrete', grate: 'metal_grate_rusty',
+    shutter: 'rusty_metal_shutter', asphalt: 'road_damaged', factoryBrick: 'factory_brick',
+    precast: 'precast_concrete_wall', paintedConcrete: 'painted_concrete', tiles: 'dirty_tiles', plate: 'metal_plate'
   };
   // Réglages de couleur : tout reste dans la palette « crayon » grise et terreuse
   var FILTER = {
@@ -19,6 +24,8 @@
     brickPlaster: 'grayscale(0.55) sepia(0.2) contrast(1.1)',
     rust: 'grayscale(0.55) sepia(0.25) contrast(1.15)',
     planks2: 'grayscale(0.6) sepia(0.25) contrast(1.1)',
+    corrugated: 'grayscale(0.6) sepia(0.25) contrast(1.15)', shutter: 'grayscale(0.6) sepia(0.25) contrast(1.15)',
+    factoryBrick: 'grayscale(0.6) sepia(0.2) contrast(1.1)', grate: 'grayscale(0.6) sepia(0.25) contrast(1.2)',
     _: 'grayscale(0.8) sepia(0.12) contrast(1.15)'
   };
   var SIZE = 512;

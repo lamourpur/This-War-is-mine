@@ -465,6 +465,19 @@
   // Sortie : porte entrouverte sur la nuit
   D.exit = function (ctx, r, o, y) {
     var x = o.x - o.w / 2, top = y - o.h;
+    if (o.variant === 'portail') {
+      // Portail de la cour, entrouvert ; panneau peint « sortie »
+      [x - 6, x + o.w + 2].forEach(function (px) { F(ctx, r, px, top - 16, 6, o.h + 16, METAL2, 0.2); SK.rect(ctx, r, px, top - 16, 6, o.h + 16, { w: 1.3 }); });
+      var gate = [[x + o.w + 8, top + 4], [x + o.w + 46, top + 20], [x + o.w + 46, y - 4], [x + o.w + 8, y - 2]];
+      ctx.strokeStyle = 'rgba(30,29,27,0.6)'; ctx.lineWidth = 0.7;
+      for (var gx = 0; gx < 1; gx += 0.14) { ctx.beginPath(); ctx.moveTo(C.util.lerp(gate[0][0], gate[1][0], gx), C.util.lerp(gate[0][1], gate[1][1], gx)); ctx.lineTo(C.util.lerp(gate[3][0], gate[2][0], gx), C.util.lerp(gate[3][1], gate[2][1], gx)); ctx.stroke(); }
+      SK.poly(ctx, r, gate, true, { w: 1.4 });
+      var sy = top + 18;
+      F(ctx, r, x - 2, sy, o.w + 4, 20, '#6b6152', 0.3); SK.rect(ctx, r, x - 2, sy, o.w + 4, 20, { w: 1 });
+      ctx.strokeStyle = 'rgba(225,215,190,0.8)'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x + o.w - 6, sy + 10); ctx.lineTo(x + 6, sy + 10); ctx.moveTo(x + 13, sy + 4); ctx.lineTo(x + 6, sy + 10); ctx.lineTo(x + 13, sy + 16); ctx.stroke();
+      return;
+    }
     ctx.fillStyle = '#10100f'; ctx.fillRect(x - 4, top - 6, o.w + 8, o.h + 6);
     var g = ctx.createLinearGradient(x, 0, x + o.w, 0);
     g.addColorStop(0, 'rgba(120,140,170,0.35)'); g.addColorStop(1, 'rgba(60,70,90,0.1)');
@@ -503,7 +516,61 @@
   };
 
   // Caches remplacées par de vrais objets détourés quand ils sont chargés
-  var CACHE_PROPS = { caisse: 'wooden_crate_02', valise: 'vintage_suitcase', etagere: 'worn_metal_rack' };
+  var CACHE_PROPS = { caisse: 'wooden_crate_02', valise: 'vintage_suitcase', etagere: 'worn_metal_rack',
+    // Mobilier industriel (entrepôt, garage…)
+    rayonnage: 'steel_frame_shelves_03', bureau_metal: 'metal_office_desk', caisse_mil: 'wooden_military_crate',
+    chariot: 'industrial_storage_cart', etabli: 'tool_cart', caisse2: 'wooden_crate_01', bac: 'industrial_pastic_container',
+    boite_outils: 'metal_toolbox', coffret: 'utility_box_01' };
+
+  // Palettes empilées, marchandise sous film plastique
+  function palettes(ctx, r, o, y, full) {
+    var x = o.x - o.w / 2, n = Math.max(1, Math.round(o.h / 46));
+    for (var i = 0; i < n; i++) {
+      var py = y - i * 46;
+      // Palette (planches + dés)
+      F(ctx, r, x, py - 10, o.w, 4, '#77695a', 0.2); F(ctx, r, x, py - 3, o.w, 3, '#77695a', 0.2);
+      [x + 2, o.x - 5, x + o.w - 12].forEach(function (bx) { F(ctx, r, bx, py - 7, 10, 5, WOOD2, 0.2); });
+      SK.rect(ctx, r, x, py - 10, o.w, 10, { w: 0.9, passes: 1 });
+      // Charge filmée (sauf la palette du haut une fois fouillée)
+      if (full || i < n - 1) {
+        var ch = 34, cx = x + 4, cw = o.w - 8;
+        F(ctx, r, cx, py - 10 - ch, cw, ch, '#6f6a5e', 0.4);
+        for (var k = 1; k < 3; k++) SK.line(ctx, r, cx, py - 10 - ch * k / 3, cx + cw, py - 10 - ch * k / 3, { w: 0.5, passes: 1, alpha: 0.6 });
+        ctx.fillStyle = 'rgba(210,215,220,0.13)'; ctx.fillRect(cx - 1, py - 11 - ch, cw + 2, ch + 1);
+        SK.line(ctx, r, cx + 4, py - 8 - ch, cx + cw - 10, py - 14, { w: 0.5, passes: 1, alpha: 0.4 });
+        SK.rect(ctx, r, cx, py - 10 - ch, cw, ch, { w: 1 });
+      }
+    }
+  }
+  // Conteneur maritime (portes ouvertes une fois fouillé)
+  function conteneur(ctx, r, o, y) {
+    var x = o.x - o.w / 2, top = y - o.h;
+    F(ctx, r, x, top, o.w, o.h, o.color || '#5b5448', 0.4);
+    if (C.Tex && C.Tex.ready) C.Tex.paint(ctx, { x: x, y: top, w: o.w, h: o.h }, 'corrugated2', { tile: 90, alpha: 0.9, blend: 'overlay', rot: Math.PI / 2 });
+    for (var rib = x + 8; rib < x + o.w - 4; rib += 12) SK.line(ctx, r, rib, top + 6, rib, y - 6, { w: 0.5, passes: 1, alpha: 0.6 });
+    SK.rect(ctx, r, x, top, o.w, o.h, { w: 1.6 });
+    var dx = x + o.w - 70;
+    if (o.searched) {
+      F(ctx, r, dx, top + 4, 66, o.h - 8, '#1d1c1a', 0.3);
+      P(ctx, r, [[x + o.w, top + 4], [x + o.w + 30, top + 12], [x + o.w + 30, y - 12], [x + o.w, y - 4]], o.color || '#5b5448', 0.3);
+      SK.poly(ctx, r, [[x + o.w, top + 4], [x + o.w + 30, top + 12], [x + o.w + 30, y - 12], [x + o.w, y - 4]], true, { w: 1 });
+    } else {
+      SK.line(ctx, r, dx + 33, top + 4, dx + 33, y - 4, { w: 1.2 });
+      [dx + 12, dx + 26, dx + 40, dx + 54].forEach(function (bx) { SK.line(ctx, r, bx, top + 8, bx, y - 8, { w: 1.4, color: METAL2, passes: 1 }); });
+    }
+  }
+  // Rangée de casiers métalliques
+  function casiers(ctx, r, o, y) {
+    var x = o.x - o.w / 2, top = y - o.h, n = Math.max(2, Math.round(o.w / 22)), cw = o.w / n;
+    for (var i = 0; i < n; i++) {
+      var lx = x + i * cw;
+      F(ctx, r, lx, top, cw - 1, o.h, i % 2 ? '#5d6064' : '#56595c', 0.2);
+      SK.rect(ctx, r, lx, top, cw - 1, o.h, { w: 1 });
+      for (var v = 0; v < 3; v++) SK.line(ctx, r, lx + 4, top + 8 + v * 4, lx + cw - 5, top + 8 + v * 4, { w: 0.5, passes: 1 });
+      if (o.searched && i % 2 === 0) { F(ctx, r, lx + 2, top + 22, cw - 5, o.h - 26, '#1c1b19', 0.2); SK.line(ctx, r, lx + cw - 1, top + 2, lx + cw + 10, top + 8, { w: 0.9, passes: 1 }); }
+      else { ctx.fillStyle = '#1d1d1d'; ctx.fillRect(lx + cw - 7, top + o.h * 0.5, 2, 6); }
+    }
+  }
 
   D.cache = function (ctx, r, o, y) {
     var x = o.x - o.w / 2, top = y - o.h;
@@ -552,9 +619,12 @@
       if (C.Props && C.Props.has('can_rusted')) C.Props.draw(ctx, 'can_rusted', o.x + 8, y - 2, 12, { line: 0.5, noShadow: true });
       return;
     }
+    if (o.variant === 'palettes') { palettes(ctx, r, o, y, !o.searched); return; }
+    if (o.variant === 'conteneur') { conteneur(ctx, r, o, y); return; }
+    if (o.variant === 'casiers') { casiers(ctx, r, o, y); return; }
     var cp = CACHE_PROPS[o.variant];
     if (cp && C.Props && C.Props.has(cp)) {
-      if (o.variant === 'etagere') {
+      if (o.variant === 'etagere' || o.variant === 'rayonnage') {
         C.Props.draw(ctx, cp, o.x, y, o.h, { maxW: o.w });
         // Bocaux et conserves posés au pied tant que ce n'est pas fouillé
         if (!o.searched) {
@@ -701,6 +771,14 @@
   // Recoin sombre : renfoncement dans le mur, rideau déchiré (cachette)
   D.hide = function (ctx, r, o, y) {
     var x = o.x - o.w / 2, top = y - o.h;
+    // Derrière des palettes, un conteneur, une voiture bâchée, des sacs de sable
+    if (o.variant === 'palettes') { palettes(ctx, r, o, y, true); return; }
+    if (o.variant === 'voiture' && C.Props && C.Props.has('covered_car')) { C.Props.draw(ctx, 'covered_car', o.x, y, o.h, { maxW: o.w + 30, flip: o.flip }); return; }
+    if (o.variant === 'sacs') { D.sandbags(ctx, r, { x: o.x, w: o.w, rows: Math.round(o.h / 12) }, y); return; }
+    if (o.variant === 'bidons' && C.Props && C.Props.has('barrel_03')) {
+      C.Props.draw(ctx, 'barrel_03', o.x - 14, y, o.h * 0.8, {}); C.Props.draw(ctx, 'wooden_barrels_01', o.x + 16, y, o.h * 0.7, {});
+      return;
+    }
     var rec = [[x, y], [x, top + 10], [o.x, top], [x + o.w, top + 10], [x + o.w, y]];
     P(ctx, r, rec, '#1b1a18', 0.4);
     var g = ctx.createLinearGradient(x, 0, x + o.w, 0);
@@ -714,7 +792,7 @@
 
   // Sacs de sable empilés
   D.sandbags = function (ctx, r, o, y) {
-    var x = o.x - o.w / 2, bw = 30, rows = 3;
+    var x = o.x - o.w / 2, bw = 30, rows = o.rows || 3;
     for (var j = 0; j < rows; j++) {
       var n = Math.floor(o.w / bw) - (j % 2 ? 1 : 0);
       for (var i = 0; i < n; i++) {

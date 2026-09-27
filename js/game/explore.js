@@ -81,7 +81,8 @@
     C.Combat.noises = []; C.Combat.shots = [];
     E.bellRung = false;
     E.homePos = { x: s.x, y: s.y, f: s.f, facing: s.facing };
-    E.saved = { STAIRS: C.STAIRS, WALLS: C.WALLS, WINDOWS: C.WINDOWS, SLOTS: C.SLOTS, DECOR: C.DECOR, THEME: C.THEME, NAV_START: C.NAV_START };
+    E.saved = { STAIRS: C.STAIRS, WALLS: C.WALLS, WINDOWS: C.WINDOWS, SLOTS: C.SLOTS, DECOR: C.DECOR, THEME: C.THEME, NAV_START: C.NAV_START,
+      WORLD: C.WORLD, FLOORS: C.FLOORS, LAYOUT: C.LAYOUT || null };
 
     var est = {
       version: home.version, seed: home.seed + 911, rngS: 0,
@@ -95,7 +96,11 @@
     // Bascule du plan
     C.STAIRS = map.stairs; C.WALLS = map.walls; C.WINDOWS = map.windows; C.SLOTS = [];
     C.DECOR = map.decor || []; C.THEME = map.theme || null;
-    C.NAV_START = { f: 1, x: 220 };
+    C.NAV_START = map.start ? { f: map.start.f, x: map.start.x } : { f: 1, x: 220 };
+    // Plan à géométrie libre : son propre monde (taille, niveaux, décor)
+    if (map.layout) {
+      C.WORLD = map.world; C.FLOORS = map.floors; C.LAYOUT = map;
+    }
     G().st = est;
 
     map.objects.forEach(function (d) {
@@ -115,8 +120,10 @@
     var gs = est.objects.filter(function (o) { return o.kind === 'guard'; });
     var cats = {}; gs.forEach(function (g) { cats[C.Combat.catOf(g)] = (cats[C.Combat.catOf(g)] || 0) + 1; });
     E.ev('enter', { visits: ls.visits, guards: gs.length, cats: cats, hostile: gs.some(function (g) { return g.attitude === 'hostile'; }), named: (gs.filter(function (g) { return g.name && C.Combat.catOf(g) === 'civ'; })[0] || {}).name });
-    s.x = 230; s.f = 1; s.y = C.FLOORS[1].y; s.facing = 1; s.path = []; s.act = null; s.run = false; s.hidden = false;
+    s.f = C.NAV_START.f; s.x = C.NAV_START.x + 10; s.y = C.FLOORS[s.f].y; s.facing = 1; s.path = []; s.act = null; s.run = false; s.hidden = false;
 
+    C.Render.arch = null;
+    if (map.layout && C.Render.worldChanged) C.Render.worldChanged();
     C.Render.dirty = true;
     C.Render.particles = [];
     C.Render.pops = [];
@@ -211,12 +218,16 @@
     // Restaure le refuge
     C.STAIRS = E.saved.STAIRS; C.WALLS = E.saved.WALLS; C.WINDOWS = E.saved.WINDOWS; C.SLOTS = E.saved.SLOTS;
     C.DECOR = E.saved.DECOR; C.THEME = E.saved.THEME; C.NAV_START = E.saved.NAV_START;
+    var wasLayout = !!C.LAYOUT;
+    C.WORLD = E.saved.WORLD; C.FLOORS = E.saved.FLOORS; C.LAYOUT = E.saved.LAYOUT;
     G().st = home;
     est.log.forEach(function (l) { home.log.push(l); });
     s.x = E.homePos.x; s.y = E.homePos.y; s.f = E.homePos.f; s.facing = E.homePos.facing;
     E.active = false;
     if (C.UI) C.UI.showExploreHud(false);
+    if (wasLayout && C.Render.worldChanged) C.Render.worldChanged();
     if (C.Render.camReset) C.Render.camReset();
+    C.Render.dirty = true;
 
     // Conséquences morales, appliquées au groupe une fois rentré
     var owners = Object.keys(E.stolen);
@@ -414,7 +425,7 @@
     var key = (o.key || 'pnj') + '_don';
     var pile = G().st.objects.filter(function (x) { return x.key === key; })[0];
     if (pile) { for (var k in items) pile.loot[k] = (pile.loot[k] || 0) + items[k]; }
-    else pile = G().spawnObject({ key: key, kind: 'cache', variant: 'baluchon', label: label, f: o.f, x: U.clamp(o.x + (s.x < o.x ? -48 : 48), C.WORLD.walkMin + 20, C.WORLD.walkMax - 20), w: 44, h: 26, searched: true, loot: U.copy(items) });
+    else pile = G().spawnObject({ key: key, kind: 'cache', variant: 'baluchon', label: label, f: o.f, x: U.clamp(o.x + (s.x < o.x ? -48 : 48), C.Nav.minX(o.f) + 20, C.Nav.maxX(o.f) - 20), w: 44, h: 26, searched: true, loot: U.copy(items) });
     G().markDirty();
     if (C.Render.pop) C.Render.pop(s, [], 'Sac plein : posé à terre', 'warn');
     if (C.Audio.ready) C.Audio.sfx.deny();

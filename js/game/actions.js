@@ -17,7 +17,7 @@
   // Exploration : le butin d'un meuble démonté ou de gravats reste en tas à fouiller
   function leavePile(s, o) {
     if (!lootLeft(o)) return;
-    var pile = G().spawnObject({ key: (o.key || 'x') + '_tas', kind: 'cache', variant: 'tas', f: o.f, x: C.util.clamp(o.x, C.WORLD.walkMin + 20, C.WORLD.walkMax - 20), w: 56, h: 22, searched: true, loot: C.util.copy(o.loot), owner: o.owner });
+    var pile = G().spawnObject({ key: (o.key || 'x') + '_tas', kind: 'cache', variant: 'tas', f: o.f, x: C.util.clamp(o.x, C.Nav.minX(o.f) + 20, C.Nav.maxX(o.f) - 20), w: 56, h: 22, searched: true, loot: C.util.copy(o.loot), owner: o.owner });
     if (C.UI && C.UI.openLoot) C.UI.openLoot(pile, s);
   }
   // Refus ou empêchement : écrit dans la scène au-dessus du survivant (plus de message en bas)
@@ -631,7 +631,7 @@
     if (b.path.length && Math.abs(b.y - C.FLOORS[b.f].y) > 1) { f = b.path[0].f; bx = b.path[0].x; }
     var lying = b.act && b.act.phase === 'work' && (b.act.kind === 'sleep' || b.act.kind === 'sleepfloor');
     var side = (s.f === f && s.x < bx) ? -1 : 1;
-    return { f: f, x: U.clamp(bx + side * (lying ? 46 : 42), C.WORLD.walkMin, C.WORLD.walkMax) };
+    return { f: f, x: C.Nav.clampX(f, bx + side * (lying ? 46 : 42)) };
   }
 
   Actions.moveTo = function (s, f, x) {
@@ -700,7 +700,7 @@
     if (r < 0.3) {
       // Quelques pas dans la pièce
       for (var i = 0; i < 6; i++) {
-        var x = U.clamp(s.x + (Math.random() < 0.5 ? -1 : 1) * (80 + Math.random() * 160), C.WORLD.walkMin, C.WORLD.walkMax);
+        var x = C.Nav.clampX(s.f, s.x + (Math.random() < 0.5 ? -1 : 1) * (80 + Math.random() * 160));
         if (C.Nav.clear(s.f, s.x, x)) {
           var p = C.Nav.findPath({ f: s.f, x: s.x }, { f: s.f, x: x });
           if (p) { s.path = p; s.act = { kind: 'move', uid: null, p: { auto: true }, prog: 0, dur: 0, phase: 'walk' }; return; }

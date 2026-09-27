@@ -360,7 +360,7 @@
       var s = C.UI.selectedSurv();
       var f = C.Render.floorAt(w.x, w.y);
       if (s && f != null && (st.phase === 'day' || st.phase === 'explore')) {
-        C.Actions.moveTo(s, f, U.clamp(w.x, C.WORLD.walkMin, C.WORLD.walkMax));
+        C.Actions.moveTo(s, f, C.Nav.clampX(f, w.x));
         // Exploration : double-clic = courir (plus vite, mais bruyant)
         if (st.phase === 'explore') s.run = e.detail >= 2;
       }

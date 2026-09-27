@@ -14,7 +14,13 @@
     'steel_frame_shelves_01', 'worn_metal_rack', 'old_gas_mask', 'wooden_broom',
     'propane_tank', 'compost_bags', 'wooden_barrels_01',
     'vintage_radio_transceiver', 'ArmChair_01', 'metal_tool_chest', 'Television_01', 'wooden_stool_01',
-    'wooden_ladder', 'rusted_wheel_rim_01', 'vintage_oil_lamp'];
+    'wooden_ladder', 'rusted_wheel_rim_01', 'vintage_oil_lamp',
+    // Lieux industriels (entrepôt, garage, dépôts)
+    'barrel_03', 'covered_car', 'hand_truck', 'industrial_storage_cart', 'portable_generator', 'portable_searchlight',
+    'steel_frame_shelves_02', 'steel_frame_shelves_03', 'tool_cart', 'wooden_military_crate', 'wooden_crate_01',
+    'industrial_pastic_container', 'metal_jerrycan_green', 'hanging_industrial_lamp', 'utility_box_01', 'power_box_01',
+    'security_light', 'metal_office_desk', 'plastic_crate_02', 'portable_welding_cart', 'small_lpg_tank', 'metal_toolbox',
+    'street_lamp_01'];
   var TONE = 'grayscale(0.72) sepia(0.2) contrast(1.05) brightness(0.74)';
 
   var P = C.Props = { ready: false, enabled: true, img: {} };

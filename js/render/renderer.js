@@ -10,6 +10,8 @@
 
   var SK = C.Sketch, U = C.util;
   var W = C.WORLD.W, H = C.WORLD.H;
+  // Plan à géométrie libre (exploration) : dessiné par C.Layout
+  function LAY() { return C.LAYOUT && C.Layout ? C.LAYOUT : null; }
 
   var R = C.Render = {
     dirty: true, scale: 1, ox: 0, oy: 0, dpr: 1,
@@ -27,7 +29,21 @@
   };
 
   var STATIC_MAX_W = 2200;
+  // Budget de pixels du décor (couche statique) : celui du refuge (2 200 px
+  // de large) ; un plan plus grand est rendu un peu moins finement.
+  function staticCap(zoom) {
+    return Math.sqrt(STATIC_MAX_W * STATIC_MAX_W * (900 / 1600) * (zoom ? 1.45 * 1.45 : 1) / (W * H));
+  }
+  // Le monde a changé de taille (entrée ou sortie d'un plan d'exploration)
+  R.worldChanged = function () {
+    W = C.WORLD.W; H = C.WORLD.H;
+    R.cam.follow = null; R.cam.z = 1;
+    R.resize();
+    R.cam.cx = CX0; R.cam.cy = CY0;
+    R.applyCam();
+  };
   R.resize = function () {
+    W = C.WORLD.W; H = C.WORLD.H;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var cw = Math.floor(window.innerWidth * dpr), ch = Math.floor(window.innerHeight * dpr);
     R.canvas.width = cw; R.canvas.height = ch;
@@ -39,6 +55,10 @@
     var leftUI = (wide ? (window.innerWidth > 1100 ? 336 : 290) : 0) * dpr;
     var rightUI = (wide ? 96 : 0) * dpr;
     var houseW = C.WORLD.right - C.WORLD.left;
+    // Plan large : on cadre une fenêtre de la largeur voulue, la caméra défile
+    if (C.WORLD.view) houseW = Math.min(houseW, C.WORLD.view);
+    CX0 = C.WORLD.left + houseW / 2; CY0 = H / 2;
+    R.viewL = leftUI + 10 * dpr; R.viewR = cw - rightUI - 10 * dpr;
     R.scale = Math.min((cw - leftUI - rightUI - 20 * dpr) / houseW, (ch - 40 * dpr) / (H - 60), cw / W * 1.25);
     var extra = Math.max(0, (cw - leftUI - rightUI - 20 * dpr) - houseW * R.scale);
     R.ox = leftUI + 10 * dpr - C.WORLD.left * R.scale + extra / 2;
@@ -50,7 +70,7 @@
     // Retina/4K, le reconstruire en pleine définition prenait près d'une
     // demi-seconde (saccade à chaque fouille, porte, mort…). Le trait crayonné
     // supporte très bien un léger agrandissement.
-    R.sScale = Math.min(R.scale, STATIC_MAX_W / W);
+    R.sScale = Math.min(R.scale, staticCap(false));
     R.staticCanvas.width = Math.ceil(W * R.sScale);
     R.staticCanvas.height = Math.ceil(H * R.sScale);
     R.dirty = true;
@@ -63,9 +83,21 @@
   var CX0 = (C.WORLD.left + C.WORLD.right) / 2, CY0 = H / 2;
   R.cam = { z: 1, cx: CX0, cy: CY0, follow: null, auto: false };
   R.ZMAX = 2.4;
+  // Garde c dans [lo + a, hi - b] ; si le contenu est plus petit que la vue, le centre
+  function axis(c, lo, hi, a, b) {
+    if (hi - lo <= a + b) return (lo + hi) / 2 - (b - a) / 2;
+    return U.clamp(c, lo + a, hi - b);
+  }
   function clampCam() {
     var c = R.cam;
     c.z = U.clamp(c.z, 1, R.ZMAX);
+    if (C.WORLD.view) {
+      // Plan large : la vue ne sort pas du plan (un peu de marge)
+      var b = R.base, s = b.scale * c.z, sx = b.ox + CX0 * b.scale, sy = b.oy + CY0 * b.scale;
+      c.cx = axis(c.cx, C.WORLD.left - 40, C.WORLD.right + 40, (sx - R.viewL) / s, (R.viewR - sx) / s);
+      c.cy = axis(c.cy, 0, H, sy / s, (R.canvas.height - sy) / s);
+      return;
+    }
     var hy = CY0 * (1 - 1 / c.z);
     if (c.z <= 1.001) { c.cx = CX0; c.cy = CY0; return; }
     c.cx = U.clamp(c.cx, C.WORLD.left + (CX0 - C.WORLD.left) / c.z - 40, C.WORLD.right - (C.WORLD.right - CX0) / c.z + 40);
@@ -117,8 +149,8 @@
   function staticRes() {
     clearTimeout(resT);
     resT = setTimeout(function () {
-      var want = Math.min(R.base.scale * R.cam.z, STATIC_MAX_W * 1.45 / W);
-      want = Math.max(want, Math.min(R.base.scale, STATIC_MAX_W / W));
+      var want = Math.min(R.base.scale * R.cam.z, staticCap(true));
+      want = Math.max(want, Math.min(R.base.scale, staticCap(false)));
       if (Math.abs(want - R.sScale) / R.sScale > 0.12) {
         R.sScale = want;
         R.staticCanvas.width = Math.ceil(W * want); R.staticCanvas.height = Math.ceil(H * want);
@@ -142,9 +174,29 @@
     var r = SK.rng(st.seed % 100000 + 7);
     C.Nav.computeRegions();
 
-    drawOutside(ctx, SK.rng(11));
-    drawHouse(ctx, SK.rng(23));
+    if (LAY()) {
+      // Plan libre : fond transparent (le ciel et la ville défilent derrière).
+      // L'architecture ne change pas pendant la visite : elle est rendue une
+      // fois dans sa propre image, seuls objets et brouillard sont redessinés.
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, c.width, c.height);
+      var key = (LAY().id || '') + '|' + c.width + 'x' + c.height + '|' + !!(C.Tex && C.Tex.ready) + !!(C.Props && C.Props.ready);
+      if (!R.arch || R.arch.key !== key) {
+        var ac = document.createElement('canvas');
+        ac.width = c.width; ac.height = c.height;
+        var ax = ac.getContext('2d');
+        ax.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
+        C.Layout.drawStatic(ax, LAY());
+        R.arch = { key: key, cv: ac };
+      }
+      ctx.drawImage(R.arch.cv, 0, 0);
+      ctx.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
+    } else {
+      drawOutside(ctx, SK.rng(11));
+      drawHouse(ctx, SK.rng(23));
+    }
     drawDecor(ctx, st);
+    if (LAY()) C.Layout.drawFront(ctx, LAY());
 
     // Objets : trous d'abord (au mur), puis le reste
     var objs = st.objects.slice().sort(function (a, b) { return (a.kind === 'hole' ? 0 : 1) - (b.kind === 'hole' ? 0 : 1); });
@@ -161,13 +213,13 @@
         return o.kind === 'door' && o.peeked && o.f === rg.f && (Math.abs(o.x - rg.x0) < 1 || Math.abs(o.x - rg.x1) < 1);
       });
       var fl = C.FLOORS[rg.f];
-      var x0 = Math.max(rg.x0, C.WORLD.left + 6), x1 = Math.min(rg.x1, C.WORLD.right - 6);
+      var x0 = Math.max(rg.x0, C.Nav.x0(rg.f) + 6), x1 = Math.min(rg.x1, C.Nav.x1(rg.f) - 6);
       var pad = 0;
       C.Game.st.objects.forEach(function (o) {
         if (o.f === rg.f && C.Game.isBlocking(o) && (Math.abs(o.x - rg.x0) < 1 || Math.abs(o.x - rg.x1) < 1)) pad = Math.max(pad, o.w / 2);
       });
-      if (Math.abs(x0 - rg.x0) < 1 && rg.x0 > C.WORLD.left + 10) x0 += pad;
-      if (Math.abs(x1 - rg.x1) < 1 && rg.x1 < C.WORLD.right - 10) x1 -= pad;
+      if (Math.abs(x0 - rg.x0) < 1 && rg.x0 > C.Nav.x0(rg.f) + 10) x0 += pad;
+      if (Math.abs(x1 - rg.x1) < 1 && rg.x1 < C.Nav.x1(rg.f) - 10) x1 -= pad;
       ctx.fillStyle = rg.peeked ? 'rgba(12,11,10,0.38)' : 'rgba(12,11,10,0.8)';
       ctx.fillRect(x0, fl.ceil, x1 - x0, fl.y - fl.ceil);
       if (rg.peeked) return;
@@ -779,7 +831,7 @@
       }
     });
     // Bidon-poêle dans la rue : fumée
-    if (C.Props.has('barrel_stove') && Math.random() < dt * 2.5) R.spawn({ x: 1574 + (Math.random() - 0.5) * 10, y: C.WORLD.ground - 46, vx: -6, vy: -16, life: 3, t: 0, kind: 'smoke', size: 2.5 });
+    if (!LAY() && st.phase !== 'explore' && C.Props.has('barrel_stove') && Math.random() < dt * 2.5) R.spawn({ x: 1574 + (Math.random() - 0.5) * 10, y: C.WORLD.ground - 46, vx: -6, vy: -16, life: 3, t: 0, kind: 'smoke', size: 2.5 });
     st.objects.forEach(function (o) {
       if (o.kind === 'still' && o.brewUntil && Math.random() < dt * 1.5) R.spawn({ x: o.x - 10, y: C.FLOORS[o.f].y - 70, vx: 0, vy: -12, life: 2.4, t: 0, kind: 'steam', size: 2 });
     });
@@ -788,12 +840,15 @@
     if (wt === 'pluie' || wt === 'neige') {
       var n = wt === 'pluie' ? 70 : 22;
       for (var j = 0; j < n * dt * 10; j++) {
-        var zx;
-        var zone = Math.random();
-        if (zone < 0.25) zx = Math.random() * (C.WORLD.left - 20);
-        else if (zone < 0.5) zx = C.WORLD.right + 20 + Math.random() * (W - C.WORLD.right - 20);
-        else zx = Math.random() * W;
-        var maxY = (zx < C.WORLD.left - 14 || zx > C.WORLD.right + 14) ? C.WORLD.ground : 120;
+        var zx, maxY;
+        if (LAY()) { zx = Math.random() * W; maxY = C.Layout.rainStop(LAY(), zx); }
+        else {
+          var zone = Math.random();
+          if (zone < 0.25) zx = Math.random() * (C.WORLD.left - 20);
+          else if (zone < 0.5) zx = C.WORLD.right + 20 + Math.random() * (W - C.WORLD.right - 20);
+          else zx = Math.random() * W;
+          maxY = (zx < C.WORLD.left - 14 || zx > C.WORLD.right + 14) ? C.WORLD.ground : 120;
+        }
         if (wt === 'pluie') R.spawn({ x: zx, y: -10, vx: -40, vy: 700, life: maxY / 700, t: 0, kind: 'rain' });
         else R.spawn({ x: zx, y: -10, vx: -10, vy: 45 + Math.random() * 25, life: maxY / 55, t: 0, kind: 'snow', size: 1 + Math.random() * 1.8 });
       }
@@ -801,8 +856,10 @@
       if (wt === 'pluie') {
         for (var fg = 0; fg < 26 * dt * 10; fg++) R.spawn({ x: Math.random() * (W + 200), y: -40, vx: -70, vy: 1100, life: (H + 40) / 1100, t: 0, kind: 'rainfg', len: 22 + Math.random() * 18 });
         for (var sp = 0; sp < 30 * dt; sp++) {
-          var spx = Math.random() < 0.5 ? Math.random() * (C.WORLD.left - 20) : C.WORLD.right + 20 + Math.random() * (W - C.WORLD.right - 20);
-          R.spawn({ x: spx, y: C.WORLD.ground, vx: 0, vy: 0, life: 0.25, t: 0, kind: 'splash' });
+          var spx, spy = C.WORLD.ground;
+          if (LAY()) { spx = Math.random() * W; spy = C.Layout.rainStop(LAY(), spx); if (spy < 200) continue; }
+          else spx = Math.random() < 0.5 ? Math.random() * (C.WORLD.left - 20) : C.WORLD.right + 20 + Math.random() * (W - C.WORLD.right - 20);
+          R.spawn({ x: spx, y: spy, vx: 0, vy: 0, life: 0.25, t: 0, kind: 'splash' });
         }
       }
     }
@@ -837,6 +894,7 @@
   function drawSnowCover(ctx, st) {
     var c = R.snowCover || 0;
     if (c < 0.02) return;
+    if (LAY()) { C.Layout.drawSnow(ctx, LAY(), c); return; }
     var th = 1.5 + 7 * c;
     ctx.save();
     ctx.fillStyle = 'rgba(232,234,238,' + (0.55 + 0.35 * c) + ')';
@@ -870,8 +928,11 @@
     // Seulement dans le ciel : hors de la maison
     ctx.save();
     ctx.beginPath(); ctx.rect(-20, -20, W + 40, H + 40);
-    var rl = roofLine();
-    ctx.moveTo(rl[0][0], C.WORLD.ground); rl.forEach(function (p) { ctx.lineTo(p[0], p[1]); }); ctx.lineTo(rl[rl.length - 1][0], C.WORLD.ground); ctx.closePath();
+    if (LAY()) C.Layout.shellPath(ctx, LAY());
+    else {
+      var rl = roofLine();
+      ctx.moveTo(rl[0][0], C.WORLD.ground); rl.forEach(function (p) { ctx.lineTo(p[0], p[1]); }); ctx.lineTo(rl[rl.length - 1][0], C.WORLD.ground); ctx.closePath();
+    }
     ctx.clip('evenodd');
     gl.forEach(function (g) {
       var k = g.t / g.life, a = (k < 0.12 ? k / 0.12 : 1 - (k - 0.12) / 0.88) * (night ? 0.55 : 0.22);
@@ -946,8 +1007,10 @@
       ctx.fillStyle = lg; ctx.fillRect(lx - 180, ly - 180, 360, 360);
     }
     if (st.phase === 'explore' && C.Combat) C.Combat.drawLights(ctx, t);
+    // Lueurs propres au plan (braseros, projecteurs, lampes)
+    if (LAY()) C.Layout.drawLights(ctx, LAY(), t);
     // Lueur du bidon-poêle dans la rue
-    if (C.Props.has('barrel_stove')) {
+    if (st.phase !== 'explore' && C.Props.has('barrel_stove')) {
       var bf = 0.8 + Math.sin(t * 9) * 0.1 + Math.sin(t * 17.3) * 0.08;
       var bg = ctx.createRadialGradient(1574, C.WORLD.ground - 44, 2, 1574, C.WORLD.ground - 44, 70 * bf);
       bg.addColorStop(0, 'rgba(255,160,70,' + (0.35 * bf) + ')'); bg.addColorStop(1, 'rgba(200,110,40,0)');
@@ -1205,6 +1268,7 @@
       R.shakeT -= dt;
       sx = (Math.random() - 0.5) * R.shakeAmt * R.shakeT * 2; sy = (Math.random() - 0.5) * R.shakeAmt * R.shakeT * 2;
     }
+    if (LAY()) C.Layout.drawBackdrop(ctx, LAY(), R, sx, sy, t);
     ctx.drawImage(R.staticCanvas, R.ox + sx * s, R.oy + sy * s, R.staticCanvas.width * s / R.sScale, R.staticCanvas.height * s / R.sScale);
     ctx.setTransform(s, 0, 0, s, R.ox + sx * s, R.oy + sy * s);
 
@@ -1291,14 +1355,16 @@
 
     // Obscurité, puis lumières chaudes par-dessus
     var dk = darkness(st);
-    if (dk > 0) { ctx.fillStyle = 'rgba(8,9,16,' + dk + ')'; ctx.fillRect(-20, -20, W + 40, H + 40); }
+    // (plan large : le voile couvre aussi ce qui dépasse du plan)
+    var vx = LAY() ? -6000 : -20, vw = LAY() ? W + 12000 : W + 40, vh = LAY() ? H + 6000 : H + 40;
+    if (dk > 0) { ctx.fillStyle = 'rgba(8,9,16,' + dk + ')'; ctx.fillRect(vx, vx, vw, vh - vx); }
     ctx.globalCompositeOperation = 'lighter';
     drawLights(ctx, st, t);
     drawShellGlows(ctx, st);
     ctx.globalCompositeOperation = 'source-over';
 
     // Lumière froide de l'hiver
-    if (C.World.isWinter(st)) { ctx.fillStyle = 'rgba(120,140,170,0.07)'; ctx.fillRect(0, 0, W, H); }
+    if (C.World.isWinter(st)) { ctx.fillStyle = 'rgba(120,140,170,0.07)'; ctx.fillRect(vx, vx, vw, vh - vx); }
     drawPops(ctx, dt);
     if (R.flashT > 0) { R.flashT -= dt; ctx.fillStyle = 'rgba(255,230,190,' + (R.flashT * 0.5) + ')'; ctx.fillRect(0, 0, W, H); }
 
@@ -1429,11 +1495,16 @@
 
   // Étage sous le pointeur (pour les déplacements)
   R.floorAt = function (wx, wy) {
-    if (wx < C.WORLD.left || wx > C.WORLD.right) return null;
+    // Le niveau le plus proche sous le pointeur (les niveaux d'un plan libre
+    // peuvent se superposer : mezzanine dans un hangar, passerelle…)
+    var best = null, bd = Infinity;
     for (var f = 0; f < C.FLOORS.length; f++) {
       var fl = C.FLOORS[f];
-      if (wy >= fl.ceil && wy <= fl.y + 10) return f;
+      if (wx < C.Nav.x0(f) || wx > C.Nav.x1(f)) continue;
+      if (wy < fl.ceil || wy > fl.y + 10) continue;
+      var d = fl.y - wy;
+      if (d < bd) { bd = d; best = f; }
     }
-    return null;
+    return best;
   };
 })(window.CQR);
