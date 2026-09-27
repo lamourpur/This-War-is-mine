@@ -506,6 +506,13 @@
 
   D.cache = function (ctx, r, o, y) {
     var x = o.x - o.w / 2, top = y - o.h;
+    if (o.variant === 'baluchon') {
+      // Objets donnés, noués dans un tissu et posés par terre
+      var bn = [[o.x - 20, y], [o.x - 17, y - 16], [o.x - 6, y - 24], [o.x + 8, y - 23], [o.x + 18, y - 14], [o.x + 20, y]];
+      P(ctx, r, bn, '#7a6e5c', 0.8); SK.hatchPoly(ctx, r, bn, { gap: 3, alpha: 0.28, angle: 0.8 }); SK.poly(ctx, r, bn, true, { w: 1.1 });
+      SK.line(ctx, r, o.x - 4, y - 24, o.x - 10, y - 32, { w: 1.4, passes: 1 }); SK.line(ctx, r, o.x + 2, y - 24, o.x + 9, y - 31, { w: 1.4, passes: 1 });
+      return;
+    }
     if (o.variant === 'corps') {
       // Corps d'un soldat, allongé dans une flaque sombre
       var T = C.GUARD_TYPES && C.GUARD_TYPES[o.gtype];

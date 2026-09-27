@@ -639,6 +639,11 @@
       m.entries.push(entry('Parler', '', null, start('gtalk', { what: 'talk' })));
       if (T.trade) m.entries.push(entry('Échanger', 'troc', null, start('gtalk', { what: 'trade' })));
     }
+    // Mode exploration : on parle, on ne frappe pas (comme dans le jeu d'origine)
+    if (E().mode !== 'combat') {
+      m.entries.push(entry('Attaquer', 'passez en mode combat (touche C)', 'Mode exploration : on ne peut pas attaquer.', null));
+      return m;
+    }
     var mw = K.bestMelee(), md = K.MELEE[mw];
     var sneaky = K.unaware(g, s) || K.isHidden(s);
     var lbl = sneaky ? 'Attaque furtive (' + md.name + ')' : 'Attaquer (' + md.name + ')';
@@ -661,6 +666,56 @@
       m.entries.push(entry('Tirer (' + gd.name + ')', G().count('munitions') + ' munition' + (G().count('munitions') > 1 ? 's' : '') + ' · très bruyant', why, confirmNeutral(start('shoot', { weapon: gun, tool: gd.tool })), gun || 'pistolet'));
     }
     return m;
+  };
+
+  // ------------------------------------------------------------ mode combat
+  // Comme dans This War of Mine : un bouton (ou la touche C) fait passer du
+  // mode exploration (parler, fouiller) au mode combat (arme en main, un clic
+  // sur un ennemi l'attaque directement).
+  K.setMode = function (mode) {
+    if (!E() || !E().active) return;
+    E().mode = mode;
+    var s = E().s;
+    if (C.Audio.ready) C.Audio.sfx.click();
+    if (s && C.Render.pop) C.Render.pop(s, [], mode === 'combat' ? 'Mode combat' : 'Mode exploration', null);
+    // Un soldat neutre n'aime pas voir une arme sortie tout près de lui
+    if (mode === 'combat') K.guards().forEach(function (g) {
+      if (g.attitude !== 'hostile' && !g.dead && K.sees(g, s) && Math.abs(g.x - s.x) < 260) E().say(g, g.type === 'brute' ? 'Tu veux te battre ? Vas-y, essaie.' : 'Doucement. Rangez ça.', 3);
+    });
+    if (C.UI && C.UI.updateExploreHud) C.UI.updateExploreHud();
+  };
+  K.toggleMode = function () { K.setMode(E().mode === 'combat' ? 'explore' : 'combat'); };
+
+  // Ce que ferait un clic sur ce soldat en mode combat
+  K.plan = function (s, g) {
+    if (g.dead) return null;
+    if (g.state === 'surrender') return { kind: 'menu', label: 'Il se rend' };
+    var mw = K.bestMelee(), md = K.MELEE[mw];
+    var unaware = K.unaware(g, s) || K.isHidden(s);
+    // Attaque furtive à la lame d'abord : silencieuse
+    if (unaware && md.stealth === 'kill' && g.f === s.f) return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: 'Attaque furtive (' + md.name + ')', sub: 'le tue sur le coup' };
+    var gun = K.bestGun();
+    if (gun) {
+      var gd = K.GUNS[gun], d = Math.abs(g.x - s.x);
+      if (g.f === s.f && d <= gd.range && C.Nav.clear(s.f, s.x, g.x)) {
+        var pH = Math.min(0.95, gd.acc * (1 - 0.45 * d / gd.range) * (G().hasTrait(s, 'combattant') ? 1.15 : 1) * (unaware ? 1.25 : 1) * (s.wound >= 60 ? 0.8 : 1));
+        return { kind: 'shoot', p: { weapon: gun, tool: gd.tool }, label: 'Tirer (' + gd.name + ')', sub: Math.round(pH * 100) + ' % · ' + G().count('munitions') + ' mun.' };
+      }
+    }
+    return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: (unaware ? 'Attaque furtive (' : 'Frapper (') + md.name + ')', sub: unaware ? 'coup par surprise' : 'corps à corps' };
+  };
+  K.quickAttack = function (s, g, sx, sy) {
+    var pl = K.plan(s, g);
+    if (!pl) return;
+    if (pl.kind === 'menu') { C.UI.openContext(g, sx, sy); return; }
+    C.Actions.start(s, g, pl.kind, pl.p);
+  };
+  // Arme tenue en mode combat (pour le dessin)
+  K.readyTool = function (s) {
+    if (!E() || !E().active || E().mode !== 'combat' || s !== E().s) return null;
+    var gun = K.bestGun();
+    if (gun) return K.GUNS[gun].tool;
+    return K.MELEE[K.bestMelee()].tool || 'fists';
   };
 
   // Mila est libre quand le soldat ivre n'est plus là (mort, parti ou à genoux)
@@ -755,6 +810,27 @@
       fl.addColorStop(0, 'rgba(255,240,190,' + a + ')'); fl.addColorStop(1, 'rgba(255,170,80,0)');
       ctx.fillStyle = fl; ctx.fillRect(sh.x0 - 26, sh.y0 - 26, 52, 52);
     });
+  };
+
+  // Mode combat : ce que fera le clic, écrit à côté du curseur (au premier plan)
+  K.drawCursor = function (ctx) {
+    if (!E() || !E().active || E().mode !== 'combat') return;
+    var hv = C.Render.hoverObj, m = C.Render.mouse;
+    if (!hv || hv.kind !== 'guard' || hv.dead || !m) return;
+    var pl = K.plan(E().s, hv);
+    if (!pl) return;
+    ctx.save();
+    ctx.font = '17px "Bebas Neue", sans-serif';
+    var w1 = ctx.measureText(pl.label.toUpperCase()).width;
+    ctx.font = '12px "Special Elite", monospace';
+    var w2 = pl.sub ? ctx.measureText(pl.sub).width : 0;
+    var tw = Math.max(w1, w2) + 20, th = pl.sub ? 38 : 24;
+    var x = Math.min(m.x + 18, C.WORLD.W - tw - 6), y = m.y + 16;
+    ctx.fillStyle = 'rgba(20,16,13,0.92)'; ctx.fillRect(x, y, tw, th);
+    ctx.strokeStyle = '#b5543f'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, tw, th);
+    ctx.fillStyle = '#efe6d0'; ctx.font = '17px "Bebas Neue", sans-serif'; ctx.fillText(pl.label.toUpperCase(), x + 10, y + 18);
+    if (pl.sub) { ctx.font = '12px "Special Elite", monospace'; ctx.fillStyle = '#d9a386'; ctx.fillText(pl.sub, x + 10, y + 32); }
+    ctx.restore();
   };
 
   function modeOf(g) {

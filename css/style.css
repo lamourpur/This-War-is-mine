@@ -688,13 +688,25 @@ kbd { font-family: var(--f-ui); font-weight: 700; border: 1px solid currentColor
   padding: 8px 10px 8px 18px; background: rgba(16,15,13,.88); border: 1px solid #3a352d; box-shadow: 0 6px 20px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.03); color: var(--bone); }
 #explore-hud .tb-k { display: block; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #9d917a; }
 #explore-hud .xh-loc b { font-family: var(--f-display); font-weight: normal; font-size: 26px; letter-spacing: .04em; line-height: 1; }
-#explore-hud .xh-bag { min-width: 170px; }
+#explore-hud .xh-bag { min-width: 170px; white-space: nowrap; }
+#explore-hud .xh-loc b { white-space: nowrap; }
 #explore-hud .xh-bag em { font-style: normal; font-family: var(--f-display); font-size: 18px; margin-left: 8px; vertical-align: middle; }
 #explore-hud .bm-bar, .bag-meter .bm-bar { display: inline-block; vertical-align: middle; width: 120px; height: 8px; background: #2a2620; box-shadow: inset 0 0 0 1px #4a4336; }
 #explore-hud .bm-bar i, .bag-meter .bm-bar i { display: block; height: 100%; background: linear-gradient(90deg, #b7a888, #dba84c); transition: width .2s; }
 #explore-hud .xh-home { display: inline-flex; align-items: center; gap: 6px; }
 #explore-hud .xh-home svg { width: 18px; height: 18px; }
 #explore-hud.late { border-color: #a4472c; box-shadow: 0 0 0 1px #a4472c, 0 6px 20px rgba(0,0,0,.5); animation: xhPulse 1.4s ease-in-out infinite; }
+#explore-hud .xh-mode { position: relative; display: flex; border: 1px solid #4a4336; background: #1a1714; }
+#explore-hud .xh-m { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0; background: transparent; color: #9d917a; font-family: var(--f-display); font-size: 19px; letter-spacing: .06em; cursor: pointer; }
+#explore-hud .xh-m svg { width: 18px; height: 18px; }
+#explore-hud .xh-m:hover { color: var(--bone); }
+#explore-hud .xh-m.on { background: #3a352c; color: var(--bone); box-shadow: inset 0 -3px 0 var(--amber); }
+#explore-hud .xh-m.on[data-m="combat"] { background: #4a2219; box-shadow: inset 0 -3px 0 #d0683f; color: #f3d6c8; }
+#explore-hud .xh-mode kbd { position: absolute; top: -9px; right: -6px; font: 11px var(--f-ui); padding: 0 4px; background: #2a2620; border: 1px solid #4a4336; color: #9d917a; }
+#explore-hud.combat { border-color: #7a2e20; }
+#explore-hud.danger .xh-m[data-m="combat"] { animation: xhDanger .8s ease-in-out infinite; }
+@keyframes xhDanger { 50% { background: #7a2e20; color: #fff1e6; } }
+canvas#game.aim { cursor: crosshair; }
 @keyframes xhPulse { 50% { box-shadow: 0 0 18px rgba(164,71,44,.6), 0 6px 20px rgba(0,0,0,.5); } }
 body.exploring #btn-place, body.exploring #door-alert, body.exploring #dusk-btn { display: none !important; }
 .bag-meter { display: flex; align-items: center; gap: 8px; margin: -4px 0 10px; color: #b8ad95; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; }

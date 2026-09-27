@@ -182,9 +182,11 @@
         return;
       }
       var hit = C.Render.pick(w.x, w.y);
+      C.Render.mouse = w;
       C.Render.hoverObj = hit && hit.obj ? hit.obj : null;
       C.Render.hoverSurv = hit && hit.surv ? hit.surv : null;
       cv.classList.toggle('pointer', !!hit);
+      cv.classList.toggle('aim', !!(hit && hit.obj && hit.obj.kind === 'guard' && C.Explore && C.Explore.active && C.Explore.mode === 'combat'));
     });
     cv.addEventListener('mouseleave', function () { C.Render.hoverObj = null; C.Render.hoverSurv = null; });
 
@@ -207,6 +209,11 @@
         C.UI.select(hit.surv.id);
         if (C.Audio.ready) C.Audio.sfx.click();
         return;
+      }
+      // Mode combat : un clic sur un soldat l'attaque directement
+      if (hit && hit.obj && hit.obj.kind === 'guard' && st.phase === 'explore' && C.Explore.mode === 'combat') {
+        var fighter = C.UI.selectedSurv();
+        if (fighter) { C.Combat.quickAttack(fighter, hit.obj, e.clientX, e.clientY); return; }
       }
       if (hit && hit.obj) {
         if (st.phase === 'dusk' && hit.obj.kind !== 'stock') {
@@ -259,6 +266,7 @@
         case 'Tab': e.preventDefault(); if (!C.UI.modalOpen) C.UI.cycle(e.shiftKey ? -1 : 1); break;
         case 'i': case 'I': if (!C.UI.modalOpen) C.UI.openStock(); break;
         case 'j': case 'J': if (!C.UI.modalOpen) C.UI.openLog(); break;
+        case 'c': case 'C': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.toggleMode(); break;
       }
     });
   }

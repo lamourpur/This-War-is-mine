@@ -20,7 +20,7 @@
     var st = G().st;
     o.loot = o.loot || {};
     var taken = {};                         // bilan net (pris − déposés) pour le retour à la fermeture
-    var name = (o.kind === 'cache' && C.CACHE_NAMES[o.variant]) || G().objName(o).replace(/\s*\(.*\)$/, '');
+    var name = o.label || (o.kind === 'cache' && C.CACHE_NAMES[o.variant]) || G().objName(o).replace(/\s*\(.*\)$/, '');
     var p = UI.panel(name, 'Fouille de ' + U.esc(first(s)) + ' — glissez les objets d\'un côté à l\'autre', { wide: true, foot: true });
     p.classList.add('loot-panel');
 
@@ -159,6 +159,8 @@
         if (inBag && Object.keys(got).length) C.Explore.ev('loot', { name: name, items: got });
         if (inBag && o.owner) C.Explore.markStolen(o, got);
         if (Object.keys(got).length) G().log(first(s) + ' a pris dans ' + name.toLowerCase() + ' : ' + C.itemsText(got) + '.', 'action');
+        // Baluchon vidé : il n'a plus de raison d'être là
+        if (o.variant === 'baluchon' && !Object.keys(o.loot).some(function (k) { return o.loot[k] > 0; })) G().removeObject(o);
         G().markDirty();
         if (C.UI.buildCards) C.UI.buildCards();
       }

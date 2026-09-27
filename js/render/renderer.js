@@ -1039,6 +1039,9 @@
     drawPops(ctx, dt);
     if (R.flashT > 0) { R.flashT -= dt; ctx.fillStyle = 'rgba(255,230,190,' + (R.flashT * 0.5) + ')'; ctx.fillRect(0, 0, W, H); }
 
+    // Mode combat : action et chance de toucher près du curseur (au-dessus de tout)
+    if (st.phase === 'explore' && C.Combat) C.Combat.drawCursor(ctx);
+
     // Vignette + grain (espace écran)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     var cw = R.canvas.width, ch = R.canvas.height;

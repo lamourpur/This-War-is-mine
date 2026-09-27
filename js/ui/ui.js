@@ -451,7 +451,14 @@
       h.id = 'explore-hud';
       h.innerHTML = '<div class="xh-loc"><span class="tb-k">Exploration</span><b></b></div>' +
         '<div class="xh-bag"><span class="tb-k">Sac</span><div class="bm-bar"><i></i></div><em></em></div>' +
+        '<div class="xh-mode" title="Mode exploration / mode combat (touche C)">' +
+          '<button class="xh-m" data-m="explore">' + I('speech') + '<span>Exploration</span></button>' +
+          '<button class="xh-m" data-m="combat">' + I('skull') + '<span>Combat</span></button>' +
+          '<kbd>C</kbd></div>' +
         '<button class="btn xh-home">' + I('home') + 'Rentrer</button>';
+      Array.prototype.forEach.call(h.querySelectorAll('.xh-m'), function (b) {
+        b.addEventListener('click', function () { C.Combat.setMode(b.dataset.m); });
+      });
       h.querySelector('.xh-home').addEventListener('click', function () {
         var s = C.Explore.s, ex = G().st.objects.filter(function (o) { return o.kind === 'exit'; })[0];
         if (s && ex) C.Actions.start(s, ex, 'leave');
@@ -469,5 +476,11 @@
     h.querySelector('.bm-bar i').style.width = Math.min(100, w / cap * 100) + '%';
     h.querySelector('.xh-bag em').textContent = w + ' / ' + cap;
     h.classList.toggle('late', G().st.minute >= 28 * 60);
+    var mode = C.Explore.mode || 'explore';
+    Array.prototype.forEach.call(h.querySelectorAll('.xh-m'), function (b) { b.classList.toggle('on', b.dataset.m === mode); });
+    h.classList.toggle('combat', mode === 'combat');
+    // Des soldats vous tirent dessus et vous êtes en exploration : le bouton combat clignote
+    var danger = C.Combat.guards().some(function (g) { return g.state === 'alert' && !g.dead; });
+    h.classList.toggle('danger', danger && mode !== 'combat');
   };
 })(window.CQR);

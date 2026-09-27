@@ -96,6 +96,19 @@
     eat: 'food', coffee: 'cup', drink: 'cup', smoke: 'cig', read: 'book', heal: 'bandage', medicate: 'pill', care: 'bandage'
   };
 
+  // Mode combat (exploration) : arme en main, en garde
+  function readyPose(s, P) {
+    var ready = C.Combat && C.Combat.readyTool ? C.Combat.readyTool(s) : null;
+    if (!ready || P.tool || (P.kind !== 'stand' && P.kind !== 'walk')) return false;
+    if (ready === 'rifle') P.arms = [{ a: 0.9, bend: 0.55 }, { a: 0.7, bend: 0.75 }];
+    else if (ready === 'pistol') P.arms[1] = { a: 0.55, bend: 0.5 };
+    else if (ready === 'fists') P.arms = [{ a: 0.5, bend: 1.9 }, { a: 0.35, bend: 2.0 }];
+    else P.arms[1] = { a: 0.25, bend: 1.1 };
+    P.tool = ready === 'fists' ? null : ready;
+    P.lean += 0.08; P.brow = 'angry';
+    return true;
+  }
+
   F.pose = function (s, t) {
     var a = s.act, working = a && a.phase === 'work', kind = working ? a.kind : null;
     var walking = s.path.length > 0;
@@ -137,6 +150,7 @@
       ];
       P.lean = 0.06 + (tired ? 0.08 : 0) + (low ? 0.05 : 0);
       P.head = low ? 0.2 : 0;
+      readyPose(s, P);
       return P;
     }
 
@@ -219,6 +233,7 @@
         break;
     }
 
+    if (readyPose(s, P)) return P;
     // Posture générale : moral bas / épuisement
     if (P.kind === 'stand') {
       var breath = Math.sin(t * 2 + s.anim) * 0.02;

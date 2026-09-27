@@ -115,7 +115,8 @@
         case 'rubble': return o.block ? 'Éboulis' : 'Gravats';
         case 'door': return o.open ? 'Porte forcée' : 'Porte verrouillée';
         case 'grate': return 'Grille métallique';
-        case 'cache': return (C.CACHE_NAMES[o.variant] || 'Meuble') + (o.searched ? ' (fouillé)' : o.locked ? ' verrouillé' + (o.variant === 'coffre' ? '' : 'e') : '');
+        case 'cache': if (o.label) return o.label + (o.loot && Object.keys(o.loot).some(function (k) { return o.loot[k] > 0; }) ? '' : ' (vide)');
+          return (C.CACHE_NAMES[o.variant] || 'Meuble') + (o.searched ? ' (fouillé)' : o.locked ? ' verrouillé' + (o.variant === 'coffre' ? '' : 'e') : '');
         case 'furniture': return C.FURNITURE_NAMES[o.variant] || 'Meuble';
         case 'hole': return o.boarded ? 'Trou barricadé' : 'Trou dans le mur';
         case 'npc': return C.NPCS && C.NPCS[o.npc] ? C.NPCS[o.npc].name : 'Quelqu\'un';

@@ -19,6 +19,7 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
 | Manger, se soigner, consommer | Bouton **Besoins ▾** de la fiche |
 | Pause / vitesses | `Espace` · `1` `2` `3` |
 | Survivant suivant | `Tab` |
+| Mode exploration / mode combat (exploration de nuit) | `C` ou bouton du bandeau |
 | Réserve / Journal / Menu | `I` · `J` · `Échap` |
 
 ## Mécaniques
@@ -39,9 +40,11 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
   - Les soldats **patrouillent**, regardent devant eux (faisceau de leur lampe) et **entendent le bruit** : fouiller, forcer une serrure au pied-de-biche, déblayer, courir (double-clic) ou tirer produit des cercles de bruit qui les attirent. Un « ? » se remplit quand ils ont un doute, un « ! » quand ils vous ont repéré.
   - À l'entrepôt, ils sont **neutres** : le sergent Maddox fait même du troc. Mais entrer dans leur **zone interdite** (marquée en rouge) déclenche un avertissement, puis ils ouvrent le feu si on ne recule pas ; **voler sous leurs yeux** ou **attaquer l'un d'eux** rend toute la garnison hostile, et elle s'en souviendra aux visites suivantes. Voler leur matériel sans être vu ne pèse pas sur le moral.
   - À l'avant-poste, ils **tirent à vue**. Il faut progresser dans l'ombre.
+  - **Deux modes, comme dans le jeu d'origine** : en **mode exploration**, un clic sur quelqu'un permet de parler ou d'échanger, jamais de frapper. En **mode combat** (bouton du bandeau ou touche `C`), le survivant sort son arme, et un clic sur un soldat l'attaque directement : attaque furtive à la lame s'il ne vous a pas vu, tir si vous avez une arme à feu et une ligne de mire, sinon corps à corps. L'action et la chance de toucher s'affichent près du curseur. Le bouton Combat clignote quand des soldats vous tirent dessus.
   - **Combat** : se cacher dans les **recoins sombres** (invisible tant qu'on ne bouge pas, et plus dur à toucher), **attaque furtive** par-derrière ou sur un soldat endormi (mortelle avec un couteau ou une hachette), corps à corps, **tir** au pistolet ou au fusil (munitions, portée, ligne de mire, très bruyant). Le gilet pare-balles réduit les blessures. Un survivant trop blessé meurt sur place, et son sac est perdu.
   - Un soldat grièvement blessé peut **fuir puis se rendre** : l'épargner ou l'achever. Le moral encaisse différemment un combat pour sa vie, un meurtre dans le sommeil, ou l'exécution d'un homme qui supplie. Les corps peuvent être fouillés (armes, munitions).
   - À l'étage de l'entrepôt, un soldat ivre retient une jeune femme. On peut passer son chemin… ou intervenir.
+- **Cadeaux et récompenses** : si le sac n'a pas la place, rien n'est forcé dedans. Le survivant est averti, le cadeau est posé à terre dans un baluchon et la fenêtre de transfert s'ouvre. On prend ce qui rentre, et le reste attend qu'on fasse de la place, même jusqu'à la visite suivante.
 - **Rapport d'expédition** : au matin, une fiche comme au retour d'une sortie dans le jeu d'origine. On y voit le portrait du pilleur avec un tampon (rentré, blessé, pas revenu), les heures de départ et de retour, le bilan (butin, meubles fouillés, rencontres, morts, blessures), les objets rapportés en icônes, et le **carnet de la nuit** écrit à la première personne, heure par heure.
 - **Parler aux soldats** : chaque soldat a sa conversation. Le survivant pose une question, le soldat répond, et le sergent donne parfois des indices utiles.
 - **Objets de valeur** : bijoux, montre en or, diamants (très rares), la meilleure monnaie de troc.

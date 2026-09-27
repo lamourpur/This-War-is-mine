@@ -56,6 +56,7 @@
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
     E.notes = []; E.effects = []; E.stolen = {}; E.helped = [];
     E.kills = []; E.spared = []; E.provoked = {}; E.events = [];
+    E.mode = 'explore';          // 'explore' | 'combat' (bouton, touche C)
     E.w0 = s.wound; E.startBag = U.copy(bag);
     C.Combat.noises = []; C.Combat.shots = [];
     E.bellRung = false;
@@ -347,8 +348,7 @@
       if (!C.Combat.freed('brute')) { E.say(o, d.greet[(ns.talk - 1) % d.greet.length], 5); return; }
       if (!ns.rescued) {
         ns.rescued = true; ns.helped = true;
-        G().addItems(d.reward);
-        if (C.Render.pop) C.Render.pop(s, Object.keys(d.reward).map(function (k) { return { item: k, n: d.reward[k] }; }));
+        E.give(s, o, d.reward, 'Cadeau de ' + d.name);
         E.home.stats.helped++;
         E.notes.push({ t: first(s) + ' a libéré ' + d.name + ' du soldat qui la retenait.', k: 'good' });
         E.ev('rescue', { name: d.name, items: U.copy(d.reward) });
@@ -364,16 +364,33 @@
     if (d.need && !ns.helped && ns.talk > 1) setTimeout(function () { if (E.active) E.say(o, d.need.ask); }, 1800);
   };
 
+  // Objets donnés par quelqu'un : dans le sac s'il y a la place. Sinon, comme
+  // dans le jeu d'origine, ils sont posés à côté (baluchon) et la fenêtre de
+  // transfert s'ouvre : on prend ce qui rentre, le reste attend qu'on fasse de
+  // la place (il reste là, même à la visite suivante).
+  E.give = function (s, o, items, label) {
+    if (E.weight(items) <= E.room()) {
+      G().addItems(items);
+      if (C.Render.pop) C.Render.pop(s, Object.keys(items).map(function (k) { return { item: k, n: items[k] }; }));
+      return true;
+    }
+    var key = (o.key || 'pnj') + '_don';
+    var pile = G().st.objects.filter(function (x) { return x.key === key; })[0];
+    if (pile) { for (var k in items) pile.loot[k] = (pile.loot[k] || 0) + items[k]; }
+    else pile = G().spawnObject({ key: key, kind: 'cache', variant: 'baluchon', label: label, f: o.f, x: U.clamp(o.x + (s.x < o.x ? -48 : 48), C.WORLD.walkMin + 20, C.WORLD.walkMax - 20), w: 44, h: 26, searched: true, loot: U.copy(items) });
+    G().markDirty();
+    if (C.Render.pop) C.Render.pop(s, [], 'Sac plein : posé à terre', 'warn');
+    if (C.Audio.ready) C.Audio.sfx.deny();
+    if (C.UI && C.UI.openLoot) setTimeout(function () { if (E.active && G().st.objects.indexOf(pile) >= 0 && !C.UI.modalOpen) C.UI.openLoot(pile, s); }, 900);
+    return false;
+  };
+
   E.help = function (s, o) {
     var d = E.npcDef(o), ns = E.npcState(o), need = d.need;
     if (!need || ns.helped || !G().has(need.items)) return;
     G().removeItems(need.items);
     ns.helped = true;
-    if (need.reward) {
-      // La récompense va dans le sac (ou reste par terre si le sac est plein : on la rapporte quand même)
-      G().addItems(need.reward);
-      if (C.Render.pop) C.Render.pop(s, Object.keys(need.reward).map(function (k) { return { item: k, n: need.reward[k] }; }));
-    }
+    if (need.reward) E.give(s, o, need.reward, 'Cadeau de ' + d.name);
     E.say(o, need.thanks, 7);
     E.ev('help', { name: d.name, items: U.copy(need.items), reward: need.reward ? U.copy(need.reward) : null });
     E.home.stats.helped++;
