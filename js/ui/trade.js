@@ -100,8 +100,10 @@
       sp.style.background = diff >= 0 ? '#3f5a2a' : '#a4472c';
       bal.appendChild(sp); mid.appendChild(bal);
       mid.appendChild(offerBox(theirs, sellP, function (id) { theirs[id]--; if (!theirs[id]) delete theirs[id]; render(); }));
-      // Sac : le poids après l'échange doit tenir
-      var over = opts.bag && C.Explore && C.Explore.active ? wsum(theirs) - wsum(mine) - C.Explore.room() : 0;
+      // Sac : un échange qui alourdit le sac doit tenir dans la place libre ;
+      // un échange qui l'allège passe toujours (même si le sac déborde déjà)
+      var gain = wsum(theirs) - wsum(mine);
+      var over = opts.bag && C.Explore && C.Explore.active && gain > 0 ? gain - Math.max(0, C.Explore.room()) : 0;
       var verdict = !give && !take ? 'Choisissez quoi échanger.' : over > 0 ? 'Le sac serait trop lourd (' + over + ' de trop).' : diff >= 0 ? (diff > take * 0.5 && take > 0 ? '« Marché conclu ! » (il y gagne)' : '« Ça me va. »') : '« Ce n\'est pas assez. »';
       mid.appendChild(U.el('div', '', '<div class="lab">Vous recevez</div><b class="trade-verdict">' + take + ' ¤</b>'));
       mid.appendChild(U.el('div', 'trade-say' + (over > 0 ? ' bad' : ''), verdict));
