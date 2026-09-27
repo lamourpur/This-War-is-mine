@@ -1,26 +1,27 @@
-Portraits des visiteurs du refuge (facultatif)
+Portraits des visiteurs du refuge
 
-Déposez ici une photo par visiteur pour remplacer son portrait dessiné,
-puis ajoutez son identifiant à la liste C.VISITOR_PHOTOS en haut de
-js/data/visitor_faces.js, par exemple : C.VISITOR_PHOTOS = ['blesse', 'emma_1'];
-Format conseillé : JPG, buste cadré comme les portraits des survivants
-(visage dans le tiers supérieur), retravaillé au fusain, environ 400 × 480.
+Visages générés par intelligence artificielle (thispersondoesnotexist.com,
+modèle StyleGAN) : ces personnes n'existent pas. Comme pour les survivants,
+chaque visage a été recadré en buste (360 × 420) puis retravaillé « au
+fusain » : noir et blanc chaud, contraste renforcé, rendu lissé, fond
+charbonneux (vignette), grain.
 
-Nom du fichier = identifiant du visiteur :
+Fichier = identifiant du visiteur (js/data/visitor_faces.js) :
 
   marchand.jpg      le marchand
   voisin_aide.jpg   Walt, le voisin d'en face
-  enfants.jpg       les deux enfants (la grande sœur au premier plan)
+  enfants.jpg       les deux enfants (la grande sœur)
   blesse.jpg        l'homme blessé
   milice.jpg        le chef des miliciens
   vieille_dame.jpg  la vieille dame
   troc_voisin.jpg   Dana, du troisième
   emma_1.jpg        Emma
   emma_2.jpg        Victor, le père d'Emma
-  deserteur_1.jpg   Danny, le déserteur (en uniforme)
+  deserteur_1.jpg   Danny, le déserteur
   deserteur_2.jpg   le sergent de la patrouille
-  deserteur_3.jpg   Danny, en civil
+  deserteur_3.jpg   Danny (même visage, cadrage légèrement différent)
 
-Sans fichier, le portrait est dessiné par le jeu (js/data/visitor_faces.js).
-Source conseillée : thispersondoesnotexist.com (visages générés de
-personnes qui n'existent pas), comme pour les survivants.
+Pour ajouter ou remplacer un portrait : déposer le fichier ici, puis
+ajouter son identifiant à la liste C.VISITOR_PHOTOS en haut de
+js/data/visitor_faces.js. Sans fichier, le portrait est dessiné par le jeu.
+En jeu, l'état du visiteur s'ajoute par-dessus (blessure, fatigue…).

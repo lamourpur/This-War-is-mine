@@ -19,7 +19,7 @@
 
   // Visiteurs qui ont une photo dans assets/portraits/pnj/<id>.jpg
   // (ajouter l'identifiant ici après avoir déposé le fichier)
-  C.VISITOR_PHOTOS = [];
+  C.VISITOR_PHOTOS = ['marchand', 'voisin_aide', 'enfants', 'blesse', 'milice', 'vieille_dame', 'troc_voisin', 'emma_1', 'emma_2', 'deserteur_1', 'deserteur_2', 'deserteur_3'];
 
   C.VISITOR_PEOPLE = {
     marchand: {
