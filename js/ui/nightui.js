@@ -170,13 +170,15 @@
           if (on) plan.scav.equip.splice(plan.scav.equip.indexOf(id), 1);
           else if (plan.scav.equip.length < 3) plan.scav.equip.push(id);
           var gun = plan.scav.equip.some(function (x) { return C.ITEMS[x].ammo; });
-          plan.scav.ammo = gun ? Math.min(G().count('munitions'), 6) : 0;
+          plan.scav.ammo = gun ? Math.min(G().count('munitions'), C.stackOf ? C.stackOf('munitions') : 6) : 0;
           renderAll();
         });
         eq.appendChild(b);
       });
       eqG.appendChild(eq);
       if (plan.scav.ammo) eqG.appendChild(U.el('small', '', '<span style="color:#b9ae95">+ ' + plan.scav.ammo + ' munitions</span>'));
+      else if (plan.scav.equip.some(function (x) { return C.ITEMS[x].ammo; })) eqG.appendChild(U.el('small', '', '<span style="color:#d9866a">Aucune munition en réserve : l\'arme à feu ne pourra pas tirer.</span>'));
+      if (plan.scav.equip.length) eqG.appendChild(U.el('small', '', '<span style="color:#8a8170">Sur place, choisissez l\'arme en main dans le bandeau (touche A).</span>'));
       var row2 = U.el('div', 'opt-row'); row2.appendChild(eqG);
       scavBox.appendChild(row2);
     }
@@ -194,7 +196,7 @@
       var holes = st.objects.filter(function (o) { return o.kind === 'hole' && !o.boarded; }).length;
       var heaterFuel = 0; st.objects.forEach(function (o) { if (o.kind === 'heater') heaterFuel = Math.max(heaterFuel, o.fuel || 0); });
       var estTemp = Math.round(st.weather.out - 3 + 6 - holes * 1.8 + (heaterFuel > 0 ? C.World.heaterOutput(st) * Math.min(1, heaterFuel / 600) : 0));
-      var hungry = present.filter(function (s) { return s.hunger >= 45; }).map(function (s) { return s.name.split(' ')[0]; });
+      var hungry = present.filter(function (s) { return s.hunger >= 45; }).map(function (s) { return s.name.split(' ')[0] + (s.hunger >= 100 ? ' (meurt de faim)' : ''); });
       function tile(cls, icon, big, small) { return '<div class="ni ' + cls + '">' + C.Icon(icon) + '<div><b>' + big + '</b>' + small + '</div></div>'; }
       info.innerHTML =
         tile(sleepers > beds ? 'warn' : '', 'bed', beds + ' lit' + (beds > 1 ? 's' : '') + ' / ' + sleepers, sleepers > beds ? (sleepers - beds) + (sleepers - beds > 1 ? ' dormiront' : ' dormira') + ' par terre' : 'Tout le monde a un lit') +

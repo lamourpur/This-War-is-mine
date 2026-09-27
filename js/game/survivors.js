@@ -49,7 +49,7 @@
     var inBed = working && a.kind === 'sleep';
     var cold = env.temp < 8;
 
-    s.hunger += h * (sleeping ? 0.7 : 1.0) * (cold ? 1.2 : 1);
+    Surv.feedHunger(s, h * (sleeping ? 0.7 : 1.0) * (cold ? 1.2 : 1), h);
 
     var frate;
     if (working && def.fatigue != null) frate = def.fatigue;
@@ -92,10 +92,32 @@
     Surv.checkDeath(s);
   };
 
-  Surv.checkDeath = function (s) {
+  // Faim, comme dans This War of Mine : on ne meurt pas d'un coup en passant
+  // le seuil. Arrivé au bout (100), le survivant « meurt de faim » ; la mort
+  // ne tombe qu'à l'aube, et seulement s'il a passé une journée entière dans
+  // cet état sans rien manger (STARVE_H heures). Il y a donc toujours au
+  // moins une journée pour le nourrir, même au retour d'une expédition.
+  Surv.STARVE_H = 24;
+  // amount : faim ajoutée · hours : durée écoulée (compte si déjà à bout)
+  Surv.feedHunger = function (s, amount, hours) {
+    var was = s.hunger;
+    s.hunger += amount;
+    if (s.hunger >= 100) {
+      s.hunger = 100;
+      if (was >= 100) s.starving = (s.starving || 0) + hours;
+      else {
+        s.starving = 0;
+        // Alerte dans la scène au moment où il bascule
+        if (G().st && G().st.phase === 'day' && C.Render && C.Render.pop) C.Render.pop(s, [], 'Meurt de faim !', 'warn');
+      }
+    } else s.starving = 0;
+  };
+
+  // atDawn : bilan du matin (seul moment où la faim peut tuer)
+  Surv.checkDeath = function (s, atDawn) {
     if (!s.alive) return;
     var cause = null;
-    if (s.hunger >= 100) cause = 'faim';
+    if (atDawn && s.hunger >= 100 && (s.starving || 0) >= Surv.STARVE_H) cause = 'faim';
     else if (s.wound >= 100) cause = 'blessures';
     else if (s.sick >= 100) cause = 'maladie';
     if (cause) Surv.kill(s, cause);
@@ -137,7 +159,8 @@
   // --- Libellés d'état (comme les icônes de statut)
   Surv.states = function (s) {
     var out = [];
-    if (s.hunger >= 70) out.push({ k: 'hunger', t: 'Affamé(e)', lv: 3 });
+    if (s.hunger >= 100) out.push({ k: 'hunger', t: 'Meurt de faim', lv: 3 });
+    else if (s.hunger >= 70) out.push({ k: 'hunger', t: 'Affamé(e)', lv: 3 });
     else if (s.hunger >= 45) out.push({ k: 'hunger', t: 'Très faim', lv: 2 });
     else if (s.hunger >= 20) out.push({ k: 'hunger', t: 'A faim', lv: 1 });
 
@@ -185,5 +208,8 @@
       report.push({ t: n + ' traîne des pieds sans son café.', k: 'bad' });
     }
     if (s.moral < 15) s.brokenDays++; else s.brokenDays = 0;
+    if (s.hunger >= 100) {
+      report.push({ t: n + ' meurt de faim. Sans nourriture aujourd\'hui, ' + (s.look && s.look.female ? 'elle' : 'il') + ' ne passera pas la nuit.', k: 'bad' });
+    }
   };
 })(window.CQR);

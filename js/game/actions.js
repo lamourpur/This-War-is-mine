@@ -420,6 +420,7 @@
       done: function (s, o, p) {
         var f = C.FOODS[p.food];
         s.hunger = Math.max(0, s.hunger - f.hunger);
+        s.starving = 0;
         s.moral = U.clamp(s.moral + f.moral, 0, 100);
         var msg = first(s) + ' a mangé : ' + C.ITEMS[p.food].name.toLowerCase() + '.';
         if (f.sick && C.R.chance(f.sick)) { s.sick = Math.min(100, s.sick + 18); msg += ' Ça passe mal…'; }

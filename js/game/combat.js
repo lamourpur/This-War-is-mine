@@ -54,6 +54,50 @@
     return null;
   };
 
+  // Arme en main, choisie par le joueur comme dans This War of Mine
+  // (sélecteur du bandeau d'exploration, touche A). Sans choix, ou si l'arme
+  // n'est plus dans le sac (ou plus de munitions), la meilleure disponible.
+  K.MELEE_ORDER = ['hachette', 'couteau', 'pied_de_biche', 'pelle'];
+  K.weapons = function () {
+    var out = [];
+    ['fusil', 'pistolet'].forEach(function (id) {
+      if (G().count(id) > 0) out.push({ id: id, gun: true, name: K.GUNS[id].name, ok: G().count('munitions') > 0, why: G().count('munitions') > 0 ? '' : 'pas de munitions' });
+    });
+    K.MELEE_ORDER.forEach(function (id) { if (G().count(id) > 0) out.push({ id: id, name: K.MELEE[id].name, ok: true }); });
+    out.push({ id: 'poings', name: 'poings', ok: true });
+    return out;
+  };
+  function usable(id) {
+    if (!id) return false;
+    if (id === 'poings') return true;
+    if (G().count(id) <= 0) return false;
+    return !K.GUNS[id] || G().count('munitions') > 0;
+  }
+  K.weapon = function () {
+    var w = E() && E().weapon;
+    return usable(w) ? w : (K.bestGun() || K.bestMelee());
+  };
+  K.isGun = function (id) { return !!K.GUNS[id]; };
+  K.setWeapon = function (id) {
+    if (!E() || !E().active) return;
+    var s = E().s;
+    if (!usable(id)) {
+      if (s && C.Render.pop) C.Render.pop(s, [], K.GUNS[id] && G().count(id) > 0 ? 'Pas de munitions' : 'Pas dans le sac', 'warn');
+      if (C.Audio.ready) C.Audio.sfx.deny();
+      return;
+    }
+    E().weapon = id;
+    if (C.Audio.ready) C.Audio.sfx.click();
+    if (s && C.Render.pop) C.Render.pop(s, [], 'En main : ' + (K.GUNS[id] || K.MELEE[id]).name, null);
+    if (C.UI && C.UI.updateExploreHud) C.UI.updateExploreHud();
+  };
+  // Passe à l'arme suivante (touche A)
+  K.cycleWeapon = function () {
+    var list = K.weapons().filter(function (w) { return w.ok; }), cur = K.weapon();
+    var i = 0; for (var j = 0; j < list.length; j++) if (list[j].id === cur) i = j;
+    if (list.length > 1) K.setWeapon(list[(i + 1) % list.length].id);
+  };
+
   // ------------------------------------------------------------ soldats
   K.type = function (g) { return C.GUARD_TYPES[g.type]; };
   // Nom affiché : prénom propre (Rick, Kurt…) ou nom du type
@@ -668,7 +712,8 @@
       m.entries.push(entry('Attaquer', 'passez en mode combat (touche C)', 'Mode exploration : on ne peut pas attaquer.', null));
       return m;
     }
-    var mw = K.bestMelee(), md = K.MELEE[mw];
+    var held = K.weapon();
+    var mw = K.isGun(held) ? K.bestMelee() : held, md = K.MELEE[mw];
     var sneaky = K.unaware(g, s) || K.isHidden(s);
     var lbl = sneaky ? 'Attaque furtive (' + md.name + ')' : 'Attaquer (' + md.name + ')';
     var sub = sneaky ? (md.stealth === 'kill' ? 'le tue sur le coup' : 'coup violent par surprise') : 'corps à corps';
@@ -682,7 +727,7 @@
       };
     }
     m.entries.push(entry(lbl, sub, null, confirmNeutral(start('attack', { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) })), mw === 'poings' ? null : mw));
-    var gun = K.bestGun();
+    var gun = K.isGun(held) ? held : K.bestGun();
     if (gun || G().count('pistolet') || G().count('fusil')) {
       var gd = K.GUNS[gun || (G().count('fusil') ? 'fusil' : 'pistolet')];
       var d = Math.abs(g.x - s.x);
@@ -714,32 +759,36 @@
   K.plan = function (s, g) {
     if (g.dead) return null;
     if (g.state === 'surrender') return { kind: 'menu', label: 'Il se rend' };
-    var mw = K.bestMelee(), md = K.MELEE[mw];
+    var held = K.weapon();
     var unaware = K.unaware(g, s) || K.isHidden(s);
-    // Attaque furtive à la lame d'abord : silencieuse
-    if (unaware && md.stealth === 'kill' && g.f === s.f) return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: 'Attaque furtive (' + md.name + ')', sub: 'le tue sur le coup' };
-    var gun = K.bestGun();
-    if (gun) {
-      var gd = K.GUNS[gun], d = Math.abs(g.x - s.x);
-      if (g.f === s.f && d <= gd.range && C.Nav.clear(s.f, s.x, g.x)) {
+    // Arme à feu en main : on tire (ou on dit pourquoi on ne peut pas)
+    if (K.isGun(held)) {
+      var gun = held, gd = K.GUNS[gun], d = Math.abs(g.x - s.x);
+      if (g.f !== s.f || d > gd.range || !C.Nav.clear(s.f, s.x, g.x)) {
+        return { kind: 'warn', label: g.f !== s.f ? 'Pas au même étage' : d > gd.range ? 'Trop loin pour tirer' : 'Pas de ligne de mire' };
+      }
+      {
         var pH = Math.min(0.95, gd.acc * (1 - 0.45 * d / gd.range) * (G().hasTrait(s, 'combattant') ? 1.15 : 1) * (unaware ? 1.25 : 1) * (s.wound >= 60 ? 0.8 : 1));
         return { kind: 'shoot', p: { weapon: gun, tool: gd.tool }, label: 'Tirer (' + gd.name + ')', sub: Math.round(pH * 100) + ' % · ' + G().count('munitions') + ' mun.' };
       }
     }
+    var mw = held, md = K.MELEE[mw];
+    if (unaware && md.stealth === 'kill' && g.f === s.f) return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: 'Attaque furtive (' + md.name + ')', sub: 'le tue sur le coup' };
     return { kind: 'attack', p: { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) }, label: (unaware ? 'Attaque furtive (' : 'Frapper (') + md.name + ')', sub: unaware ? 'coup par surprise' : 'corps à corps' };
   };
   K.quickAttack = function (s, g, sx, sy) {
     var pl = K.plan(s, g);
     if (!pl) return;
     if (pl.kind === 'menu') { C.UI.openContext(g, sx, sy); return; }
+    if (pl.kind === 'warn') { C.Render.pop(s, [], pl.label, 'warn'); if (C.Audio.ready) C.Audio.sfx.deny(); return; }
     C.Actions.start(s, g, pl.kind, pl.p);
   };
   // Arme tenue en mode combat (pour le dessin)
   K.readyTool = function (s) {
     if (!E() || !E().active || E().mode !== 'combat' || s !== E().s) return null;
-    var gun = K.bestGun();
-    if (gun) return K.GUNS[gun].tool;
-    return K.MELEE[K.bestMelee()].tool || 'fists';
+    var w = K.weapon();
+    if (K.isGun(w)) return K.GUNS[w].tool;
+    return K.MELEE[w].tool || 'fists';
   };
 
   // Mila est libre quand le soldat ivre n'est plus là (mort, parti ou à genoux)

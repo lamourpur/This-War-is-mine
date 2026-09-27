@@ -124,7 +124,7 @@
     sleepers.forEach(function (s, i) {
       var inBed = i < beds;
       s.fatigue = inBed ? 0 : Math.max(0, s.fatigue - 55);
-      s.hunger += 8;
+      C.Surv.feedHunger(s, 8, 10);
       if (s.wound > 0 && s.hunger < 70) s.wound = Math.max(0, s.wound - (s.bandaged > 0 ? 6 : 2) * (inBed ? 1.5 : 1));
       if (s.bandaged > 0) s.bandaged = Math.max(0, s.bandaged - 10);
       coldNight(s, nightTemp, inBed ? 0.6 : 1);
@@ -137,7 +137,7 @@
 
     guards.forEach(function (s) {
       s.fatigue = Math.min(100, s.fatigue + 25);
-      s.hunger += 10;
+      C.Surv.feedHunger(s, 10, 10);
       coldNight(s, nightTemp, 1);
     });
 
@@ -165,7 +165,7 @@
       if (gotN >= 6) { C.Mood.think(scav, 'scav_good'); scav.moral = Math.min(100, scav.moral + 2); }
       st.lastScavLoc = plan.scav.loc;
       scav.fatigue = Math.min(100, scav.fatigue + 35);
-      scav.hunger += 12;
+      C.Surv.feedHunger(scav, 12, 10);
       coldNight(scav, nightOut, 0.7);
       G().addItems(ex.items, true);
       reserved = {};
@@ -185,7 +185,7 @@
       if (scav.alive) st.pendingExp.story.push({ t: 'Rentré' + fe + ' avant l\'aube' + (nGot ? ', avec ' + nGot + ' objet' + (nGot > 1 ? 's' : '') + ' dans le sac.' : ', les mains vides.'), k: 'end' });
       st.lastScavLoc = plan.scav.loc;
       scav.fatigue = Math.min(100, scav.fatigue + 35);
-      scav.hunger += 12;
+      C.Surv.feedHunger(scav, 12, 10);
       coldNight(scav, nightOut, 0.7);
       if (scav.alive) G().addItems(res.returnItems, true);
       reserved = {};
@@ -426,8 +426,8 @@
     var people = [];
     st.survivors.forEach(function (s) {
       if (!s.alive) return;
+      C.Surv.checkDeath(s, true);
       C.Surv.daily(s, st, people);
-      C.Surv.checkDeath(s);
     });
     C.Mood.dawn(st, people);
     people.forEach(function (r) { add('people', r.t, r.k); });

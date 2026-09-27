@@ -315,6 +315,7 @@
         case 'j': case 'J': if (!C.UI.modalOpen) C.UI.openLog(); break;
         case 'n': case 'N': if (!C.UI.modalOpen && st.phase === 'day') { if (Main.skipping) Main.stopSkip(); else Main.skipDay(); } break;
         case 'c': case 'C': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.toggleMode(); break;
+        case 'a': case 'A': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.cycleWeapon(); break;
       }
     });
   }

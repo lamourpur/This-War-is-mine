@@ -493,6 +493,7 @@
   };
 
   // ------------------------------------------------ exploration de nuit
+  function wpnArt(id, sz) { return id === 'poings' ? '<i class="xh-fist">' + I('fist') + '</i>' : C.ItemArt.img(id, sz); }
   UI.showExploreHud = function (on) {
     var h = $('explore-hud');
     if (!h) {
@@ -504,10 +505,26 @@
           '<button class="xh-m" data-m="explore">' + I('speech') + '<span>Exploration</span></button>' +
           '<button class="xh-m" data-m="combat">' + I('skull') + '<span>Combat</span></button>' +
           '<kbd>C</kbd></div>' +
+        '<div class="xh-wpn" title="Arme en main (touche A)"><button class="xh-wb"></button><kbd>A</kbd><div class="xh-wl hidden"></div></div>' +
         '<button class="btn xh-home">' + I('home') + 'Rentrer</button>';
       Array.prototype.forEach.call(h.querySelectorAll('.xh-m'), function (b) {
         b.addEventListener('click', function () { C.Combat.setMode(b.dataset.m); });
       });
+      var wl = h.querySelector('.xh-wl');
+      h.querySelector('.xh-wb').addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!wl.classList.contains('hidden')) { wl.classList.add('hidden'); return; }
+        var cur = C.Combat.weapon();
+        wl.innerHTML = '<div class="xh-wt">Arme en main</div>' + C.Combat.weapons().map(function (w) {
+          return '<button data-w="' + w.id + '" class="' + (w.id === cur ? 'on' : '') + (w.ok ? '' : ' off') + '">' + wpnArt(w.id, 26) +
+            '<span>' + U.esc(w.name) + '</span><small>' + (w.gun ? (w.ok ? G().count('munitions') + ' mun.' : w.why) : w.id === 'poings' ? 'à mains nues' : 'corps à corps') + '</small></button>';
+        }).join('');
+        Array.prototype.forEach.call(wl.querySelectorAll('button'), function (b) {
+          b.addEventListener('click', function (ev) { ev.stopPropagation(); C.Combat.setWeapon(b.dataset.w); wl.classList.add('hidden'); });
+        });
+        wl.classList.remove('hidden');
+      });
+      document.addEventListener('click', function () { wl.classList.add('hidden'); });
       h.querySelector('.xh-home').addEventListener('click', function () {
         var s = C.Explore.s, ex = G().st.objects.filter(function (o) { return o.kind === 'exit'; })[0];
         if (s && ex) C.Actions.start(s, ex, 'leave');
@@ -528,6 +545,13 @@
     var mode = C.Explore.mode || 'explore';
     Array.prototype.forEach.call(h.querySelectorAll('.xh-m'), function (b) { b.classList.toggle('on', b.dataset.m === mode); });
     h.classList.toggle('combat', mode === 'combat');
+    var w = C.Combat.weapon(), gun = C.Combat.isGun(w);
+    var key = w + ':' + (gun ? G().count('munitions') : '');
+    var wb = h.querySelector('.xh-wb');
+    if (wb.dataset.k !== key) {
+      wb.dataset.k = key;
+      wb.innerHTML = wpnArt(w, 30) + '<span class="tb-k">En main</span><b>' + U.esc((C.Combat.GUNS[w] || C.Combat.MELEE[w]).name) + '</b>' + (gun ? '<em>' + G().count('munitions') + ' mun.</em>' : '');
+    }
     // Des soldats vous tirent dessus et vous êtes en exploration : le bouton combat clignote
     var danger = C.Combat.guards().some(function (g) { return g.state === 'alert' && !g.dead; });
     h.classList.toggle('danger', danger && mode !== 'combat');

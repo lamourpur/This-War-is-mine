@@ -72,6 +72,7 @@
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
     E.notes = []; E.effects = []; E.stolen = {}; E.helped = [];
     E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = []; E.warnedExposed = false;
+    E.weapon = null;             // arme en main choisie (null = la meilleure)
     E.mode = 'explore';          // 'explore' | 'combat' (bouton, touche C)
     E.w0 = s.wound; E.startBag = U.copy(bag);
     C.Combat.noises = []; C.Combat.shots = [];
