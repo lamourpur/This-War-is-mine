@@ -14,7 +14,8 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 - `js/data/` objets (`C.ITEMS` : w = poids, v = valeur de troc), constructions, survivants, lieux de pillage, événements, plan du refuge (`shelter.js`), plans explorables et PNJ (`maps.js` : `C.MAPS`, `C.NPCS`).
 - `js/game/` état (`C.Game.st`), déplacements (`nav.js`), actions et menus contextuels (`actions.js`), besoins/moral, monde, nuit (`night.js`, `Night.resolve`), exploration jouable (`explore.js`).
 - `js/render/` monde 1600×900, 4 étages (sol y 800/630/460/290). Couche statique reconstruite quand `C.Render.dirty` (`G().markDirty()`), couche dynamique chaque frame. `sketch.js` = trait crayonné, `objects.js` = meubles, `figure.js` = personnages articulés, `portrait.js` = portraits (photos `assets/portraits/<id>.jpg` + surcouches d'état), `itemart.js` = icônes d'objets, `textures.js` / `props.js` = ressources CC0 peintes dans les contours.
-- `js/ui/` HUD, fenêtres (`panels.js`), fouille par glisser-déposer (`loot.js`), troc (`trade.js`), écran de nuit (`nightui.js`).
+- `js/ui/` HUD, fenêtres (`panels.js`), fouille par glisser-déposer (`loot.js`), troc (`trade.js`), écran de nuit (`nightui.js`), carte de la ville en SVG (`citymap.js`, positions `POS`).
+- Sac du pilleur en cases : `C.stackOf(id)` (piles, `C.STACK` dans `items.js`), `Explore.capacity` (10/14 cases), `Explore.slots`, `Explore.canTake(id)`, `Explore.fits(items)`.
 
 ## Exploration de nuit
 `C.Explore.start(plan, onDone)` remplace temporairement les globales du plan (`C.STAIRS/WALLS/WINDOWS/SLOTS/DECOR/THEME`) et `C.Game.st` par un état d'exploration (phase `'explore'`, inventaire = sac, un seul survivant) ; tous les systèmes (nav, actions, fouille, rendu) sont réutilisés. `finish()` sauvegarde l'état du lieu dans `st.locations[id]`, restaure tout, puis `Night.resolve` lit `plan.scav.explored`. Les lieux sans plan passent par le pillage abstrait de `night.js`.

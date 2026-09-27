@@ -125,19 +125,15 @@
       scavBox.classList.toggle('hidden', !s);
       if (!s) return;
       scavBox.innerHTML = '<h3>' + C.Icon('pack') + 'Expédition de ' + U.esc(s.name.split(' ')[0]) + '</h3>';
-      var ll = U.el('div', 'loc-list');
-      C.LOCATIONS.forEach(function (l) {
-        if (l.unlock > st.day) return;
-        var ls = st.locations[l.id];
-        var b = U.el('button', 'loc has-photo' + (plan.scav.loc === l.id ? ' on' : ''));
-        var stashNote = l.stash && !ls.stashTaken && ls.visits > 0 ? ' · réserve verrouillée' : '';
-        var pips = '<span class="pips">' + [0, 1, 2].map(function (i) { return '<i class="' + (i < l.danger ? 'on' : '') + '"></i>'; }).join('') + '</span>';
-        b.innerHTML = '<span class="loc-thumb" style="background-image:url(assets/locations/' + l.id + '.jpg)"></span><b>' + l.name + '</b>' + (C.isPlayableLocation(l.id) ? '<span class="loc-play">À explorer</span>' : '') + '<small><span class="danger' + l.danger + '">' + pips + C.DANGER_LABELS[l.danger] + '</span> · ' + C.RESIDENT_LABELS[l.residents] + (ls.residentsGone ? ' (partis)' : '') + '</small><small>' + lootLevel(st, l) + ' · ' + ls.visits + ' visite' + (ls.visits > 1 ? 's' : '') + stashNote + '</small>';
-        b.title = l.desc;
-        b.addEventListener('click', function () { plan.scav.loc = l.id; renderAll(); });
-        ll.appendChild(b);
+      // Carte de la ville : on choisit la sortie en cliquant sur un repère
+      var mapBox = U.el('div', 'cm-box');
+      scavBox.appendChild(mapBox);
+      C.CityMap.render(mapBox, st, plan.scav.loc, function (id) { plan.scav.loc = id; renderAll(); }, function (l) {
+        var ls = st.locations[l.id] || {};
+        if (l.unlock > st.day) return '<b>' + U.esc(l.name) + '</b><span>On n\'en sait encore rien. (jour ' + l.unlock + ')</span>';
+        return '<b>' + U.esc(l.name) + '</b><span class="danger' + l.danger + '">' + C.DANGER_LABELS[l.danger] + '</span> · ' + C.RESIDENT_LABELS[l.residents] + (Object.keys(ls.hostile || {}).length ? ' · <em>hostiles</em>' : '') +
+          '<span>' + lootLevel(st, l) + ' · ' + (ls.visits || 0) + ' visite' + ((ls.visits || 0) > 1 ? 's' : '') + '</span>';
       });
-      scavBox.appendChild(ll);
       var loc = plan.scav.loc ? C.locationDef(plan.scav.loc) : null;
       if (loc) {
         // Grande photo du lieu choisi, description tapée à la machine par-dessus
