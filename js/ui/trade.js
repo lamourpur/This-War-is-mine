@@ -45,6 +45,12 @@
     function buyP(id, n2) { return Math.max(1, Math.round(Trade.buyPrice(id, n2) * (likes[id] || 1))); }
     function sellP(id, n2) { return Trade.sellPrice(id, n2); }
     var p = C.UI.panel('Troc' + (opts.name ? ' avec ' + U.esc(opts.name) : ''), U.esc(s.name.split(' ')[0]) + ' négocie' + (nego ? ' — négociateur : bien meilleurs prix' : '') + ' · clic : 1, Maj+clic : 5', { foot: true, noClose: true, wide: true });
+    if (opts.face) {
+      var fr = U.el('div', 'trade-face');
+      fr.appendChild(C.UI.portrait(opts.face.s, 70, 84));
+      fr.appendChild(U.el('div', '', '<b>' + U.esc(who) + '</b><span>' + U.esc(opts.faceLine || 'Voyons ce que vous avez.') + '</span>'));
+      p.body.appendChild(fr);
+    }
     var wantList = Object.keys(likes).filter(function (k) { return likes[k] > 1; });
     if (wantList.length) p.body.appendChild(U.el('p', 'trade-wants', C.Icon('star') + '<span>' + U.esc(who) + ' recherche : ' + wantList.map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ') + '</span>'));
     var wrap = U.el('div', 'trade');

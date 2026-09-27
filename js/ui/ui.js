@@ -306,11 +306,14 @@
     var s = UI.selectedSurv();
     var m = C.Actions.menu(s, o);
     var cm = $('ctxmenu');
+    var face = (o.kind === 'npc' || o.kind === 'guard') && C.npcPortrait ? C.npcPortrait(o) : null;
     var html = '<div class="cm-title">' + U.esc(m.title) + '</div>';
     if (m.desc) html += '<div class="cm-desc">' + U.esc(m.desc) + '</div>';
+    if (face) html = '<div class="cm-face-row"><div class="cm-face"></div><div>' + html + '</div></div>';
     if (m.hint && m.entries.length && o.kind !== 'stock') html += '<div class="cm-hint">' + U.esc(m.hint) + '</div>';
     else if (s && m.entries.length) html += '<div class="cm-hint who">' + U.esc(first(s)) + ' peut :</div>';
     cm.innerHTML = html;
+    if (face) cm.querySelector('.cm-face').appendChild(UI.portrait(face.s, 58, 70));
     m.entries.forEach(function (e) { cm.appendChild(itemBtn(e)); });
     if (!m.entries.length && !m.desc) return;
     UI.placeMenu(cm, sx, sy);

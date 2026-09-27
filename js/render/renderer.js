@@ -499,14 +499,17 @@
     if (b && b.until > performance.now()) drawBubble(ctx, b.text, lx, topY - (sel || hov ? 30 : 8), b.until - performance.now());
   }
 
-  function drawBubble(ctx, text, x, y, left) {
+  // face : petit portrait (canvas) de celui qui parle, à gauche du texte
+  function drawBubble(ctx, text, x, y, left, face) {
     ctx.save();
     ctx.font = '15px "Special Elite", monospace';
     var words = text.split(' '), lines = [], cur = '';
     words.forEach(function (w) { var tst = cur ? cur + ' ' + w : w; if (ctx.measureText(tst).width > 220 && cur) { lines.push(cur); cur = w; } else cur = tst; });
     if (cur) lines.push(cur);
     var w = 0; lines.forEach(function (l) { w = Math.max(w, ctx.measureText(l).width); });
-    var h = lines.length * 18 + 10, bx = x - w / 2 - 10, by = y - h - 8;
+    var pad = face ? 42 : 0;
+    w += pad;
+    var h = Math.max(lines.length * 18 + 10, face ? 50 : 0), bx = x - w / 2 - 10, by = y - h - 8;
     bx = U.clamp(bx, C.WORLD.left, C.WORLD.right - w - 16);
     // Évite de recouvrir une autre bulle ou un prénom : d'abord en glissant
     // sur le côté (la pointe doit rester sous la bulle), sinon vers le haut
@@ -542,9 +545,26 @@
     ctx.fill();
     ctx.strokeStyle = '#1a1816'; ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = '#211e1a';
-    lines.forEach(function (l, i) { ctx.fillText(l, bx + 9, by + 19 + i * 18); });
+    lines.forEach(function (l, i) { ctx.fillText(l, bx + 9 + pad, by + 19 + i * 18); });
+    if (face) {
+      ctx.drawImage(face, bx + 6, by + 5, 34, 40);
+      ctx.strokeStyle = '#1a1816'; ctx.lineWidth = 1; ctx.strokeRect(bx + 6, by + 5, 34, 40);
+    }
     ctx.restore();
   }
+  // Petit portrait mis en cache pour les bulles
+  var FACES = {};
+  R.faceCanvas = function (o) {
+    var p = C.npcPortrait && C.npcPortrait(o);
+    if (!p) return null;
+    var key = p.s.id + ':' + p.s.wound + ':' + p.s.sick + ':' + p.s.moral;
+    if (!FACES[key] || !FACES[key].ok) {
+      var cv = FACES[key] ? FACES[key].cv : document.createElement('canvas');
+      R.portrait(cv, p.s, 34, 40);
+      FACES[key] = { cv: cv, ok: C.Portrait.hasPhoto(p.s.defId) };
+    }
+    return FACES[key].cv;
+  };
 
   R.bubbles = {};
   R.bubbleRects = [];
@@ -1040,7 +1060,7 @@
         var o = C.Game.obj(+uid);
         if (!o) return;
         var bb = C.ObjDraw.bounds(o);
-        drawBubble(ctx, b.text, o.x, bb.y - 6, b.until - nowMs);
+        drawBubble(ctx, b.text, o.x, bb.y - 6, b.until - nowMs, R.faceCanvas(o));
       });
     }
 

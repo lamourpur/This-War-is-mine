@@ -830,3 +830,13 @@ body.skipping #tb-clock { color: var(--amber); }
 #door-alert.with-face .ico { display: none; }
 #door-alert .card-pf { width: 48px; height: 56px; padding: 2px; background: #efe6d0; flex: none; }
 #door-alert .card-pf canvas { width: 44px; height: 52px; display: block; }
+
+/* ---------- Portraits des personnages rencontrés ---------- */
+.cm-face-row { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; margin-bottom: 4px; }
+.cm-face .card-pf { width: 62px; height: 74px; padding: 2px; background: #efe6d0; box-shadow: 0 2px 6px rgba(0,0,0,.35); transform: rotate(-2deg); }
+.cm-face .card-pf canvas { width: 58px; height: 70px; display: block; }
+.trade-face { display: flex; align-items: center; gap: 14px; margin: 0 0 12px; }
+.trade-face .card-pf { width: 76px; height: 90px; padding: 3px; background: #efe6d0; box-shadow: 0 3px 8px rgba(0,0,0,.35); transform: rotate(-2deg); flex: none; }
+.trade-face .card-pf canvas { width: 70px; height: 84px; display: block; }
+.trade-face b { display: block; font-family: var(--f-display); font-weight: normal; font-size: 26px; letter-spacing: .03em; line-height: 1; }
+.trade-face span { font-family: var(--f-note); font-size: 15px; color: var(--ink-2); }

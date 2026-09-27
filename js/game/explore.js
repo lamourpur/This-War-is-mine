@@ -470,7 +470,7 @@
     var d = E.npcDef(o);
     if (locState(E.home, E.loc).angry) { E.say(o, d.afterSteal ? d.afterSteal[1] : 'Je n\'ai rien à échanger avec vous.'); return; }
     E.say(o, d.trade.say || 'Voyons ce que vous avez.', 4);
-    C.TradeUI.open(s, E.traderStock(o), null, { name: d.name, likes: d.trade.likes, bag: true });
+    C.TradeUI.open(s, E.traderStock(o), null, { name: d.name, likes: d.trade.likes, bag: true, face: C.npcPortrait(o), faceLine: d.trade.say });
   };
 
   // Un objet appartient-il aux habitants ? (prendre = voler)

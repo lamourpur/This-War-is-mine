@@ -21,6 +21,24 @@
   // (ajouter l'identifiant ici après avoir déposé le fichier)
   C.VISITOR_PHOTOS = ['marchand', 'voisin_aide', 'enfants', 'blesse', 'milice', 'vieille_dame', 'troc_voisin', 'emma_1', 'emma_2', 'deserteur_1', 'deserteur_2', 'deserteur_3'];
 
+  // Personnages rencontrés la nuit : photo assets/portraits/pnj/<id>.jpg
+  C.NPC_PHOTOS = ['hank', 'arthur', 'edith', 'sal', 'daniel', 'rosa', 'lili', 'ruth', 'benny', 'dale', 'carol', 'hal', 'tim', 'mila', 'maddox', 'holt', 'soldat', 'rick', 'kurt', 'ray'];
+  // Soldats et pilleurs : clé de l'objet (ou type) → portrait
+  var GUARD_FACE = { maddox: 'maddox', brute: 'holt', rick: 'rick', kurt: 'kurt', ray: 'ray' };
+  // Portrait d'un personnage de la scène (PNJ ou soldat), ou null
+  C.npcPortrait = function (o) {
+    if (!o) return null;
+    var id = null, st = {}, name = '';
+    if (o.kind === 'npc' && C.NPCS[o.npc]) { id = o.npc; st = C.NPCS[o.npc].cond || {}; name = C.NPCS[o.npc].name; }
+    else if (o.kind === 'guard') {
+      id = GUARD_FACE[o.key] || (o.type === 'soldat' ? 'soldat' : null);
+      name = o.name || (C.GUARD_TYPES[o.type] || {}).name;
+      if (o.hp != null && o.maxHp && o.hp < o.maxHp * 0.6) st = { wound: 45 };
+    }
+    if (!id || C.NPC_PHOTOS.indexOf(id) < 0) return null;
+    return { s: { id: 'p_' + id, defId: 'p_' + id, moral: o.state === 'surrender' ? 20 : 60, fatigue: 30, wound: st.wound || 0, sick: st.sick || 0 }, name: name };
+  };
+
   C.VISITOR_PEOPLE = {
     marchand: {
       name: 'Le marchand',

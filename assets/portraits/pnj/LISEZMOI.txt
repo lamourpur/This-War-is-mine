@@ -21,6 +21,22 @@ Fichier = identifiant du visiteur (js/data/visitor_faces.js) :
   deserteur_2.jpg   le sergent de la patrouille
   deserteur_3.jpg   Danny (même visage, cadrage légèrement différent)
 
+Personnages rencontrés la nuit (liste C.NPC_PHOTOS, même dossier) :
+
+  hank.jpg    Hank, vagabond blessé        arthur.jpg  Arthur Whitaker
+  edith.jpg   Edith Whitaker               sal.jpg     Sal, marchand de l'église
+  daniel.jpg  le père Daniel               rosa.jpg    Rosa, réfugiée
+  lili.jpg    Lili, sa fille               ruth.jpg    Dr Ruth Keller
+  benny.jpg   Benny, infirmier             dale.jpg    Dale, soldat blessé
+  carol.jpg   Carol, institutrice          hal.jpg     Hal, père de famille
+  tim.jpg     Tim, enfant                  mila.jpg    Mila (entrepôt)
+  maddox.jpg  sergent Maddox               holt.jpg    Holt, le soldat ivre
+  soldat.jpg  soldats de garde             rick.jpg    Rick, pilleur
+  kurt.jpg    Kurt, pilleur                ray.jpg     Ray, pilleur
+
+Ils apparaissent dans les bulles quand ils parlent, dans leur menu et
+dans la fenêtre de troc.
+
 Pour ajouter ou remplacer un portrait : déposer le fichier ici, puis
 ajouter son identifiant à la liste C.VISITOR_PHOTOS en haut de
 js/data/visitor_faces.js. Sans fichier, le portrait est dessiné par le jeu.

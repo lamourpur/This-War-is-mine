@@ -614,6 +614,11 @@
     im.onerror = function () {};
     im.src = 'assets/portraits/pnj/' + id + '.jpg';
   });
+  (C.NPC_PHOTOS || []).forEach(function (id) {
+    var im = new Image();
+    im.onload = function () { PHOTOS['p_' + id] = im; };
+    im.src = 'assets/portraits/pnj/' + id + '.jpg';
+  });
   Object.keys(SPEC).forEach(function (id) {
     if (id.indexOf('v_') === 0) return;
     var im = new Image();

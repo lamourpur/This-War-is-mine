@@ -638,7 +638,7 @@
     ns.lastDay = E().home.day;
     g.known = true;
     E().say(g, T.trade.say, 4);
-    C.TradeUI.open(s, ns.stock, null, { name: K.nameOf(g), likes: T.trade.likes, bag: true });
+    C.TradeUI.open(s, ns.stock, null, { name: K.nameOf(g), likes: T.trade.likes, bag: true, face: C.npcPortrait(g), faceLine: T.trade.say });
   };
 
   // Menu contextuel d'un soldat
