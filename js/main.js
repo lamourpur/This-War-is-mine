@@ -188,7 +188,11 @@
     }
 
     var inGame = Main.mode === 'game' && st;
+    // Guitare : on la prend (ou la repose) → le décor change
+    var guitarOn = !!(inGame && st.phase !== 'explore' && st.survivors.some(function (s) { return s.alive && s.act && s.act.kind === 'guitar' && s.act.phase === 'work'; }));
+    if (guitarOn !== !!Main.guitarOn) { Main.guitarOn = guitarOn; if (inGame) C.Game.markDirty(); }
     C.Audio.update(dt, {
+      guitar: guitarOn,
       fire: inGame && st.objects.some(function (o) { return o.kind === 'heater' && o.fuel > 0; }),
       radio: inGame && st.survivors.some(function (s) { return s.alive && s.act && (s.act.kind === 'news' || s.act.kind === 'music') && s.act.phase === 'work'; }),
       war: true, onShell: function () { if (Math.random() < 0.6) C.Render.shake(2 + Math.random() * 4); } });

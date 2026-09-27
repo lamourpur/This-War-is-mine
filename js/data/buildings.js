@@ -36,7 +36,9 @@
     armchair:  { name: 'Fauteuil', w: 70, h: 72, small: true,
       desc: 'Se reposer, lire. Le seul coin de confort du refuge.' },
     radio:     { name: 'Radio', w: 56, h: 66, small: true,
-      desc: 'Les nouvelles de la ville, la météo… et un peu de musique.' }
+      desc: 'Les nouvelles de la ville, la météo… et un peu de musique.' },
+    guitar:    { name: 'Guitare', w: 40, h: 96, small: true,
+      desc: 'Quelqu\'un joue, et pour un moment tout le refuge oublie la guerre. Remonte le moral de ceux qui écoutent.' }
   };
 
   C.CRAFT_TABS = [
@@ -69,6 +71,7 @@
     { id: 'b_still',      tab: 'mobilier', lvl: 2, cost: { pieces_meca: 4, composants: 5, bois: 3 }, time: 150, build: 'still' },
     { id: 'b_herbshop',   tab: 'mobilier', lvl: 2, cost: { bois: 5, composants: 4 }, time: 120, build: 'herbshop' },
     { id: 'b_radio',      tab: 'mobilier', lvl: 2, cost: { pieces_elec: 3, composants: 3 }, time: 120, build: 'radio' },
+    { id: 'b_guitar',     tab: 'mobilier', lvl: 2, cost: { bois: 4, composants: 5 }, time: 90, build: 'guitar' },
 
     // ---- Divers
     { id: 'filtre',  tab: 'divers', lvl: 1, cost: { composants: 3 }, time: 30, give: { filtre: 1 } },

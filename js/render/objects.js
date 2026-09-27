@@ -916,6 +916,30 @@
     SK.line(ctx, r, x + 20, y - 58, x + 30, y - 48, { w: 0.8, passes: 1 }); // déchirure
   };
 
+  // Guitare posée contre le mur (cachée quand quelqu'un en joue)
+  D.guitar = function (ctx, r, o, y) {
+    var st = C.Game.st, used = st.survivors.some(function (s) { return s.alive && s.act && s.act.kind === 'guitar' && s.act.uid === o.uid && s.act.phase === 'work'; });
+    // Petit tabouret
+    F(ctx, r, o.x - 14, y - 30, 28, 5, WOOD, 0.3); SK.rect(ctx, r, o.x - 14, y - 30, 28, 5, { w: 1 });
+    legs(ctx, r, o.x - 12, y - 25, 24, 25);
+    if (used) return;
+    var bx = o.x + 6, by = y - 22, ang = -0.18;
+    ctx.save(); ctx.translate(bx, by); ctx.rotate(ang);
+    ctx.fillStyle = '#6e5236';
+    ctx.beginPath(); ctx.ellipse(0, 0, 14, 17, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -22, 11, 12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = SK.INK; ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.ellipse(0, 0, 14, 17, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, -22, 11, 12, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#231c16'; ctx.beginPath(); ctx.arc(0, -12, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a2e24'; ctx.fillRect(-2.2, -70, 4.4, 38);
+    ctx.fillRect(-4, -80, 8, 11);
+    SK.rect(ctx, r, -4, -80, 8, 11, { w: 0.8, passes: 1 });
+    ctx.strokeStyle = 'rgba(230,220,200,0.45)'; ctx.lineWidth = 0.4;
+    ctx.beginPath(); ctx.moveTo(-1, 8); ctx.lineTo(-1, -70); ctx.moveTo(1, 8); ctx.lineTo(1, -70); ctx.stroke();
+    ctx.restore();
+  };
+
   D.radio = function (ctx, r, o, y) {
     var x = o.x - 26, top = y - 38;
     F(ctx, r, x, top, 52, 6, WOOD, 0.3); SK.rect(ctx, r, x, top, 52, 6, { w: 1.2 });

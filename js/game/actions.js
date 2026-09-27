@@ -366,6 +366,24 @@
         else return true;
       }
     },
+    // Guitare : celui qui joue se détend, et tous ceux qui sont au refuge
+    // (éveillés) en profitent un peu — comme dans le jeu d'origine
+    guitar: {
+      excl: true, loop: true, label: 'Joue de la guitare', fatigue: 0.4,
+      dur: function () { return 0; },
+      tick: function (s, o, p, gm) {
+        var h = gm / 60;
+        if (s.restToday < 16) { var d = 2.4 * h * (G().hasTrait(s, 'empathique') ? 1.3 : 1); s.moral = Math.min(100, s.moral + d); s.restToday += d; }
+        G().present().forEach(function (b) {
+          if (b === s || !b.alive || b.away) return;
+          var sl = b.act && b.act.phase === 'work' && (b.act.kind === 'sleep' || b.act.kind === 'sleepfloor');
+          if (sl || (b.listenToday || 0) >= 8) return;
+          var k = 1.3 * h;
+          b.moral = Math.min(100, b.moral + k); b.listenToday = (b.listenToday || 0) + k;
+        });
+        if (s.restToday >= 16 && G().present().every(function (b) { return b === s || (b.listenToday || 0) >= 8; })) return true;
+      }
+    },
     answer: {
       label: 'Répond à la porte', fatigue: 0,
       check: function () { if (!st().visitor) return 'Personne ne frappe.'; },
@@ -904,6 +922,9 @@
       case 'armchair':
         m.entries.push(E('Se reposer', 'repos + moral', null, go('rest')));
         m.entries.push(E('Lire un livre', costSub(null, 60), G().count('livres') ? null : 'Aucun livre', go('read')));
+        break;
+      case 'guitar':
+        m.entries.push(E('Jouer de la guitare', 'moral de tout le refuge', null, go('guitar')));
         break;
       case 'radio':
         m.entries.push(E('Écouter les informations', costSub(null, 30), null, go('news')));

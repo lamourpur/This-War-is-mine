@@ -198,6 +198,7 @@
     if (!s.alive) return;
     s.readToday = 0;
     s.restToday = 0;
+    s.listenToday = 0;
     var n = s.name.split(' ')[0];
     if (G().hasTrait(s, 'fumeur') && st.day - s.lastSmoke >= 2) {
       s.moral = Math.max(0, s.moral - 7);

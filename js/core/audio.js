@@ -336,6 +336,25 @@
     lp.connect(g); g.connect(A.nodes.music); g.connect(A.nodes.verb);
   };
 
+  // Corde pincée (synthèse simple : triangle + harmonique, attaque sèche)
+  var GUITAR = [[45, 52, 57, 60, 64], [41, 48, 53, 57, 60], [48, 52, 55, 60, 64], [43, 47, 50, 55, 59]];
+  var guitarIdx = 0, guitarBeat = 0;
+  A.pluck = function (midi, delay, gain) {
+    if (!A.ready) return;
+    var ctx = A.ctx, t = ctx.currentTime + (delay || 0), f = 440 * Math.pow(2, (midi - 69) / 12);
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain || 0.06, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(700, t + 0.5);
+    [[1, 'triangle', 1], [2, 'sine', 0.35], [3, 'sine', 0.12]].forEach(function (h) {
+      var o = ctx.createOscillator(); o.type = h[1]; o.frequency.value = f * h[0];
+      var hg = ctx.createGain(); hg.gain.value = h[2];
+      o.connect(hg); hg.connect(lp); o.start(t); o.stop(t + 1.7);
+    });
+    lp.connect(g); g.connect(A.nodes.music); g.connect(A.nodes.verb);
+  };
+
   // Ré mineur, mélodie éparse et lente
   var SCALE = [50, 53, 55, 57, 58, 60, 62, 65, 67, 69, 70, 72];
   var CHORDS = [[38, 50, 57], [34, 46, 53], [36, 48, 55], [33, 45, 52]];
@@ -350,6 +369,17 @@
       if (A.has('static')) A.loop('static', opts.radio ? 0.12 : 0, 'amb');
     }
     stepLoops(dt);
+    // Guitare jouée au refuge : accords grattés, cordes pincées
+    if (opts && opts.guitar) {
+      if (now >= (A.nextStrum || 0)) {
+        var ch = GUITAR[guitarIdx % GUITAR.length], beat = guitarBeat++ % 4;
+        if (beat === 0) A.pluck(ch[0], 0, 0.11);
+        if (beat === 2 || Math.random() < 0.35) ch.slice(1).forEach(function (m, i) { A.pluck(m, 0.012 * i, 0.05); });
+        else A.pluck(ch[1 + Math.floor(Math.random() * (ch.length - 1))], 0, 0.07);
+        if (beat === 3 && Math.random() < 0.7) guitarIdx++;
+        A.nextStrum = now + 0.42 + Math.random() * 0.12;
+      }
+    }
     // Musique
     if (A.musicOn) {
       if (now >= A.nextNote) {

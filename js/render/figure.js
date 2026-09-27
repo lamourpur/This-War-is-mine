@@ -227,6 +227,11 @@
         P.legs = [{ a1: 1.25, bend: 2.2 }, { a1: 0.85, bend: 1.9 }];
         P.arms = [{ a: 0.8, bend: 0.9 }, { a: 0.95, bend: 0.8 }];
         break;
+      case 'guitar':
+        P.arms = [{ a: 1.3, bend: 0.5 }, { a: 0.5, bend: 1.2 + 0.16 * Math.sin(t * 9) }];
+        P.tool = 'guitar'; P.head = 0.18 + 0.05 * Math.sin(t * 1.7); P.lean = 0.04;
+        P.mouth = 'flat'; P.brow = 'calm';
+        break;
       case 'listen': case 'news': case 'music':
         P.arms = [{ a: 0.35, bend: 1.45 }, { a: 0.3, bend: 1.5 }];
         P.head = 0.12 + 0.06 * Math.sin(t * 1.3);
@@ -471,6 +476,21 @@
           break;
         case 'bandage':
           ctx.fillStyle = '#e4dfd3'; ctx.beginPath(); ctx.arc(hand[0] + 2, hand[1] - 2, 3.2, 0, Math.PI * 2); ctx.fill();
+          break;
+        case 'guitar':
+          // Caisse contre le ventre, manche vers l'avant et le haut
+          var gd = [Math.sin(2.3), Math.cos(2.3)], gA = Math.atan2(gd[1], gd[0]);
+          var gc = [hand[0] - gd[0] * 0.05 * H, hand[1] - gd[1] * 0.05 * H + 0.01 * H];
+          var gEnd = [gc[0] + gd[0] * 0.5 * H, gc[1] + gd[1] * 0.5 * H];
+          SK.line(ctx, r, gc[0], gc[1], gEnd[0], gEnd[1], { w: 3.4, passes: 1, color: '#3a2e24' });
+          ctx.save(); ctx.translate(gEnd[0], gEnd[1]); ctx.rotate(gA); ctx.fillStyle = '#2e241c'; ctx.fillRect(-2, -3.5, 9, 7); ctx.restore();
+          ctx.fillStyle = '#74553a'; ctx.strokeStyle = INK; ctx.lineWidth = 0.9;
+          ctx.beginPath(); ctx.ellipse(gc[0] - gd[0] * 0.06 * H, gc[1] - gd[1] * 0.06 * H, 0.11 * H, 0.095 * H, gA, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.ellipse(gc[0] + gd[0] * 0.07 * H, gc[1] + gd[1] * 0.07 * H, 0.08 * H, 0.072 * H, gA, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#74553a'; ctx.beginPath(); ctx.ellipse(gc[0] + gd[0] * 0.005 * H, gc[1] + gd[1] * 0.005 * H, 0.07 * H, 0.065 * H, gA, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#231c16'; ctx.beginPath(); ctx.arc(gc[0] + gd[0] * 0.03 * H, gc[1] + gd[1] * 0.03 * H, 0.024 * H, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(230,220,200,0.55)'; ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.moveTo(gc[0] - gd[0] * 0.13 * H, gc[1] - gd[1] * 0.13 * H); ctx.lineTo(gEnd[0], gEnd[1]); ctx.stroke();
           break;
         case 'pill':
           ctx.fillStyle = '#d9d4c8'; ctx.fillRect(hand[0], hand[1] - 3, 3, 2);
