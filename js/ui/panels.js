@@ -258,6 +258,14 @@
       line.appendChild(inp); line.appendChild(out);
       p.body.appendChild(line);
     });
+    // Luminosité : de 70 % à 160 %
+    var bl = U.el('div', 'opt-line', '<label>Luminosité</label>');
+    var bi = document.createElement('input'), bo = document.createElement('output');
+    bi.type = 'range'; bi.min = 0.7; bi.max = 1.6; bi.step = 0.05; bi.value = S.brightness || 1;
+    bo.textContent = Math.round((S.brightness || 1) * 100) + ' %';
+    bi.addEventListener('input', function () { S.brightness = +bi.value; bo.textContent = Math.round(S.brightness * 100) + ' %'; C.Main.applySettings(); });
+    bi.addEventListener('change', function () { C.Save.saveSettings(S); });
+    bl.appendChild(bi); bl.appendChild(bo); p.body.appendChild(bl);
     function check(label, key, apply) {
       var l = U.el('div', 'opt-line', '<label>' + label + '</label>');
       var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = S[key];

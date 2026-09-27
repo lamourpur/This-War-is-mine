@@ -84,7 +84,7 @@
       });
       if (Math.abs(x0 - rg.x0) < 1 && rg.x0 > C.WORLD.left + 10) x0 += pad;
       if (Math.abs(x1 - rg.x1) < 1 && rg.x1 < C.WORLD.right - 10) x1 -= pad;
-      ctx.fillStyle = 'rgba(12,11,10,0.86)';
+      ctx.fillStyle = 'rgba(12,11,10,0.8)';
       ctx.fillRect(x0, fl.ceil, x1 - x0, fl.y - fl.ceil);
       var rr = SK.rng(rg.f * 31 + Math.round(rg.x0));
       SK.scribble(ctx, rr, x0 + 6, fl.ceil + 6, x1 - x0 - 12, fl.y - fl.ceil - 12, 60, 0.18);
@@ -722,13 +722,14 @@
   }
 
   // ============================================================ lumière
+  // Voile d'obscurité selon l'heure (allégé : l'ambiance reste, on voit ce qu'on fait)
   function darkness(st) {
-    if (st.phase === 'explore') return 0.4;
-    if (st.phase !== 'day') return 0.55;
+    if (st.phase === 'explore') return 0.26;
+    if (st.phase !== 'day') return 0.38;
     var m = st.minute;
-    if (m < 7 * 60) return U.lerp(0.4, 0.05, (m - 360) / 60);
-    if (m > 18 * 60) return U.lerp(0.05, 0.5, (m - 1080) / 120);
-    return 0.05;
+    if (m < 7 * 60) return U.lerp(0.26, 0.02, (m - 360) / 60);
+    if (m > 18 * 60) return U.lerp(0.02, 0.34, (m - 1080) / 120);
+    return 0.02;
   }
 
   function drawLights(ctx, st, t) {
@@ -1088,7 +1089,7 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     var cw = R.canvas.width, ch = R.canvas.height;
     var vg = ctx.createRadialGradient(cw / 2, ch / 2, Math.min(cw, ch) * 0.35, cw / 2, ch / 2, Math.max(cw, ch) * 0.75);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.6)');
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
     ctx.fillStyle = vg; ctx.fillRect(0, 0, cw, ch);
     if (R.grainOn) {
       ctx.globalAlpha = 0.55;

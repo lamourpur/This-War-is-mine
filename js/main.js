@@ -13,6 +13,7 @@
 
   Main.init = function () {
     Main.settings = C.Save.loadSettings();
+    Main.applyDisplay();
     C.Render.init($('game'));
     // Textures photo : le décor se redessine dès qu'elles sont prêtes
     C.Tex.load(function () { C.Render.dirty = true; if (C.ItemArt) C.ItemArt.cache = {}; });
@@ -23,11 +24,21 @@
     requestAnimationFrame(loop);
   };
 
+  // Affichage : grain et luminosité de l'image (réglables dans Options)
+  Main.applyDisplay = function () {
+    var S = Main.settings;
+    C.Render.grainOn = S.grain;
+    var cv = document.getElementById('game');
+    // Au-delà de 100 %, on remonte aussi un peu les ombres (contraste adouci)
+    var b = S.brightness || 1;
+    if (cv) cv.style.filter = b === 1 ? '' : 'brightness(' + b + ')' + (b > 1 ? ' contrast(' + (1 - (b - 1) * 0.2).toFixed(3) + ')' : '');
+  };
+
   Main.applySettings = function () {
     var S = Main.settings;
     C.Audio.vol.master = S.master; C.Audio.vol.music = S.music; C.Audio.vol.sfx = S.sfx; C.Audio.vol.ambience = S.ambience;
     C.Audio.applyVolumes();
-    C.Render.grainOn = S.grain;
+    Main.applyDisplay();
     if (C.Audio.ready && G().st) C.Audio.setWeather(G().st.weather.type);
   };
 

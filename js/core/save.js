@@ -96,7 +96,7 @@
     },
 
     loadSettings: function () {
-      var def = { master: 0.8, music: 0.5, sfx: 0.7, ambience: 0.6, grain: true, autoPauseVisitor: true };
+      var def = { master: 0.8, music: 0.5, sfx: 0.7, ambience: 0.6, grain: true, autoPauseVisitor: true, brightness: 1.3 };
       var raw = storageGet(SETTINGS_KEY);
       if (raw) { try { var s = JSON.parse(raw); for (var k in s) def[k] = s[k]; } catch (e) { /* défaut */ } }
       return def;
