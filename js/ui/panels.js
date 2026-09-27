@@ -378,14 +378,22 @@
       if (!lines.length) return;
       any = true;
       html += '<div class="rep-sec"><h3>' + I(sc[2]) + sc[1] + '</h3>';
-      // Photo du lieu pillé
-      if (sc[0] === 'scav' && rep.loc) html += '<div class="loc-photo sm" style="background-image:url(assets/locations/' + rep.loc + '.jpg)"><span>' + U.esc(C.locationDef(rep.loc).name) + '</span></div>';
+      // Photo du lieu pillé (la fiche d'expédition l'intègre déjà)
+      if (sc[0] === 'scav' && rep.loc && !rep.expedition) html += '<div class="loc-photo sm" style="background-image:url(assets/locations/' + rep.loc + '.jpg)"><span>' + U.esc(C.locationDef(rep.loc).name) + '</span></div>';
+      if (sc[0] === 'scav' && rep.expedition) { html += '<div class="exp-slot"></div>'; if (lines.length) html += '<div class="rep-sub">Ce que le groupe en retient</div>'; }
       lines.forEach(function (l) { html += '<div class="rep-line ' + l.k + '">' + U.esc(l.t) + '</div>'; });
       html += '</div>';
     });
+    // Nuit sans pillage raconté par des lignes, mais avec une fiche (ex. rien rapporté)
+    if (rep.expedition && !rep.items.some(function (i) { return i.sec === 'scav' && i.t; })) {
+      html = html.replace('<div class="rep-sec">', '<div class="rep-sec"><h3>' + I('pack') + 'Pillage</h3><div class="exp-slot"></div></div><div class="rep-sec">');
+      any = true;
+    }
     if (!any) html += '<div class="rep-line">Une nuit sans histoire. C\'est déjà beaucoup.</div>';
     html += '<div class="rep-sec"><h3>' + I('user') + 'État du groupe</h3><div class="rep-surv"></div></div>';
     p.body.innerHTML = html;
+    var slot = p.body.querySelector('.exp-slot');
+    if (slot && rep.expedition) slot.appendChild(expeditionCard(rep.expedition));
     var box = p.body.querySelector('.rep-surv');
     st.survivors.forEach(function (s) {
       if (!s.alive && s.deathDay < rep.day - 1) return;
@@ -410,6 +418,56 @@
     UI.modal(p);
     if (!over && C.Main) C.Main.setSpeed(0);
   };
+
+  // ------------------------------------------------ fiche d'expédition
+  // Comme au retour d'une sortie dans le jeu d'origine : qui, où, combien de
+  // temps, dans quel état, ce qui a été rapporté, et le carnet de la nuit.
+  function hhmm(m) { m = Math.round(m) % 1440; return (m / 60 < 10 ? '0' : '') + Math.floor(m / 60) + ':' + (m % 60 < 10 ? '0' : '') + (m % 60); }
+  function expeditionCard(x) {
+    var s = G().surv(x.sid), loc = C.locationDef(x.loc);
+    var fe = s && s.look && s.look.female ? 'e' : '';
+    var dead = x.reason === 'dead' || (s && !s.alive);
+    var stamp = dead ? 'N\'est pas revenu' + fe : x.wound >= 20 ? 'Blessé' + fe : x.reason === 'time' ? 'Rentré' + fe + ' à l\'aube' : 'Rentré' + fe;
+    var el = U.el('div', 'exp' + (dead ? ' dead' : x.wound >= 20 ? ' hurt' : ''));
+    var head = U.el('div', 'exp-head');
+    head.style.backgroundImage = 'url(assets/locations/' + x.loc + '.jpg)';
+    if (s) { var pf = UI.portrait(s, 84, 100); pf.classList.add('exp-pf'); if (dead) { pf.style.filter = 'grayscale(1) brightness(.75) contrast(1.1)'; pf.classList.add('gone'); } head.appendChild(pf); }
+    var when = x.abstract ? 'Pillage de nuit' : 'Parti' + fe + ' à ' + hhmm(x.start) + (dead ? '' : ' · rentré' + fe + ' à ' + hhmm(x.end));
+    head.appendChild(U.el('div', 'exp-id', '<span class="exp-k">Expédition de la nuit</span><b>' + U.esc(loc ? loc.name : '') + '</b><span class="exp-who">' + U.esc(s ? s.name : '') + ' · ' + when + '</span>'));
+    head.appendChild(U.el('div', 'exp-stamp', U.esc(stamp)));
+    el.appendChild(head);
+
+    // Vignettes de bilan
+    var tiles = [];
+    tiles.push(['pack', dead ? '—' : x.gainedN, dead ? 'objets perdus' : 'objet' + (x.gainedN > 1 ? 's' : '') + ' rapporté' + (x.gainedN > 1 ? 's' : '')]);
+    if (!x.abstract) {
+      tiles.push(['stock', x.searched, 'meuble' + (x.searched > 1 ? 's' : '') + ' fouillé' + (x.searched > 1 ? 's' : '')]);
+      tiles.push(['speech', x.met, 'rencontre' + (x.met > 1 ? 's' : '')]);
+    }
+    if (x.kills || x.spared) tiles.push(['skull', x.kills, 'tué' + (x.kills > 1 ? 's' : '') + (x.spared ? ' · ' + x.spared + ' épargné' + (x.spared > 1 ? 's' : '') : ''), 'bad']);
+    if (x.stole) tiles.push(['alert', '!', 'vol', 'bad']);
+    tiles.push(['wound', x.wound ? '+' + x.wound : '0', x.hits ? x.hits + ' blessure' + (x.hits > 1 ? 's' : '') + ' reçue' + (x.hits > 1 ? 's' : '') : 'blessure', x.wound >= 20 ? 'bad' : '']);
+    el.appendChild(U.el('div', 'exp-stats', tiles.map(function (t) {
+      return '<div class="exp-tile ' + (t[3] || '') + '">' + I(t[0]) + '<b>' + t[1] + '</b><span>' + t[2] + '</span></div>';
+    }).join('')));
+
+    var cols = U.el('div', 'exp-cols');
+    // Butin
+    var ids = Object.keys(x.gained || {}).filter(function (k) { return x.gained[k] > 0; });
+    var lootHtml = '<h4>' + (dead ? 'Resté là-bas' : 'Rapporté au refuge') + '</h4>';
+    if (dead) lootHtml += '<p class="exp-none">Le sac et l\'équipement sont perdus.</p>';
+    else if (!ids.length) lootHtml += '<p class="exp-none">Rien. Les mains vides.</p>';
+    else lootHtml += '<div class="exp-grid">' + ids.map(function (k) { return '<div class="exp-item" title="' + U.esc(C.ITEMS[k].name) + '">' + C.ItemArt.img(k, 46) + '<i>' + x.gained[k] + '</i><span>' + U.esc(C.ITEMS[k].name) + '</span></div>'; }).join('') + '</div>';
+    cols.appendChild(U.el('div', 'exp-loot', lootHtml));
+    // Carnet
+    var diary = '<h4>' + (x.abstract ? 'Récit' : 'Carnet de ' + U.esc(s ? s.name.split(' ')[0] : '')) + '</h4>';
+    (x.story || []).forEach(function (l) {
+      diary += '<div class="exp-entry ' + (l.k || '') + '">' + (l.m != null ? '<time>' + hhmm(l.m) + '</time>' : '<time>·</time>') + '<p>' + U.esc(l.t) + '</p></div>';
+    });
+    cols.appendChild(U.el('div', 'exp-diary', diary));
+    el.appendChild(cols);
+    return el;
+  }
 
   // ------------------------------------------------ fin de partie
   UI.showEnding = function () {

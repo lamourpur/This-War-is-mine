@@ -149,17 +149,19 @@
     }
     if (!scav && plan.scav && plan.scav.explored && plan.scav.explored.dead) {
       // Le pilleur n'est pas revenu de l'exploration
-      add('scav', C.locationDef(plan.scav.loc).name + ' :', 'info');
-      plan.scav.explored.notes.forEach(function (nt) { add('scav', nt.t, nt.k); });
+      var dz = plan.scav.explored.exp && G().surv(plan.scav.explored.exp.sid), dfe = dz && dz.look && dz.look.female ? 'e' : '';
+      plan.scav.explored.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, dfe), nt.k); });
+      st.pendingExp = plan.scav.explored.exp;
       st.lastScavLoc = plan.scav.loc;
       reserved = {};
     } else if (scav && plan.scav && plan.scav.loc && plan.scav.explored) {
       // Exploration jouée : le sac revient tel quel (l'équipement est déjà parti avec)
-      var ex = plan.scav.explored, ldef = C.locationDef(plan.scav.loc);
-      add('scav', first(scav) + ' est allé(e) explorer : ' + ldef.name + '.', 'info');
-      ex.notes.forEach(function (nt) { add('scav', nt.t, nt.k); });
-      var gotN = 0; for (var gk in ex.items) gotN += ex.items[gk];
-      add('scav', first(scav) + ' est rentré(e) avec : ' + itemsText(ex.items) + '.', gotN ? 'good' : 'info');
+      // La fiche d'expédition (carnet, butin) est montrée dans le rapport ; ici, les conséquences
+      var ex = plan.scav.explored;
+      var xfe = scav.look && scav.look.female ? 'e' : '';
+      ex.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, xfe), nt.k); });
+      st.pendingExp = ex.exp;
+      var gotN = ex.exp ? ex.exp.gainedN : 0;
       if (gotN >= 6) { C.Mood.think(scav, 'scav_good'); scav.moral = Math.min(100, scav.moral + 2); }
       st.lastScavLoc = plan.scav.loc;
       scav.fatigue = Math.min(100, scav.fatigue + 35);
@@ -169,7 +171,18 @@
       reserved = {};
     } else if (scav && plan.scav && plan.scav.loc) {
       G().removeItems(reserved);
+      var w0 = scav.wound, from = rep.length, fe = scav.look && scav.look.female ? 'e' : '';
       var res = scavenge(st, scav, plan.scav, add, R);
+      // Pillage raconté : même fiche, récit à la troisième personne
+      var told = rep.splice(from, rep.length - from);
+      var nGot = 0; for (var rk in res.returnItems) nGot += res.returnItems[rk];
+      st.pendingExp = {
+        abstract: true, sid: scav.id, loc: plan.scav.loc, reason: scav.alive ? 'exit' : 'dead',
+        gained: res.returnItems, gainedN: nGot, wound: Math.round(Math.max(0, scav.wound - w0)),
+        story: told.filter(function (l) { return !/est parti\(e\) vers|est rentré\(e\) avec/.test(l.t); }).map(function (l) { return { t: l.t.replace(/\(e\)/g, fe), k: l.k === 'death' ? 'dead' : l.k === 'bad' ? 'bad' : l.k === 'good' ? 'good' : '' }; })
+      };
+      st.pendingExp.story.unshift({ t: first(scav) + ' est parti' + fe + ' à la tombée de la nuit. Direction : ' + C.locationDef(plan.scav.loc).name + '.' });
+      if (scav.alive) st.pendingExp.story.push({ t: 'Rentré' + fe + ' avant l\'aube' + (nGot ? ', avec ' + nGot + ' objet' + (nGot > 1 ? 's' : '') + ' dans le sac.' : ', les mains vides.'), k: 'end' });
       st.lastScavLoc = plan.scav.loc;
       scav.fatigue = Math.min(100, scav.fatigue + 35);
       scav.hunger += 12;
@@ -428,7 +441,8 @@
 
     C.World.planVisitor(st);
     C.World.planDayEvents(st);
-    st.lastReport = { day: st.day, items: rep, loc: st.lastScavLoc || null };
+    st.lastReport = { day: st.day, items: rep, loc: st.lastScavLoc || null, expedition: st.pendingExp || null };
+    st.pendingExp = null;
     st.lastScavLoc = null;
 
     var alive = G().alive();

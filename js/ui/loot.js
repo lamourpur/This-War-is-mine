@@ -156,6 +156,7 @@
         Object.keys(taken).forEach(function (id) { if (taken[id]) gains.push({ item: id, n: taken[id] }); });
         if (gains.length && C.Render.pop) C.Render.pop(s, gains);
         var got = {}; gains.forEach(function (g) { if (g.n > 0) got[g.item] = g.n; });
+        if (inBag && Object.keys(got).length) C.Explore.ev('loot', { name: name, items: got });
         if (inBag && o.owner) C.Explore.markStolen(o, got);
         if (Object.keys(got).length) G().log(first(s) + ' a pris dans ' + name.toLowerCase() + ' : ' + C.itemsText(got) + '.', 'action');
         G().markDirty();

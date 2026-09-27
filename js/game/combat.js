@@ -176,6 +176,7 @@
       ls.hostile[group] = true;
       E().provoked = E().provoked || {};
       E().provoked[group] = why;
+      E().ev('provoked', { why: why, group: group });
       if (C.Audio.ready) C.Audio.sfx.alert();
     }
     K.guards().forEach(function (g) {
@@ -188,6 +189,7 @@
   K.witnessTheft = function (s, owner) {
     var seen = K.guards().filter(function (g) { return !g.dead && K.sees(g, s) && (g.susp > 0.3 || Math.abs(g.x - s.x) < 220); });
     if (!seen.length) return false;
+    E().ev('caught');
     K.provoke(seen[0].group, 'theft', s);
     E().say(seen[0], 'Voleur !', 3);
     return true;
@@ -198,6 +200,7 @@
     if (G().count('gilet') > 0) dmg *= 0.55;
     s.wound = Math.min(100, s.wound + dmg);
     s.hurtT = 0.35;
+    E().ev('hit', { dmg: Math.round(dmg) });
     blood(s.x, s.y - 55, from && from.x < s.x ? 1 : -1);
     if (C.Render.shake) C.Render.shake(3);
     if (C.Render.pop) C.Render.pop(s, [], dmg >= 30 ? 'Gravement touché' : 'Touché', 'warn');
@@ -267,6 +270,7 @@
     else if (g.attitudeAtStart === 'hostile' || why === 'zone' || why === 'theft') kind = 'fight';
     else kind = 'unprovoked';
     E().kills.push({ type: g.type, name: T.name, kind: kind });
+    E().ev('kill', { kind: kind, name: T.name });
     G().removeObject(g);
     // Le corps : on peut le fouiller (arme, munitions, affaires)
     var loot = U.copy(T.loot);
@@ -302,11 +306,15 @@
     if (!s.path.length) s.run = false;
     // Caché uniquement en restant dans le recoin
     s.hidden = K.isHidden(s);
+    // Un soldat passe tout près pendant qu'on se cache : on le note au carnet
+    if (!s.hidden) s.hideNoted = false;
+    else if (!s.hideNoted && K.guards().some(function (g) { return g.f === s.f && g.state !== 'sleep' && Math.abs(g.x - s.x) < 140; })) { s.hideNoted = true; E().ev('hide'); }
 
     K.guards().forEach(function (g) { think(g, s, rs, gm); });
   };
 
-  K.WORK_NOISE = { search: 90, pick: 120, unlock: 320, clear: 260, dismantle: 300, cut: 360, attack: 220 };
+  // (les coups et les tirs font leur propre bruit, au moment où ils partent)
+  K.WORK_NOISE = { search: 90, pick: 120, unlock: 320, clear: 260, dismantle: 300, cut: 360 };
 
   function think(g, s, rs, gm) {
     var T = K.type(g);
@@ -416,6 +424,7 @@
     // Deuxième fois dans la zone : plus d'avertissement
     if (g.warned >= 2) { K.provoke(g.group, 'zone', s); sayG(g, 'attack'); return true; }
     g.state = 'warn'; g.warnT = g.warned ? 3 : 5.5; g.path = [];
+    E().ev('warn', { name: K.type(g).name });
     sayG(g, g.warned ? 'warn2' : 'warn', 5);
     if (C.Audio.ready) C.Audio.sfx.alert();
     return true;
@@ -567,16 +576,30 @@
   K.spare = function (s, g) {
     sayG(g, 'spared', 4);
     E().spared.push(g.type);
+    E().ev('spare', { name: K.type(g).name });
     G().removeObject(g);
     G().markDirty();
   };
 
   // ------------------------------------------------------------ dialogue et troc
   K.talk = function (s, g) {
-    if (g.attitude === 'hostile') return;
+    if (g.attitude === 'hostile' || g.dead) return;
+    var T = K.type(g);
     g.known = true;
     g.facing = s.x >= g.x ? 1 : -1;
-    sayG(g, 'greet', 4);
+    s.facing = g.x >= s.x ? 1 : -1;
+    var ls = E().home.locations[E().loc];
+    ls.npc = ls.npc || {};
+    var ns = ls.npc[g.key] = ls.npc[g.key] || {};
+    var lines = T.talk || [];
+    E().ev('talk', { name: T.name });
+    // Parler au soldat ivre, c'est avoir vu ce qui se passe
+    if (g.group === 'brute') { ls.npc.mila = ls.npc.mila || {}; ls.npc.mila.talk = (ls.npc.mila.talk || 0) + 1; }
+    if (!lines.length) { E().say(g, T.say.greet[0], 4); return; }
+    var ln = lines[(ns.talk || 0) % lines.length];
+    ns.talk = (ns.talk || 0) + 1;
+    E().say(s, ln[0], 1.7);
+    setTimeout(function () { if (E().active && !g.dead && g.attitude !== 'hostile') E().say(g, ln[1], 6); }, 1700);
   };
   K.trade = function (s, g) {
     var T = K.type(g);

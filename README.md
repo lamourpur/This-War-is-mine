@@ -42,6 +42,8 @@ Jeu de survie et de gestion en temps réel. Un groupe de civils tente de tenir d
   - **Combat** : se cacher dans les **recoins sombres** (invisible tant qu'on ne bouge pas, et plus dur à toucher), **attaque furtive** par-derrière ou sur un soldat endormi (mortelle avec un couteau ou une hachette), corps à corps, **tir** au pistolet ou au fusil (munitions, portée, ligne de mire, très bruyant). Le gilet pare-balles réduit les blessures. Un survivant trop blessé meurt sur place, et son sac est perdu.
   - Un soldat grièvement blessé peut **fuir puis se rendre** : l'épargner ou l'achever. Le moral encaisse différemment un combat pour sa vie, un meurtre dans le sommeil, ou l'exécution d'un homme qui supplie. Les corps peuvent être fouillés (armes, munitions).
   - À l'étage de l'entrepôt, un soldat ivre retient une jeune femme. On peut passer son chemin… ou intervenir.
+- **Rapport d'expédition** : au matin, une fiche comme au retour d'une sortie dans le jeu d'origine. On y voit le portrait du pilleur avec un tampon (rentré, blessé, pas revenu), les heures de départ et de retour, le bilan (butin, meubles fouillés, rencontres, morts, blessures), les objets rapportés en icônes, et le **carnet de la nuit** écrit à la première personne, heure par heure.
+- **Parler aux soldats** : chaque soldat a sa conversation. Le survivant pose une question, le soldat répond, et le sergent donne parfois des indices utiles.
 - **Objets de valeur** : bijoux, montre en or, diamants (très rares), la meilleure monnaie de troc.
 - **Fin** : un cessez-le-feu tombe à une date aléatoire entre le jour 30 et le jour 45. Un épilogue est écrit pour chaque survivant.
 

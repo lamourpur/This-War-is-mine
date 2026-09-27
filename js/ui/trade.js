@@ -121,6 +121,7 @@
       for (var k in theirs) { stock[k] -= theirs[k]; if (stock[k] <= 0) delete stock[k]; }
       for (k in mine) stock[k] = (stock[k] || 0) + mine[k];
       var txt = 'Troc : donné ' + C.Night.itemsText(mine) + ' — reçu ' + C.Night.itemsText(theirs) + '.';
+      if (C.Explore && C.Explore.active) C.Explore.ev('trade', { name: who, gave: U.copy(mine), got: U.copy(theirs) });
       G().log(txt, 'action');
       C.UI.toast(txt, 'done');
       if (C.Audio.ready) C.Audio.sfx.pickup();

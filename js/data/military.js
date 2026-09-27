@@ -22,6 +22,14 @@
       name: 'Soldat', look: LOOK_SOLDAT, hp: 100, weapon: 'fusil', tool: 'rifle', ammo: 14,
       dmg: [22, 38], acc: 0.62, range: 520, sight: 330, walk: 46, run: 100,
       loot: { munitions: 4, conserve: 1, cigarettes: 1 },
+      // Conversation : réplique du survivant, puis réponse du soldat
+      talk: [
+        ['Bonsoir. Je ne cherche pas d\'ennuis.', 'Alors restez de votre côté de la ligne rouge, et on s\'entendra.'],
+        ['Vous gardez quoi, là-dedans ?', 'Des rations, des munitions. De quoi tenir le secteur. Pas pour vous.'],
+        ['On dit que le cessez-le-feu approche.', 'On dit beaucoup de choses. Moi, je compte les nuits.'],
+        ['Ça fait longtemps que vous êtes ici ?', 'Trois mois. Avant, je réparais des vélos. Drôle de monde.'],
+        ['Vous avez des enfants ?', 'Une fille. Elle a six ans. Elle est chez sa grand-mère, de l\'autre côté du fleuve.']
+      ],
       say: {
         idle: ['…', 'Encore une nuit à garder des caisses.', 'Il fait un froid de chien.'],
         suspect: ['Qui va là ?', 'Il y a quelqu\'un ?', 'J\'ai entendu quelque chose…'],
@@ -39,6 +47,13 @@
       name: 'Sergent Maddox', look: look({ build: 1.14, h: 1.0, beard: 'full', hairColor: '#4a3f36', hat: 'cap', hatColor: '#3f4334', bag: false, coat: '#545844' }),
       hp: 110, weapon: 'pistolet', tool: 'pistol', ammo: 10, dmg: [22, 36], acc: 0.62, range: 420, sight: 300, walk: 40, run: 90,
       loot: { munitions: 3, cafe: 1, cigarettes: 2 },
+      talk: [
+        ['Vous vendez quoi, sergent ?', 'Ce que l\'armée ne comptera pas. Parlez-moi de gnôle, de café ou de bijoux.'],
+        ['Et le soldat du premier étage ?', 'Holt ? Il boit. Ce qu\'il fait là-haut, je ne veux pas le savoir. Ce n\'est pas mon problème.'],
+        ['Qu\'est-ce qu\'il y a, à la cave ?', 'L\'armurerie. Un de mes gars y dort pendant sa garde. Ne le réveillez pas.'],
+        ['Le reste de l\'entrepôt, on peut fouiller ?', 'Les hangars à gauche de la ligne, oui. Le dépôt, non. Je ne le dirai pas deux fois.'],
+        ['Ça tient, le front ?', 'Le front ? Il est partout et nulle part. On garde des caisses, c\'est tout ce qu\'on sait faire.']
+      ],
       trade: {
         stock: { munitions: 8, conserve: 4, bandage: 2, medicaments: 1, cigarettes: 3, carburant: 2, filtre: 1 },
         likes: { alcool: 1.5, bijoux: 1.3, montre: 1.35, cafe: 1.3, tabac: 1.25, diamants: 1.4 },
@@ -58,6 +73,11 @@
       name: 'Soldat ivre', look: look({ build: 1.12, beard: 'full', hairColor: '#3a2e24', hat: null, coat: '#555845', bag: false }),
       villain: true, hp: 90, weapon: 'pistolet', tool: 'pistol', ammo: 6, dmg: [20, 34], acc: 0.5, range: 380, sight: 260, walk: 40, run: 90,
       loot: { munitions: 2, alcool: 1, bijoux: 1 },
+      talk: [
+        ['Laissez-la partir.', 'Tu te prends pour qui ? Dégage avant que je m\'énerve.'],
+        ['Elle ne veut pas. Ça se voit.', 'Personne ne t\'a demandé ton avis. Je la nourris, elle me doit bien ça.'],
+        ['Votre sergent sait ce que vous faites ?', 'Maddox ? Il s\'en fiche. Tout le monde s\'en fiche. Fous le camp.']
+      ],
       say: {
         greet: ['Qu\'est-ce que tu regardes, toi ? Dégage. Ça ne te regarde pas.', 'Va-t\'en. C\'est entre elle et moi.'],
         warn: ['Tu sors de cette pièce. Maintenant.', 'Recule, j\'ai dit !'],
