@@ -163,19 +163,21 @@
     if (C.UI) C.UI.showExploreHud(false);
 
     // Conséquences morales, appliquées au groupe une fois rentré
-    var stolenAny = Object.keys(E.stolen).length > 0;
-    if (stolenAny) {
+    var owners = Object.keys(E.stolen);
+    if (owners.length) {
       home.stats.stole++;
-      if (E.stolen.whitaker) {
-        E.notes.push({ t: first(s) + ' a volé les Whitaker. Le vieil homme a supplié ; sa femme pleurait.', k: 'bad' });
-        G().moralAll(-16, { bad: true, key: 'stole_old' });
-        home.flags.horvat = home.day + 3;
-        ls.angry = true;
-      } else {
-        E.notes.push({ t: first(s) + ' a volé ceux qui s\'abritaient là.', k: 'bad' });
-        G().moralAll(-9, { bad: true, key: 'stole' });
-        ls.angry = true;
-      }
+      ls.angry = true;
+      owners.forEach(function (ow) {
+        var od = C.OWNERS[ow] || { text: ' a volé ceux qui s\'abritaient là.', moral: -9, key: 'stole' };
+        E.notes.push({ t: first(s) + od.text, k: 'bad' });
+        G().moralAll(od.moral, { bad: true, key: od.key });
+        if (od.horvat) home.flags.horvat = home.day + 3;
+        // Ce qu'on apprendra plus tard (une seule fois par lieu)
+        if (od.later && !ls.laterSet) {
+          ls.laterSet = true;
+          (home.flags.later = home.flags.later || []).push({ day: home.day + od.later.days, text: od.later.text, moral: od.later.moral, key: od.later.key });
+        }
+      });
     }
     E.effects.forEach(function (fn) { fn(); });
     if (reason === 'time') E.notes.unshift({ t: 'Le jour se levait : ' + first(s) + ' a dû rentrer en hâte.', k: 'info' });

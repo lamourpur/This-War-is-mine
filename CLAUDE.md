@@ -18,6 +18,8 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 
 ## Exploration de nuit
 `C.Explore.start(plan, onDone)` remplace temporairement les globales du plan (`C.STAIRS/WALLS/WINDOWS/SLOTS/DECOR/THEME`) et `C.Game.st` par un état d'exploration (phase `'explore'`, inventaire = sac, un seul survivant) ; tous les systèmes (nav, actions, fouille, rendu) sont réutilisés. `finish()` sauvegarde l'état du lieu dans `st.locations[id]`, restaure tout, puis `Night.resolve` lit `plan.scav.explored`. Seules les zones sans danger sont jouables ; les autres lieux passent par le pillage abstrait de `night.js`.
+- Ajouter un lieu jouable : un plan dans `C.MAPS` (même id que dans `C.LOCATIONS`, `danger: 0`), ses PNJ dans `C.NPCS` (`need` / `trade` / `donate`, `cond: {wound, sick}` pour l'état dessiné, `afterSteal`), et le propriétaire des caches `owner` dans `C.OWNERS` (texte, perte de moral, clé de pensée dans `thoughts.js`, `later` = conséquence apprise quelques jours après, via `st.flags.later` traité à l'aube).
+- Lieux jouables : maison abandonnée, école (institutrice, enfants, père de famille), Whitaker, hôpital (chirurgienne, infirmier marchand, soldat blessé, pharmacie verrouillée), église.
 
 ## Pièges connus
 - `file://` : canvas « tainted » → `ItemArt.buildingUrl` désactive textures/props ; audio en HTMLAudio au lieu de Web Audio.

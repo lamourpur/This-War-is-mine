@@ -382,6 +382,15 @@
       G().moralAll(-8, { bad: true, key: 'horvat' });
       st.flags.horvat = 0;
     }
+    // Conséquences différées d'un vol pendant une exploration
+    if (st.flags.later && st.flags.later.length) {
+      st.flags.later = st.flags.later.filter(function (lt) {
+        if (st.day < lt.day) return true;
+        add('people', lt.text, 'bad');
+        G().moralAll(lt.moral, { bad: true, key: lt.key });
+        return false;
+      });
+    }
 
     // D'autres gens abandonnent des choses : les lieux déjà visités se regarnissent un peu
     C.LOCATIONS.forEach(function (l) {

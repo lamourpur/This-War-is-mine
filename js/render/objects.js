@@ -46,6 +46,7 @@
       if (nd.pose === 'lie') { var ly = o.onBed ? y - 42 : y - 9; return { x: o.x - nh * 0.58, y: ly - 22, w: nh * 1.1, h: 30 }; }
       return { x: o.x - 22, y: y - nh * (nd.pose === 'sit' ? 0.82 : 1.05), w: 44, h: nh * (nd.pose === 'sit' ? 0.82 : 1.05) };
     }
+    if (o.kind === 'blackboard') return { x: o.x - o.w / 2 - 5, y: y - 155, w: o.w + 10, h: o.h + 14 };
     return { x: o.x - o.w / 2, y: y - o.h, w: o.w, h: o.h };
   };
 
@@ -430,7 +431,7 @@
     if (!d) return;
     var fake = {
       id: 'npc_' + o.npc, look: d.look, traits: [], path: [], x: o.x, y: y, f: o.f, anim: 0,
-      moral: d.pose === 'lie' ? 30 : 60, fatigue: 30, wound: o.npc === 'hank' ? 50 : 0, sick: o.npc === 'edith' || o.npc === 'lili' ? 60 : 0,
+      moral: d.pose === 'lie' ? 30 : 60, fatigue: 30, wound: (d.cond && d.cond.wound) || 0, sick: (d.cond && d.cond.sick) || 0,
       act: d.pose === 'lie' ? { kind: 'sleepfloor', phase: 'work' } : d.pose === 'sit' ? { kind: 'rest', phase: 'work' } : null
     };
     var H = C.Figure.BASE * d.look.h;
@@ -445,10 +446,10 @@
       C.Figure.draw(ctx, fake, o.x + H * 0.45, ly, 1, { t: 0, pose: C.Figure.pose(fake, 0) });
       // Couverture sur le corps
       var bl = [[o.x - H * 0.28, ly + 8], [o.x - H * 0.25, ly - 12], [o.x + H * 0.2, ly - 13], [o.x + H * 0.48, ly - 8], [o.x + H * 0.5, ly + 8]];
-      P(ctx, r, bl, o.npc === 'hank' ? '#5b5448' : '#77705f', 0.6);
+      P(ctx, r, bl, d.blanket || '#77705f', 0.6);
       SK.hatchPoly(ctx, r, bl, { gap: 3.5, alpha: 0.3, angle: 0.9 });
       SK.poly(ctx, r, bl, false, { w: 1, passes: 1 });
-      if (o.npc === 'hank') { ctx.fillStyle = 'rgba(110,25,20,0.55)'; ctx.beginPath(); ctx.ellipse(o.x + H * 0.3, ly - 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill(); }
+      if (d.blood) { ctx.fillStyle = 'rgba(110,25,20,0.55)'; ctx.beginPath(); ctx.ellipse(o.x + H * 0.3, ly - 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill(); }
       return;
     }
     if (d.pose === 'sit') {
@@ -564,6 +565,26 @@
         SK.line(ctx, r, x + o.w - 10, top, x + o.w - 10, y, { w: 2, color: METAL2 });
         if (o.locked) { F(ctx, r, o.x - 5, top + 12, 10, 10, METAL, 0.2); SK.rect(ctx, r, o.x - 5, top + 12, 10, 10, { w: 0.9 }); ctx.strokeStyle = SK.INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(o.x, top + 12, 4, Math.PI, 0); ctx.stroke(); }
         break;
+      case 'pharmacie':
+        // Armoire métallique émaillée, croix peinte, vitre fêlée
+        box(ctx, r, x, top, o.w, o.h, '#8f8c84', 0);
+        SK.hatch(ctx, r, x, top, o.w, o.h, { gap: 9, alpha: 0.12, angle: -1.2 });
+        F(ctx, r, x + 5, top + 8, o.w - 10, o.h * 0.42, o.searched ? '#2b2a27' : '#4d5354', 0.2);
+        SK.rect(ctx, r, x + 5, top + 8, o.w - 10, o.h * 0.42, { w: 1 });
+        if (!o.searched) {
+          for (var fl = 0; fl < 3; fl++) { var fx = x + 10 + fl * (o.w - 22) / 2; F(ctx, r, fx, top + 8 + o.h * 0.42 - 16, 7, 14, fl === 1 ? '#6f5a3c' : '#a7a298', 0.2); SK.rect(ctx, r, fx, top + 8 + o.h * 0.42 - 16, 7, 14, { w: 0.6, passes: 1 }); }
+        }
+        SK.line(ctx, r, x + 8, top + 12, x + o.w * 0.55, top + o.h * 0.3, { w: 0.6, passes: 1, alpha: 0.7 });
+        SK.line(ctx, r, x + 5, top + o.h * 0.55, x + o.w - 5, top + o.h * 0.55, { w: 1 });
+        var ccx = o.x, ccy = top + o.h * 0.74;
+        ctx.fillStyle = 'rgba(128,40,34,0.82)';
+        ctx.fillRect(ccx - 3.5, ccy - 11, 7, 22); ctx.fillRect(ccx - 11, ccy - 3.5, 22, 7);
+        if (o.locked) { F(ctx, r, x + o.w - 12, top + o.h * 0.58, 7, 10, METAL, 0.2); SK.rect(ctx, r, x + o.w - 12, top + o.h * 0.58, 7, 10, { w: 0.8, passes: 1 }); }
+        if (o.searched) {
+          P(ctx, r, [[x + o.w, top + 6], [x + o.w + 16, top + 14], [x + o.w + 16, top + o.h * 0.5], [x + o.w, top + o.h * 0.5 + 4]], '#8f8c84', 0.3);
+          SK.poly(ctx, r, [[x + o.w, top + 6], [x + o.w + 16, top + 14], [x + o.w + 16, top + o.h * 0.5], [x + o.w, top + o.h * 0.5 + 4]], true, { w: 1 });
+        }
+        break;
       case 'valise':
         box(ctx, r, x, top, o.w, o.h, '#5b4f43', 4);
         SK.poly(ctx, r, [[o.x - 10, top], [o.x - 8, top - 7], [o.x + 8, top - 7], [o.x + 10, top]], false, { w: 1.2 });
@@ -600,6 +621,7 @@
 
   D.bed = function (ctx, r, o, y) {
     var x = o.x - o.w / 2;
+    if (o.metal) { hospitalBed(ctx, r, o, x, y); return; }
     F(ctx, r, x, y - 30, 8, 30, WOOD2, 0.3); SK.rect(ctx, r, x, y - 44, 8, 44, { w: 1.2 });
     F(ctx, r, x + o.w - 8, y - 22, 8, 22, WOOD2, 0.3); SK.rect(ctx, r, x + o.w - 8, y - 30, 8, 30, { w: 1.2 });
     box(ctx, r, x + 6, y - 22, o.w - 12, 10, WOOD, 0);
@@ -611,6 +633,64 @@
     P(ctx, r, bl, '#686257', 1);
     SK.hatchPoly(ctx, r, bl, { gap: 4, alpha: 0.3, angle: 0.9 });
     SK.poly(ctx, r, bl, true, { w: 1 });
+  };
+
+  // Lit d'hôpital : cadre en tube, roulettes, drap clair
+  function hospitalBed(ctx, r, o, x, y) {
+    [x + 4, x + o.w - 8].forEach(function (lx, i) {
+      var hh = i ? 34 : 48;
+      SK.line(ctx, r, lx, y - 6, lx, y - hh, { w: 2.2, color: METAL2 });
+      SK.line(ctx, r, lx + 4, y - 6, lx + 4, y - hh, { w: 2.2, color: METAL2 });
+      SK.line(ctx, r, lx - 1, y - hh, lx + 5, y - hh, { w: 2, color: METAL2 });
+      SK.line(ctx, r, lx, y - hh + 12, lx + 4, y - hh + 12, { w: 1, passes: 1 });
+      ctx.strokeStyle = SK.INK; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(lx + 2, y - 3, 3, 0, Math.PI * 2); ctx.stroke();
+    });
+    F(ctx, r, x + 6, y - 22, o.w - 12, 6, METAL, 0.2); SK.rect(ctx, r, x + 6, y - 22, o.w - 12, 6, { w: 1 });
+    var sheet = [[x + 8, y - 22], [x + 10, y - 32], [x + o.w - 10, y - 33], [x + o.w - 8, y - 22]];
+    P(ctx, r, sheet, '#aaa497', 0.8); SK.poly(ctx, r, sheet, true, { w: 1 });
+    var pil = [[x + 12, y - 32], [x + 14, y - 40], [x + 36, y - 40], [x + 38, y - 32]];
+    P(ctx, r, pil, '#bcb6a8', 0.8); SK.poly(ctx, r, pil, true, { w: 0.9 });
+    SK.stain(ctx, x + o.w * 0.6, y - 27, 10, 0.12);
+    // Pied à perfusion
+    var px = x + o.w + 10;
+    SK.line(ctx, r, px, y, px, y - 92, { w: 1.3 });
+    SK.line(ctx, r, px - 8, y, px + 8, y, { w: 1.3 });
+    SK.line(ctx, r, px - 7, y - 92, px + 7, y - 92, { w: 1 });
+    F(ctx, r, px - 5, y - 90, 10, 16, '#b7b8ae', 0.2); SK.rect(ctx, r, px - 5, y - 90, 10, 16, { w: 0.8, passes: 1 });
+    ctx.strokeStyle = 'rgba(40,38,34,0.6)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(px, y - 74); ctx.quadraticCurveTo(px - 10, y - 50, x + o.w - 30, y - 34); ctx.stroke();
+  }
+
+  // Tableau noir d'une salle de classe (craie à moitié effacée)
+  D.blackboard = function (ctx, r, o, y) {
+    var x = o.x - o.w / 2, top = y - 150;
+    F(ctx, r, x - 5, top - 5, o.w + 10, o.h + 10, WOOD, 0.3); SK.rect(ctx, r, x - 5, top - 5, o.w + 10, o.h + 10, { w: 1.2 });
+    SK.fillRect(ctx, r, x, top, o.w, o.h, '#2f3530', 0.3); SK.rect(ctx, r, x, top, o.w, o.h, { w: 1 });
+    ctx.save();
+    ctx.strokeStyle = 'rgba(215,210,195,0.55)'; ctx.fillStyle = 'rgba(215,210,195,0.6)'; ctx.lineWidth = 1;
+    ctx.font = '11px "Special Elite", monospace';
+    ctx.fillText('7 × 8 = 56', x + 10, top + 18);
+    ctx.globalAlpha = 0.35; ctx.fillText('la paix', x + 14, top + 38); ctx.globalAlpha = 1;
+    // Maison et soleil dessinés par un enfant
+    ctx.beginPath(); ctx.moveTo(x + 70, top + o.h - 10); ctx.lineTo(x + 70, top + o.h - 28); ctx.lineTo(x + 82, top + o.h - 38); ctx.lineTo(x + 94, top + o.h - 28); ctx.lineTo(x + 94, top + o.h - 10); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + o.w - 22, top + o.h - 26, 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(215,210,195,0.12)'; ctx.fillRect(x + 20, top + 44, 42, 12);
+    ctx.restore();
+    SK.line(ctx, r, x, top + o.h + 7, x + o.w, top + o.h + 7, { w: 1.4 });
+    F(ctx, r, x + 12, top + o.h + 4, 10, 3, '#d8d2c4', 0);
+  };
+
+  // Pupitre d'écolier
+  D.desk = function (ctx, r, o, y) {
+    var x = o.x - o.w / 2;
+    var lid = [[x - 2, y - o.h], [x + o.w + 2, y - o.h - 5], [x + o.w + 2, y - o.h + 1], [x - 2, y - o.h + 6]];
+    P(ctx, r, lid, WOOD, 0.4); SK.poly(ctx, r, lid, true, { w: 1 });
+    F(ctx, r, x + 4, y - o.h + 6, o.w - 8, 12, WOOD2, 0.3); SK.rect(ctx, r, x + 4, y - o.h + 6, o.w - 8, 12, { w: 0.9, passes: 1 });
+    SK.line(ctx, r, x + 6, y - o.h + 18, x + 6, y, { w: 1.6, color: METAL2 });
+    SK.line(ctx, r, x + o.w - 6, y - o.h + 18, x + o.w - 6, y, { w: 1.6, color: METAL2 });
+    SK.line(ctx, r, x + 6, y - 10, x + o.w - 6, y - 10, { w: 1, passes: 1, color: METAL2 });
+    // Encrier et cahier oublié
+    ctx.fillStyle = '#1d1d1d'; ctx.beginPath(); ctx.arc(x + o.w - 12, y - o.h - 3, 2.4, 0, Math.PI * 2); ctx.fill();
+    F(ctx, r, x + 10, y - o.h - 4, 16, 4, '#b9b2a1', 0);
   };
 
   D.stove = function (ctx, r, o, y) {

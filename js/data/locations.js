@@ -20,8 +20,8 @@
       loot: { bois: 14, composants: 16, pieces_meca: 4, carburant: 2, engrais: 2, conserve: 1 },
       stash: { tool: ['scie'], loot: { pieces_meca: 4, pieces_elec: 2, carburant: 2 } } },
 
-    { id: 'ecole', name: 'École bombardée', danger: 1, residents: 'civils', unlock: 2, dist: 1,
-      desc: 'Des familles se sont réfugiées dans le gymnase. Le reste du bâtiment est ouvert à qui ose y entrer.',
+    { id: 'ecole', name: 'École bombardée', danger: 0, residents: 'civils', unlock: 2, dist: 1,
+      desc: 'Des familles se sont réfugiées dans le gymnase, autour d\'une institutrice qui continue la classe. Le reste du bâtiment est ouvert à qui ose y entrer.',
       loot: { livres: 8, bois: 8, composants: 5, eau: 3, legumes: 3, conserve: 1, bandage: 1 },
       residentsLoot: { conserve: 3, medicaments: 1, eau: 3, cigarettes: 2 },
       stash: { tool: ['pied_de_biche'], loot: { conserve: 2, sucre: 2, pieces_elec: 1 } } },
@@ -52,7 +52,7 @@
       loot: { pieces_meca: 7, composants: 10, carburant: 4, pieces_elec: 2, bois: 3, conserve: 1 },
       stash: { tool: ['pied_de_biche', 'passe_partout'], loot: { pieces_meca: 3, munitions: 6, pied_de_biche: 1 } } },
 
-    { id: 'hopital', name: 'Hôpital de campagne', danger: 1, residents: 'civils', unlock: 6, dist: 2,
+    { id: 'hopital', name: 'Hôpital de campagne', danger: 0, residents: 'civils', unlock: 6, dist: 2,
       desc: 'Médecins et bénévoles y soignent qui ils peuvent. Leurs stocks pourraient sauver une vie… la leur ou la vôtre.',
       loot: { bandage: 3, composants: 4, eau: 3, herbes: 3, conserve: 2 },
       residentsLoot: { medicaments: 4, bandage: 4, remede: 2 },

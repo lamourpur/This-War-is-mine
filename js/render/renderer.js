@@ -184,6 +184,28 @@
       ctx.strokeStyle = SK.INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(bx + 60, btop + 60, 24, Math.PI, 0); ctx.stroke();
       SK.line(ctx, r, bx + 60, btop - 30, bx + 60, btop - 80, { w: 3 });
       SK.line(ctx, r, bx + 44, btop - 62, bx + 76, btop - 62, { w: 3 });
+    } else if (TH.hospital) {
+      // Hôpital : drap à croix rouge tendu sur le toit, visible des avions
+      var fx = W / 2 - 330, fy = roofTop + 34;
+      SK.line(ctx, r, fx, eave - 6, fx, fy - 30, { w: 2.2 });
+      var flag = [[fx, fy - 30], [fx + 92, fy - 24], [fx + 88, fy + 26], [fx, fy + 22]];
+      SK.fill(ctx, r, flag, '#c9c2b2', 0.8);
+      SK.poly(ctx, r, flag, true, { w: 1.3 });
+      ctx.fillStyle = 'rgba(132,38,32,0.85)';
+      ctx.fillRect(fx + 38, fy - 18, 14, 38); ctx.fillRect(fx + 26, fy - 6, 38, 14);
+      SK.stain(ctx, fx + 70, fy + 12, 16, 0.2);
+    } else if (TH.school) {
+      // École : clocheton et horloge arrêtée
+      var cx0 = W / 2 - 260, cw = 80, ctop = roofTop - 10;
+      var cup = [[cx0, eave], [cx0, ctop + 30], [cx0 + cw / 2, ctop - 20], [cx0 + cw, ctop + 30], [cx0 + cw, eave]];
+      SK.fill(ctx, r, cup, '#48443e', 1);
+      C.Tex.paint(ctx, cup, 'plaster', { tile: 90, alpha: 0.6, blend: 'overlay' });
+      SK.poly(ctx, r, cup, true, { w: 1.5 });
+      var ox = cx0 + cw / 2, oy = ctop + 58;
+      ctx.fillStyle = '#c9c2b0'; ctx.beginPath(); ctx.arc(ox, oy, 17, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = SK.INK; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(ox, oy, 17, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + 7, oy - 6); ctx.moveTo(ox, oy); ctx.lineTo(ox - 2, oy + 12); ctx.stroke();
+      SK.crack(ctx, r, ox - 10, oy - 12, 20, 0.9);
     } else {
       // Cheminée
       SK.fillRect(ctx, r, W / 2 - 300, roofTop + 20, 34, 70, '#46423c', 0.5);

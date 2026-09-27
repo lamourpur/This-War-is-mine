@@ -102,6 +102,7 @@
     },
     countBuilt: function (kind) { return Game.objectsOf(kind).length; },
     objName: function (o) {
+      if (o.kind === 'bed' && o.metal) return 'Lit d\'hôpital';
       if (C.BUILDINGS[o.kind]) {
         var n = C.BUILDINGS[o.kind].name;
         var b = C.BUILDINGS[o.kind];
@@ -121,6 +122,8 @@
         case 'exit': return 'Sortie';
         case 'pew': return 'Banc d\'église';
         case 'altar': return 'Autel';
+        case 'blackboard': return 'Tableau noir';
+        case 'desk': return 'Pupitre';
       }
       return o.kind;
     },
