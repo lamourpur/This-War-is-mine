@@ -219,7 +219,31 @@
     if (skb) { skb.classList.toggle('on', !!C.Main.skipping); skb.disabled = st.phase !== 'day'; }
   };
 
-  UI.refreshDoor = function () { $('door-alert').classList.toggle('hidden', !G().st.visitor); };
+  UI.refreshDoor = function () {
+    var v = G().st.visitor, el = $('door-alert');
+    el.classList.toggle('hidden', !v);
+    // Vignette du visiteur dans l'alerte (on voit qui frappe, comme par le judas)
+    var old = el.querySelector('.card-pf'); if (old) old.remove();
+    if (v) { var pf = UI.visitorPortrait(v, 44, 52); if (pf) el.insertBefore(pf, el.firstChild); }
+    el.classList.toggle('with-face', !!(v && el.querySelector('.card-pf')));
+  };
+  // Portrait d'un visiteur : fiche du survivant (réfugié) ou visage du visiteur
+  UI.visitorFace = function (v) {
+    if (!v) return null;
+    if (v.id === 'refugie' && v.data && v.data.recruit) {
+      var d = C.survivorDef(v.data.recruit);
+      return { s: { id: d.id, defId: d.id, moral: 45, fatigue: 60 }, name: d.name };
+    }
+    var vp = C.VISITOR_PEOPLE && C.VISITOR_PEOPLE[v.id];
+    if (!vp) return null;
+    var st = vp.state || {};
+    return { s: { id: 'v_' + v.id, defId: 'v_' + v.id, moral: st.moral != null ? st.moral : 70, fatigue: st.fatigue || 20, wound: st.wound || 0, sick: st.sick || 0 }, name: vp.name };
+  };
+  UI.visitorPortrait = function (v, w, h) {
+    var f = UI.visitorFace(v);
+    if (!f) return null;
+    return UI.portrait(f.s, w, h);
+  };
   UI.refreshPending = function () {
     var n = G().st.pending.length;
     $('btn-place').classList.toggle('hidden', n === 0);

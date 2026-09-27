@@ -819,3 +819,14 @@ body.skipping #tb-clock { color: var(--amber); }
 .cm-tip span { display: block; color: var(--bone-2); }
 .cm-tip em { color: #e0826a; font-style: normal; }
 .cm-tip.hidden { display: none; }
+
+/* ---------- Visiteurs : portrait dans la fenêtre et dans l'alerte ---------- */
+.visit-head { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
+.visit-head:has(> .dialog-text:only-child) { grid-template-columns: 1fr; }
+.visit-face { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.visit-face .card-pf { width: 126px; height: 150px; padding: 3px; background: #efe6d0; box-shadow: 0 3px 10px rgba(0,0,0,.4); transform: rotate(-2deg); }
+.visit-face .card-pf canvas { width: 120px; height: 144px; display: block; }
+.visit-name { font-family: var(--f-display); font-size: 19px; letter-spacing: .04em; color: var(--ink-2); text-align: center; max-width: 140px; line-height: 1.05; }
+#door-alert.with-face .ico { display: none; }
+#door-alert .card-pf { width: 48px; height: 56px; padding: 2px; background: #efe6d0; flex: none; }
+#door-alert .card-pf canvas { width: 44px; height: 52px; display: block; }

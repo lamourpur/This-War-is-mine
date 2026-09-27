@@ -604,7 +604,17 @@
   // n'existent pas, retravaillés au fusain). L'état du personnage est ajouté
   // par-dessus : fatigue, tristesse, maladie, blessure (bandage).
   var PHOTOS = {};
+  // Visiteurs du refuge : visage dessiné (fiche) ou photo assets/portraits/pnj/<id>.jpg
+  Object.keys(C.VISITOR_PEOPLE || {}).forEach(function (id) {
+    var vp = C.VISITOR_PEOPLE[id];
+    if (vp.face) SPEC['v_' + id] = vp.face;
+    var im = new Image();
+    im.onload = function () { PHOTOS['v_' + id] = im; };
+    im.onerror = function () {};
+    im.src = 'assets/portraits/pnj/' + id + '.jpg';
+  });
   Object.keys(SPEC).forEach(function (id) {
+    if (id.indexOf('v_') === 0) return;
     var im = new Image();
     im.onload = function () {
       PHOTOS[id] = im;
@@ -762,5 +772,5 @@
     ctx.restore();
   }
 
-  C.Portrait = { draw: P_draw, SPEC: SPEC };
+  C.Portrait = { draw: P_draw, SPEC: SPEC, hasPhoto: function (k) { return !!PHOTOS[k]; } };
 })(window.CQR);

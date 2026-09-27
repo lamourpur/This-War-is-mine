@@ -302,7 +302,11 @@
     v.talking = true;
     var ctx = { st: st, v: v, s: s };
     var p = UI.panel(def.title, first(s) + ' entrouvre la porte…', { small: true, noClose: true });
-    p.body.innerHTML = '<div class="dialog-text quote">' + def.text(ctx) + '</div>';
+    p.body.innerHTML = '<div class="visit-head"><div class="visit-face"></div><div class="dialog-text quote">' + def.text(ctx) + '</div></div>';
+    // Portrait de la personne sur le pas de la porte
+    var face = UI.visitorFace(v), fbox = p.body.querySelector('.visit-face');
+    if (face) { fbox.appendChild(UI.portrait(face.s, 120, 144)); fbox.appendChild(U.el('span', 'visit-name', U.esc(face.name))); }
+    else fbox.remove();
     var ch = U.el('div', 'choices');
     def.choices.forEach(function (c, i) {
       var label = typeof c.label === 'function' ? c.label(ctx) : c.label;

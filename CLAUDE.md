@@ -30,6 +30,9 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 ## Histoires
 `js/data/stories.js` : les étapes sont des visiteurs (`C.VISITORS`). Le début porte `once: '<id>'` et `canAppear`, les étapes suivantes `story: true` (jamais tirées au hasard). `C.Story.next(st, step, jours)` programme la suite, `C.Story.news(st, jours, texte, moral, clé)` annonce une nouvelle au matin, et `onMissed(st)` se déclenche si personne n'ouvre. État dans `st.story` / `st.storyQueue`.
 
+## Visiteurs
+`js/data/visitor_faces.js` (`C.VISITOR_PEOPLE[id]`) : `name`, `face` (fiche de portrait, enregistrée sous `v_<id>` dans `portrait.js`), `state` (blessure, maladie… sur le portrait), `figs` (silhouettes dessinées devant la porte par `drawVisitors` dans `renderer.js`), `hurt`, `armed`. Une photo `assets/portraits/pnj/<id>.jpg` remplace le dessin ; sinon le dessin passe au filtre fusain. Le réfugié utilise le portrait et la silhouette du survivant qu'il deviendra. `UI.visitorFace(v)` / `UI.visitorPortrait(v, w, h)`.
+
 ## Pièges connus
 - `file://` : canvas « tainted » → `ItemArt.buildingUrl` désactive textures/props ; audio en HTMLAudio au lieu de Web Audio.
 - Toute modif de décor statique doit appeler `markDirty()` sinon rien ne se redessine.

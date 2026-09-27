@@ -1,0 +1,25 @@
+Portraits des visiteurs du refuge (facultatif)
+
+Déposez ici une photo par visiteur pour remplacer son portrait dessiné.
+Le jeu la charge automatiquement (même en ouvrant index.html directement).
+Format conseillé : JPG, buste cadré comme les portraits des survivants
+(visage dans le tiers supérieur), retravaillé au fusain, environ 400 × 480.
+
+Nom du fichier = identifiant du visiteur :
+
+  marchand.jpg      le marchand
+  voisin_aide.jpg   Walt, le voisin d'en face
+  enfants.jpg       les deux enfants (la grande sœur au premier plan)
+  blesse.jpg        l'homme blessé
+  milice.jpg        le chef des miliciens
+  vieille_dame.jpg  la vieille dame
+  troc_voisin.jpg   Dana, du troisième
+  emma_1.jpg        Emma
+  emma_2.jpg        Victor, le père d'Emma
+  deserteur_1.jpg   Danny, le déserteur (en uniforme)
+  deserteur_2.jpg   le sergent de la patrouille
+  deserteur_3.jpg   Danny, en civil
+
+Sans fichier, le portrait est dessiné par le jeu (js/data/visitor_faces.js).
+Source conseillée : thispersondoesnotexist.com (visages générés de
+personnes qui n'existent pas), comme pour les survivants.

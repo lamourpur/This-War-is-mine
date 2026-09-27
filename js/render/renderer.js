@@ -558,6 +558,22 @@
     var ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     C.Portrait.draw(ctx, s, w, h);
+    // Visiteurs sans photo : le dessin passe « au fusain » pour s'accorder aux
+    // portraits photo des survivants (gris chaud, contraste, grain)
+    var key = String(s.defId || s.id || '');
+    if (key.indexOf('v_') === 0 && !C.Portrait.hasPhoto(key)) {
+      var tmp = document.createElement('canvas'); tmp.width = canvas.width; tmp.height = canvas.height;
+      tmp.getContext('2d').drawImage(canvas, 0, 0);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.filter = 'grayscale(0.88) sepia(0.28) contrast(1.18) brightness(0.92)';
+      ctx.drawImage(tmp, 0, 0);
+      ctx.filter = 'none';
+      var rr = SK.rng(C.util.hashStr(key));
+      ctx.fillStyle = 'rgba(20,16,12,0.08)';
+      for (var i = 0; i < 900; i++) ctx.fillRect(rr.next() * canvas.width, rr.next() * canvas.height, 1.2, 1.2);
+      ctx.strokeStyle = 'rgba(30,24,18,0.10)'; ctx.lineWidth = 1;
+      for (var j = 0; j < 40; j++) { var hx = rr.next() * canvas.width, hy = rr.next() * canvas.height; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + 14, hy - 10); ctx.stroke(); }
+    }
   };
   // Survivant sélectionné : halo lumineux qui épouse sa silhouette (redessinée
   // à chaque image hors écran, car elle s'anime), plus une lueur au sol
@@ -1000,6 +1016,9 @@
 
     holeFx(ctx, st, t, dt);
 
+    // Visiteurs devant la porte d'entrée
+    if (st.visitor && (st.phase === 'day' || st.phase === 'dusk')) drawVisitors(ctx, st, t);
+
     // Soldats, zones gardées, bruit et tirs (exploration)
     if (st.phase === 'explore' && C.Combat) C.Combat.draw(ctx, t);
 
@@ -1062,6 +1081,31 @@
       ctx.globalAlpha = 1;
     }
   };
+
+  // ============================================================ visiteurs
+  // Ceux qui frappent à la porte sont dans la rue, devant l'entrée : le
+  // premier frappe de temps en temps, les autres attendent derrière lui.
+  function drawVisitors(ctx, st, t) {
+    var v = st.visitor, vp = C.VISITOR_PEOPLE && C.VISITOR_PEOPLE[v.id], looks;
+    if (v.id === 'refugie' && v.data && v.data.recruit) looks = [C.survivorDef(v.data.recruit).look];
+    else looks = vp ? vp.figs : [{ hair: 'short', build: 1, h: 1, coat: '#4f4a42', pants: '#2c2a26', coatLen: 0.2, skin: '#b89c84', hairColor: '#2a2420', top: 'overcoat', shirt: '#5c5448' }];
+    var door = C.Game.st.objects.filter(function (o) { return o.kind === 'frontdoor'; })[0];
+    var x0 = (door ? door.x : 172) - 44, y = C.FLOORS[1].y;
+    looks.forEach(function (lk, i) {
+      var x = x0 - i * 34;
+      var fake = { id: 'visiteur_' + v.id + i, look: lk, traits: [], path: [], x: x, y: y, f: 1, anim: i * 1.7, moral: vp && vp.state && vp.state.moral != null ? vp.state.moral : 60, fatigue: vp && vp.state ? vp.state.fatigue || 20 : 20, wound: vp && vp.state ? vp.state.wound || 0 : 0, sick: 0, act: null };
+      var P = C.Figure.pose(fake, t + i);
+      if (i === 0 && !v.talking) {
+        // Frappe à la porte : deux petits coups toutes les trois secondes
+        var ph = (t % 3);
+        if (ph < 0.9) { var k = Math.abs(Math.sin(ph * Math.PI * 2.2)); P.arms[1] = { a: 1.25 + 0.25 * k, bend: 1.0 - 0.4 * k }; }
+      }
+      if (vp && vp.hurt) { P.lean = 0.28; P.head = 0.3; P.arms[1] = { a: 0.25, bend: 1.9 }; P.brow = 'sad'; }
+      if (vp && vp.armed) { P.tool = 'rifle'; P.arms = [{ a: 0.55, bend: 1.2 }, { a: 0.35, bend: 1.45 }]; }
+      C.Figure.draw(ctx, fake, x, y, 1, { t: t, pose: P });
+      if (vp && vp.hurt && i === 0) { ctx.fillStyle = 'rgba(110,22,18,0.55)'; ctx.beginPath(); ctx.ellipse(x + 6, y - 44, 5, 7, 0, 0, Math.PI * 2); ctx.fill(); }
+    });
+  }
 
   // ============================================================ lisibilité
   // Icônes d'état au-dessus de la tête (faim, fatigue, blessure, maladie, moral)
