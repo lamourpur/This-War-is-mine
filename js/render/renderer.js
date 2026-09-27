@@ -43,6 +43,9 @@
     var extra = Math.max(0, (cw - leftUI - rightUI - 20 * dpr) - houseW * R.scale);
     R.ox = leftUI + 10 * dpr - C.WORLD.left * R.scale + extra / 2;
     R.oy = Math.max(70 * dpr - 40 * R.scale, (ch - H * R.scale) / 2 + 20 * dpr);
+    // Cadrage de base (vue d'ensemble) : la caméra zoome à partir de là
+    R.base = { scale: R.scale, ox: R.ox, oy: R.oy };
+    R.applyCam();
     // Le décor (couche statique) est plafonné en résolution : sur un écran
     // Retina/4K, le reconstruire en pleine définition prenait près d'une
     // demi-seconde (saccade à chaque fouille, porte, mort…). Le trait crayonné
@@ -52,6 +55,77 @@
     R.staticCanvas.height = Math.ceil(H * R.sScale);
     R.dirty = true;
   };
+
+  // ============================================================ caméra
+  // Vue d'ensemble par défaut ; molette = zoom vers le curseur ; en
+  // exploration, la caméra se rapproche et suit le survivant (comme dans le
+  // jeu d'origine). z : zoom, (cx, cy) : point du monde au centre de la vue.
+  var CX0 = (C.WORLD.left + C.WORLD.right) / 2, CY0 = H / 2;
+  R.cam = { z: 1, cx: CX0, cy: CY0, follow: null, auto: false };
+  R.ZMAX = 2.4;
+  function clampCam() {
+    var c = R.cam;
+    c.z = U.clamp(c.z, 1, R.ZMAX);
+    var hy = CY0 * (1 - 1 / c.z);
+    if (c.z <= 1.001) { c.cx = CX0; c.cy = CY0; return; }
+    c.cx = U.clamp(c.cx, C.WORLD.left + (CX0 - C.WORLD.left) / c.z - 40, C.WORLD.right - (C.WORLD.right - CX0) / c.z + 40);
+    c.cy = U.clamp(c.cy, CY0 - hy, CY0 + hy + 40);
+  }
+  R.applyCam = function () {
+    var b = R.base; if (!b) return;
+    clampCam();
+    var c = R.cam, sx = b.ox + CX0 * b.scale, sy = b.oy + CY0 * b.scale;
+    R.scale = b.scale * c.z;
+    R.ox = sx - c.cx * R.scale;
+    R.oy = sy - c.cy * R.scale;
+  };
+  // Zoom en gardant fixe le point sous le curseur (coordonnées écran CSS)
+  R.zoomAt = function (px, py, z) {
+    var w = R.toWorld(px, py);
+    R.cam.z = U.clamp(z, 1, R.ZMAX);
+    var b = R.base, s = b.scale * R.cam.z, sx = b.ox + CX0 * b.scale, sy = b.oy + CY0 * b.scale;
+    R.cam.cx = w.x - (px * R.dpr - sx) / s;
+    R.cam.cy = w.y - (py * R.dpr - sy) / s;
+    R.applyCam();
+    staticRes();
+  };
+  R.panBy = function (dxCss, dyCss) {
+    R.cam.cx -= dxCss * R.dpr / R.scale; R.cam.cy -= dyCss * R.dpr / R.scale;
+    R.cam.follow = null;
+    R.applyCam();
+  };
+  R.camReset = function () { R.cam.z = 1; R.cam.cx = CX0; R.cam.cy = CY0; R.cam.follow = null; R.applyCam(); staticRes(); };
+  R.camFollow = function (s, z) {
+    R.cam.follow = s ? s.id : null;
+    if (z) { R.cam.z = z; staticRes(); }
+    if (s) { R.cam.cx = s.x; R.cam.cy = s.y - 70; }
+    R.applyCam();
+  };
+  // Suivi en douceur (appelé à chaque image)
+  function camStep(dt, st) {
+    var c = R.cam;
+    if (c.z <= 1.001) { R.applyCam(); return; }
+    var sv = c.follow ? st.survivors.filter(function (x) { return x.id === c.follow && x.alive; })[0] : null;
+    if (sv) {
+      var k = Math.min(1, dt * 4);
+      c.cx += (sv.x - c.cx) * k; c.cy += (sv.y - 70 - c.cy) * k;
+    }
+    R.applyCam();
+  }
+  // Le décor est redessiné plus finement quand on zoome (une fois le zoom posé)
+  var resT = null;
+  function staticRes() {
+    clearTimeout(resT);
+    resT = setTimeout(function () {
+      var want = Math.min(R.base.scale * R.cam.z, STATIC_MAX_W * 1.45 / W);
+      want = Math.max(want, Math.min(R.base.scale, STATIC_MAX_W / W));
+      if (Math.abs(want - R.sScale) / R.sScale > 0.12) {
+        R.sScale = want;
+        R.staticCanvas.width = Math.ceil(W * want); R.staticCanvas.height = Math.ceil(H * want);
+        R.dirty = true;
+      }
+    }, 350);
+  }
 
   R.toWorld = function (px, py) {
     return { x: (px * R.dpr - R.ox) / R.scale, y: (py * R.dpr - R.oy) / R.scale };
@@ -1119,6 +1193,7 @@
     var st = C.Game.st;
     if (!st) return;
     R.time = t;
+    camStep(dt, st);
     if (R.dirty) { buildStatic(); R.dirty = false; R.staticVersion = (R.staticVersion || 0) + 1; }
     var ctx = R.ctx, s = R.scale;
     ctx.setTransform(1, 0, 0, 1, 0, 0);

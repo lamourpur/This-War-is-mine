@@ -278,6 +278,30 @@
     });
     cv.addEventListener('mouseleave', function () { C.Render.hoverObj = null; C.Render.hoverSurv = null; });
 
+    // Caméra : molette = zoom vers le curseur ; clic molette (ou clic droit) glissé = déplacer la vue
+    cv.addEventListener('wheel', function (e) {
+      if (Main.mode !== 'game' || C.UI.modalOpen) return;
+      e.preventDefault();
+      var z = C.Render.cam.z * (e.deltaY < 0 ? 1.15 : 1 / 1.15);
+      C.Render.zoomAt(e.clientX, e.clientY, z < 1.04 ? 1 : z);
+      var sel = C.UI.selectedSurv && C.UI.selectedSurv();
+      if (C.Explore && C.Explore.active && sel) C.Render.cam.follow = sel.id;
+    }, { passive: false });
+    var drag = null;
+    cv.addEventListener('mousedown', function (e) {
+      if (Main.mode !== 'game' || (e.button !== 1 && e.button !== 2) || C.Render.cam.z <= 1.001) return;
+      e.preventDefault();
+      drag = { x: e.clientX, y: e.clientY, moved: false };
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+      drag.x = e.clientX; drag.y = e.clientY;
+      if (drag.moved) C.Render.panBy(dx, dy);
+    });
+    window.addEventListener('mouseup', function () { if (drag && drag.moved) Main.dragJustEnded = true; drag = null; setTimeout(function () { Main.dragJustEnded = false; }, 0); });
+
     cv.addEventListener('mousedown', function (e) {
       if (Main.mode !== 'game' || e.button !== 0) return;
       var st = G().st;
@@ -326,6 +350,7 @@
 
     cv.addEventListener('contextmenu', function (e) {
       e.preventDefault();
+      if (Main.dragJustEnded) return;
       if (C.Render.placing) { C.UI.stopPlacing(); return; }
       C.UI.closeContext();
     });
@@ -357,6 +382,13 @@
         case 'j': case 'J': if (!C.UI.modalOpen) C.UI.openLog(); break;
         case 'n': case 'N': if (!C.UI.modalOpen && st.phase === 'day') { if (Main.skipping) Main.stopSkip(); else Main.skipDay(); } break;
         case 'c': case 'C': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.toggleMode(); break;
+        // Z : rapprocher la caméra du survivant choisi / revenir à la vue d'ensemble
+        case 'z': case 'Z':
+          if (C.UI.modalOpen) break;
+          var zs = C.UI.selectedSurv && C.UI.selectedSurv();
+          if (C.Render.cam.z > 1.05) C.Render.camReset();
+          else if (zs) C.Render.camFollow(zs, 1.8);
+          break;
         case 'a': case 'A': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.cycleWeapon(); break;
       }
     });

@@ -58,6 +58,8 @@
   };
   UI.select = function (id) {
     UI.selected = id;
+    // Vue rapprochée : la caméra suit le survivant choisi
+    if (C.Render.cam && C.Render.cam.z > 1.05) C.Render.cam.follow = id;
     Object.keys(UI.cardEls).forEach(function (k) { UI.cardEls[k].classList.toggle('sel', k === id); });
   };
   UI.cycle = function (dir) {

@@ -128,6 +128,7 @@
       C.UI.refreshPending && C.UI.refreshPending();
       C.UI.refreshDoor && C.UI.refreshDoor();
       C.UI.showExploreHud(true);
+      if (C.Render.camFollow) C.Render.camFollow(s, 1.6);
     }
     C.Main.showDuskButton(false);
     C.Main.setSpeed(1);
@@ -215,6 +216,7 @@
     s.x = E.homePos.x; s.y = E.homePos.y; s.f = E.homePos.f; s.facing = E.homePos.facing;
     E.active = false;
     if (C.UI) C.UI.showExploreHud(false);
+    if (C.Render.camReset) C.Render.camReset();
 
     // Conséquences morales, appliquées au groupe une fois rentré
     var owners = Object.keys(E.stolen);

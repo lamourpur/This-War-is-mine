@@ -50,6 +50,7 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 ## Pièges connus
 - `file://` : canvas « tainted » → `ItemArt.buildingUrl` désactive textures/props ; audio en HTMLAudio au lieu de Web Audio.
 - Toute modif de décor statique doit appeler `markDirty()` sinon rien ne se redessine.
+- Caméra (`renderer.js`) : `R.base` = cadrage d'ensemble, `R.cam = {z, cx, cy, follow}`, `R.applyCam()` recalcule `R.scale/ox/oy` à chaque image (`camStep`) ; `zoomAt`, `panBy`, `camFollow(s, z)`, `camReset`. Exploration : `camFollow(s, 1.6)` à l'entrée, `camReset` à la sortie. `staticRes()` redessine le décor plus finement après un zoom. Toujours passer par `toWorld`/`toScreen`.
 - Performances : reconstruire la couche statique coûte cher (≈150 ms en 4K). En exploration, `addItems` / `removeItems` n'appellent pas `markDirty` (`Game.invDirty`). Le décor est plafonné à `STATIC_MAX_W` px (`R.sScale`, qui peut être plus petit que `R.scale`). Ne jamais appeler `markDirty` à chaque frame ou à chaque tir.
 - Silhouettes de surbrillance : mettre `SK.noStain = true` pour ne pas y inclure taches et ombres.
 
