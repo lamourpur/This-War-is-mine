@@ -523,6 +523,14 @@
       dur: function () { return 10; },
       done: function (s) { s.fatigue = Math.max(0, s.fatigue - 18); s.moral = Math.min(100, s.moral + (G().hasTrait(s, 'cafeinomane') ? 6 : 2)); s.lastCoffee = st().day; return first(s) + ' boit un café brûlant.'; }
     },
+    // Occupation d'un survivant désœuvré (automatique) : assis par terre,
+    // adossé au mur… Un ordre du joueur l'interrompt aussitôt.
+    idle: {
+      inPlace: true, loop: true, fatigue: -1.5,
+      label: function (s, o, p) { return p && p.pose === 'lean' ? 'Adossé(e) au mur' : 'Assis(e) par terre'; },
+      dur: function () { return 0; },
+      tick: function (s, o, p, gm) { p.left = (p.left == null ? 40 : p.left) - gm; if (p.left <= 0) return true; }
+    },
     smoke: {
       inPlace: true, label: 'Fume', fatigue: 0,
       cost: function () { return { cigarettes: 1 }; },
@@ -612,7 +620,7 @@
     s.path = prefix.concat(path);
     s.act = { kind: kind, uid: o ? o.uid : null, p: p, prog: 0, dur: 0, phase: 'walk', paid: null };
     if (o && def.excl) o.user = s.id;
-    if (C.Audio.ready) C.Audio.sfx.click();
+    if (C.Audio.ready && !p.auto) C.Audio.sfx.click();
     return true;
   };
 
@@ -660,7 +668,46 @@
     var def = ACT[a.kind];
     if (a.phase === 'walk' && a.kind !== 'move') return 'Se rend sur place…';
     if (def.label2) return def.label + ' : ' + def.label2(s, G().obj(a.uid), a.p);
-    return def.label;
+    return typeof def.label === 'function' ? def.label(s, G().obj(a.uid), a.p) : def.label;
+  };
+
+  // ---------------------------------------------------------------- oisiveté
+  // Comme dans le jeu d'origine, un survivant désœuvré ne reste pas planté :
+  // épuisé, il va dormir (un lit libre, sinon par terre) ; fatigué ou abattu,
+  // il s'installe dans le fauteuil ; sinon il s'assoit par terre, s'adosse
+  // au mur ou fait quelques pas. Un ordre du joueur passe toujours avant.
+  function freeStation(kind) {
+    return st().objects.filter(function (o) {
+      if (o.kind !== kind || o.broken) return false;
+      if (!o.user) return true;
+      var u = G().surv(o.user);
+      return !u || !u.alive || !u.act || u.act.uid !== o.uid;
+    })[0] || null;
+  }
+  Actions.autoIdle = function (s) {
+    if (!s.alive || s.away || s.act || s.path.length) return;
+    if (s.fatigue >= 75) {
+      var bed = freeStation('bed');
+      if (bed) { Actions.start(s, bed, 'sleep', { auto: true }); return; }
+      Actions.start(s, null, 'sleepfloor', { auto: true });
+      return;
+    }
+    if (s.fatigue >= 45 || s.moral < 45) {
+      var chair = freeStation('armchair');
+      if (chair) { Actions.start(s, chair, 'rest', { auto: true }); return; }
+    }
+    var r = Math.random();
+    if (r < 0.3) {
+      // Quelques pas dans la pièce
+      for (var i = 0; i < 6; i++) {
+        var x = U.clamp(s.x + (Math.random() < 0.5 ? -1 : 1) * (80 + Math.random() * 160), C.WORLD.walkMin, C.WORLD.walkMax);
+        if (C.Nav.clear(s.f, s.x, x)) {
+          var p = C.Nav.findPath({ f: s.f, x: s.x }, { f: s.f, x: x });
+          if (p) { s.path = p; s.act = { kind: 'move', uid: null, p: { auto: true }, prog: 0, dur: 0, phase: 'walk' }; return; }
+        }
+      }
+    }
+    Actions.start(s, null, 'idle', { auto: true, pose: r < 0.65 ? 'floor' : 'lean', left: 25 + Math.random() * 35 });
   };
 
   // Avance l'action du survivant de gm minutes de jeu

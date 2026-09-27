@@ -91,6 +91,12 @@
     s.moral = U.clamp(s.moral + dm * h, 0, 100);
 
     Surv.checkDeath(s);
+
+    // Désœuvré depuis un moment (en journée) : il s'occupe tout seul
+    if (G().st.phase === 'day' && !s.act && !s.path.length && s.alive && !s.away) {
+      s.idleT = (s.idleT || 0) + gm;
+      if (s.idleT >= 15) { s.idleT = 0; C.Actions.autoIdle(s); }
+    } else s.idleT = 0;
   };
 
   // Faim, comme dans This War of Mine : on ne meurt pas d'un coup en passant

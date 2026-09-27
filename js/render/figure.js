@@ -227,6 +227,20 @@
         P.legs = [{ a1: 1.25, bend: 2.2 }, { a1: 0.85, bend: 1.9 }];
         P.arms = [{ a: 0.8, bend: 0.9 }, { a: 0.95, bend: 0.8 }];
         break;
+      case 'idle':
+        if (a.p && a.p.pose === 'lean') {
+          // Adossé au mur, bras croisés
+          P.lean = -0.07; P.head = 0.06 + 0.04 * Math.sin(t * 0.7 + s.anim);
+          P.arms = [{ a: 0.55, bend: 1.95 }, { a: 0.5, bend: 2.05 }];
+          P.legs = [{ a1: 0.12, bend: 0.05 }, { a1: -0.14, bend: 0.08 }];
+        } else {
+          // Assis par terre, une jambe tendue, l'autre repliée
+          P.legs = [{ a1: 1.52, bend: 0.05 }, { a1: 2.1, bend: 1.85 }];
+          P.lean = -0.12; P.head = 0.22 + 0.05 * Math.sin(t * 0.6 + s.anim);
+          P.arms = [{ a: 0.35, bend: 0.4 }, { a: 0.95, bend: 1.1 }];
+          if (low) { P.lean = 0.25; P.head = 0.45; }
+        }
+        break;
       case 'guitar':
         P.arms = [{ a: 1.3, bend: 0.5 }, { a: 0.5, bend: 1.2 + 0.16 * Math.sin(t * 9) }];
         P.tool = 'guitar'; P.head = 0.18 + 0.05 * Math.sin(t * 1.7); P.lean = 0.04;
