@@ -130,11 +130,11 @@
   // Côté rue un banc et un réverbère, derrière une courette close de murs.
   C.MAPS.vieux_couple = keepNpcs('vieux_couple', {
     theme: { dirt: 0.12 },
-    world: { W: 1900, H: 1010, left: 40, right: 1860, ground: G, walkMin: 60, walkMax: 1840, view: 1300 },
+    world: { W: 2120, H: 1010, left: 40, right: 2080, ground: G, walkMin: 60, walkMax: 2060, view: 1350 },
     start: { f: 0, x: 100 },
     floors: [
-      { name: 'Rue et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 1840, ground: true, thick: 28,
-        segs: [{ x0: 60, x1: 420, out: true }, { x0: 420, x1: 1360, tex: 'floor' }, { x0: 1360, x1: 1840, out: true, tex: 'concrete' }] },
+      { name: 'Rue, maison et courette', y: G, ceil: 656, x0: 60, x1: 2060, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 420, out: true }, { x0: 420, x1: 1360, tex: 'floor' }, { x0: 1360, x1: 1840, out: true, tex: 'concrete' }, { x0: 1840, x1: 2060, tex: 'planks' }] },
       { name: 'Cave', y: 985, ceil: 848, x0: 432, x1: 1348, thick: 25, tex: 'concrete' },
       { name: 'Étage', y: 640, ceil: 476, x0: 432, x1: 1348, tex: 'floor', carpet: [560, 880] },
       { name: 'Grenier', y: 460, ceil: 340, x0: 470, x1: 1310, tex: 'planks' }
@@ -145,15 +145,17 @@
       R(420, 940, 476, 640, 'wallpaper', { tone: '#8b8273', paper: 14, skirt: true, frames: 2, crucifix: { x: 880, y: 500, s: 0.5 } }),
       R(940, 1360, 476, 640, 'wallpaper', { tone: '#858075', paper: 8, skirt: true, frames: 1 }),
       R(420, 1360, 340, 460, 'planks', { tone: '#5f574b', attic: 'both' }),
-      R(420, 1360, 848, 985, 'brickPlaster', { tone: '#6c675d', border: true })
+      R(420, 1360, 848, 985, 'brickPlaster', { tone: '#6c675d', border: true }),
+      R(1840, 2060, 712, G, 'planks2', { tone: '#6b6153', posters: [{ x: 1990, y: 760, t: 'OUTILS\nA. W.' }] })
     ],
     shells: [
       { x0: 420, x1: 1360, top: 340, bottom: 985, wall: 'brickPlaster', roof: 'tiles', roofH: 120, chimneys: [1200],
-        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } }
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } },
+      { x0: 1840, x1: 2060, top: 712, bottom: G, wall: 'planks2', roof: 'gable', roofH: 46, thick: 10, gaps: { left: [{ y0: 720, y1: G }] } }
     ],
     things: [
       { kind: 'bench', f: 0, x: 250 },
-      { kind: 'wall', f: 0, x: 1360, w: 470, h: 150, tex: 'brick', back: true },
+      { kind: 'wall', f: 0, x: 1360, w: 480, h: 150, tex: 'brick', back: true },
       { kind: 'tree', f: 0, x: 1700, h: 200, back: true, trunk: 9 }
     ],
     lights: [{ kind: 'candle', x: 760, y: 772, r: 120 }, { kind: 'candle', x: 820, y: 596, r: 90 }],
@@ -163,14 +165,14 @@
       { a: { f: 0, x: 1040 }, b: { f: 1, x: 1210 } },
       { a: { f: 2, x: 520 }, b: { f: 3, x: 660 } }
     ],
-    walls: [{ f: 0, x: 900 }, { f: 2, x: 940 }],
+    walls: [{ f: 0, x: 900 }, { f: 2, x: 940 }, { f: 3, x: 760 }, { f: 0, x: 1840 }],
     windows: [
       { f: 0, x: 560 }, { f: 0, x: 1150 }, { f: 2, x: 620 }, { f: 2, x: 1060 },
       { f: 3, x: 900, y: 372, w: 44, h: 40 }, { f: 1, x: 700, vent: true }
     ],
     decor: [
       { f: 0, x: 160, p: 'street_lamp_01', h: 200 }, { f: 0, x: 360, p: 'metal_trash_can', h: 34 },
-      { f: 0, x: 1450, p: 'compost_bags', h: 24 }, { f: 0, x: 1560, p: 'wooden_bucket_01', h: 24 }, { f: 0, x: 1790, p: 'wooden_barrels_01', h: 30 },
+      { f: 0, x: 1400, p: 'compost_bags', h: 24 }, { f: 0, x: 1640, p: 'wooden_bucket_01', h: 24 }, { f: 0, x: 1800, p: 'wooden_barrels_01', h: 30 }, { f: 0, x: 1990, p: 'wooden_ladder', h: 86 },
       { f: 0, x: 850, p: 'wooden_stool_01', h: 28 }, { f: 1, x: 800, p: 'wooden_barrels_01', h: 30 },
       { f: 2, x: 1010, p: 'vintage_oil_lamp', h: 28 }, { f: 3, x: 1250, p: 'vintage_suitcase', h: 24 }, { f: 3, x: 1050, p: 'cardboard_box_01', h: 28, shade: 0.3 }
     ],
@@ -188,7 +190,15 @@
       { key: 'coffret', kind: 'cache', variant: 'coffre', f: 2, x: 850, w: 60, h: 48, owner: 'whitaker', loot: { bijoux: 3, medicaments: 1 } },
       { key: 'biblio', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 1280, w: 70, h: 124, work: 90, owner: 'whitaker', loot: { bois: 4, livres: 5 } },
       { key: 'gravats', kind: 'rubble', f: 3, x: 900, w: 96, h: 42, work: 90, loot: { bois: 2, composants: 2 } },
-      { key: 'malle', kind: 'cache', variant: 'valise', f: 3, x: 1150, w: 62, h: 36, loot: { livres: 2, tabac: 1 } }
+      { key: 'malle', kind: 'cache', variant: 'valise', f: 3, x: 1150, w: 62, h: 36, loot: { livres: 2, tabac: 1 } },
+      { key: 'porte_grenier', kind: 'door', label: 'Porte du grenier', f: 3, x: 760, w: 30, h: 100, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'souvenirs', kind: 'cache', variant: 'coffre', label: 'Malle de famille', f: 3, x: 1270, w: 60, h: 48, owner: 'whitaker', loot: { bijoux: 1, alcool: 1, livres: 2 } },
+      // Courette : potager, bois de chauffage, remise
+      { key: 'potager', kind: 'garden', f: 0, x: 1500, w: 110, h: 30, growth: 4, deco: true },
+      { key: 'recolte', kind: 'cache', variant: 'bac', label: 'Récolte du potager', f: 0, x: 1610, w: 60, h: 34, owner: 'whitaker', loot: { legumes: 3, herbes: 2 } },
+      { key: 'bois_cour', kind: 'rubble', label: 'Bois de chauffage', f: 0, x: 1730, w: 90, h: 40, work: 45, loot: { bois: 4 } },
+      { key: 'porte_remise', kind: 'door', label: 'Remise cadenassée', f: 0, x: 1840, w: 30, h: 104, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'remise', kind: 'cache', variant: 'boite_outils', label: 'Outils d\'Arthur', f: 0, x: 1950, w: 70, h: 36, owner: 'whitaker', loot: { composants: 2, pieces_meca: 1, hachette: 1 } }
     ]
   });
 

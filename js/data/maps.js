@@ -31,7 +31,7 @@
       name: 'Arthur Whitaker', title: 'Vieil homme',
       look: { hair: 'short', build: 0.9, h: 0.95, coat: '#58524a', pants: '#34312d', coatLen: 0.05, skin: '#b3a595', hairColor: '#a8a298', brow: 'thin', top: 'cardigan', shirt: '#8a8276', glasses: true },
       pose: 'stand',
-      greet: ['Vous êtes du quartier ? On ne voit plus grand monde.', 'Edith est malade. La fièvre ne tombe pas depuis trois jours.', 'Nous n\'avons pas grand-chose… mais on peut échanger.'],
+      greet: ['Vous êtes du quartier ? On ne voit plus grand monde.', 'Edith est malade. La fièvre ne tombe pas depuis trois jours.', 'Nous n\'avons pas grand-chose… mais on peut échanger.', 'La remise est fermée au cadenas. Mes outils, c\'est tout ce qui me reste de l\'atelier.'],
       trade: {
         stock: { conserve: 2, legumes: 2, cafe: 1, livres: 3, tabac: 2, bijoux: 1 },
         likes: { medicaments: 1.8, bandage: 1.5, remede: 1.6, bois: 1.3, conserve: 1.2 },
