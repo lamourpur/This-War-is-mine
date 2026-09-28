@@ -75,7 +75,7 @@
     start: { icon: 'user', title: 'Premier jour', text: 'Cliquez sur un survivant (ou sur son dossier à gauche) pour le choisir, puis sur un meuble, un tas de gravats ou une porte pour voir ce qu\'il peut faire. Fouillez tout : chaque pièce cache de quoi tenir.' },
     craft: { icon: 'hammer', title: 'L\'établi', text: 'L\'établi fabrique lits, poêle, collecteur d\'eau, outils… Une fois terminé, un meuble attend d\'être installé : bouton « À installer » à droite.' },
     dusk: { icon: 'moon', title: 'La nuit tombe', text: 'Chacun dort (au lit, c\'est mieux), monte la garde ou part explorer. Choisissez un lieu sur la carte, puis préparez le sac de celui qui sort : on ne rapporte que ce qui tient dans ses cases.' },
-    explore: { icon: 'search', title: 'Exploration', text: 'Clic : marcher (double-clic : courir, plus bruyant). Clic sur un meuble : fouiller. En mode exploration on parle ; touche C pour le mode combat, A pour changer d\'arme. Rentrez avant l\'aube : la cloche sonne à 4 h.' },
+    explore: { icon: 'search', title: 'Exploration', text: 'Clic : marcher (double-clic : courir, plus bruyant). Clic sur un meuble : fouiller. Molette, clic droit glissé ou flèches : voir tout le lieu ; F : revenir sur le pilleur. En mode exploration on parle ; touche C pour le mode combat, A pour changer d\'arme. Rentrez avant l\'aube : la cloche sonne à 4 h.' },
     guards: { icon: 'skull', title: 'Vous n\'êtes pas seul', text: 'Des gens armés sont ici. Les cercles de bruit montrent jusqu\'où on vous entend : marchez, restez dans l\'ombre, cachez-vous (clic sur une cachette). Regardez par la serrure avant d\'ouvrir une porte.' },
     visitor: { icon: 'door', title: 'On frappe', text: 'Quelqu\'un est à la porte. Envoyez un survivant ouvrir (clic sur la porte). Si personne ne va voir, la personne finit par repartir.' },
     trade: { icon: 'pack', title: 'Le troc', text: 'Chacun paie plus cher ce qui lui manque, et moins ce qu\'il a déjà. Pendant une pénurie, ce qui manque en ville vaut bien plus. Les deux plateaux doivent s\'équilibrer.' },
@@ -188,6 +188,7 @@
         'Choisissez le lieu sur la carte : ce qu\'on en sait s\'affiche. Puis préparez le <b>sac</b> par glisser-déposer : chaque case contient une pile d\'un seul objet.'
       ]) + sec('search', 'Explorer', [
         '<b>Clic</b> : marcher. <b>Double-clic</b> : courir (plus vite, mais on vous entend de loin).',
+        'La caméra suit le pilleur. <b>Molette</b> : zoomer ou reculer jusqu\'à voir tout le lieu. <b>Clic droit glissé</b> ou <b>flèches</b> (Q / D) : déplacer la vue. <b>F</b> ou la flèche au bord de l\'écran : revenir sur lui.',
         'Fouiller un meuble ouvre la fouille : glissez les objets vers le sac. Serrures : pied-de-biche, passe-partout ou scie.',
         '<b>Regarder par la serrure</b> avant d\'entrer : on voit qui est dans la pièce.',
         'La cloche sonne à 4 h ; à 5 h, on rentre de force. <b>Rentrer</b> : bouton du bandeau.'

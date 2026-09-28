@@ -90,6 +90,8 @@
   var CX0 = (C.WORLD.left + C.WORLD.right) / 2, CY0 = H / 2;
   R.cam = { z: 1, cx: CX0, cy: CY0, follow: null, auto: false };
   R.ZMAX = 2.4;
+  // Plan large : on peut reculer jusqu'à voir tout le lieu
+  R.zMin = function () { return C.WORLD.view ? Math.min(1, C.WORLD.view / (C.WORLD.right - C.WORLD.left + 120)) : 1; };
   // Garde c dans [lo + a, hi - b] ; si le contenu est plus petit que la vue, le centre
   function axis(c, lo, hi, a, b) {
     if (hi - lo <= a + b) return (lo + hi) / 2 - (b - a) / 2;
@@ -97,7 +99,7 @@
   }
   function clampCam() {
     var c = R.cam;
-    c.z = U.clamp(c.z, 1, R.ZMAX);
+    c.z = U.clamp(c.z, R.zMin(), R.ZMAX);
     if (C.WORLD.view) {
       // Plan large : la vue ne sort pas du plan (un peu de marge)
       var b = R.base, s = b.scale * c.z, sx = b.ox + CX0 * b.scale, sy = b.oy + CY0 * b.scale;
@@ -121,7 +123,7 @@
   // Zoom en gardant fixe le point sous le curseur (coordonnées écran CSS)
   R.zoomAt = function (px, py, z) {
     var w = R.toWorld(px, py);
-    R.cam.z = U.clamp(z, 1, R.ZMAX);
+    R.cam.z = U.clamp(z, R.zMin(), R.ZMAX);
     var b = R.base, s = b.scale * R.cam.z, sx = b.ox + CX0 * b.scale, sy = b.oy + CY0 * b.scale;
     R.cam.cx = w.x - (px * R.dpr - sx) / s;
     R.cam.cy = w.y - (py * R.dpr - sy) / s;
@@ -133,7 +135,13 @@
     R.cam.follow = null;
     R.applyCam();
   };
-  R.camReset = function () { R.cam.z = 1; R.cam.cx = CX0; R.cam.cy = CY0; R.cam.follow = null; R.applyCam(); staticRes(); };
+  R.camReset = function () {
+    R.cam.z = 1; R.cam.cx = CX0; R.cam.cy = CY0; R.cam.follow = null;
+    // Plan large en exploration : la vue d'ensemble reste centrée sur le pilleur
+    var sv = C.WORLD.view && C.Explore && C.Explore.active ? C.Explore.s : null;
+    if (sv) { R.cam.follow = sv.id; R.cam.cx = sv.x; R.cam.cy = sv.y - 70; }
+    R.applyCam(); staticRes();
+  };
   R.camFollow = function (s, z) {
     R.cam.follow = s ? s.id : null;
     if (z) { R.cam.z = z; staticRes(); }
@@ -143,7 +151,7 @@
   // Suivi en douceur (appelé à chaque image)
   function camStep(dt, st) {
     var c = R.cam;
-    if (c.z <= 1.001) { R.applyCam(); return; }
+    if (c.z <= 1.001 && !C.WORLD.view) { R.applyCam(); return; }
     var sv = c.follow ? st.survivors.filter(function (x) { return x.id === c.follow && x.alive; })[0] : null;
     if (sv) {
       var k = Math.min(1, dt * 4);
@@ -1459,6 +1467,7 @@
 
     // Vignette + grain (espace écran)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    offscreenMarker(ctx, st, t);
     var cw = R.canvas.width, ch = R.canvas.height;
     var vg = ctx.createRadialGradient(cw / 2, ch / 2, Math.min(cw, ch) * 0.35, cw / 2, ch / 2, Math.max(cw, ch) * 0.75);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
@@ -1474,6 +1483,26 @@
       ctx.globalAlpha = 1;
     }
   };
+
+  // Pilleur hors du champ (vue déplacée à la main) : flèche au bord de l'écran
+  function offscreenMarker(ctx, st, t) {
+    if (st.phase !== 'explore' || !C.Explore.s) return;
+    var s = C.Explore.s, px = s.x * R.scale + R.ox, py = (s.y - 60) * R.scale + R.oy;
+    var L = R.viewL, Rr = R.viewR, T = 90 * R.dpr, B = R.canvas.height - 30 * R.dpr;
+    if (px >= L && px <= Rr && py >= T && py <= B) return;
+    var mx = U.clamp(px, L + 30 * R.dpr, Rr - 30 * R.dpr), my = U.clamp(py, T + 20 * R.dpr, B - 20 * R.dpr);
+    var ang = Math.atan2(py - my, px - mx), d = R.dpr, pulse = 0.75 + 0.25 * Math.sin(t * 5);
+    ctx.save(); ctx.translate(mx, my);
+    ctx.fillStyle = 'rgba(20,16,13,0.85)'; ctx.beginPath(); ctx.arc(0, 0, 22 * d, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(240,210,150,' + pulse + ')'; ctx.lineWidth = 2 * d; ctx.stroke();
+    ctx.rotate(ang); ctx.fillStyle = 'rgba(240,210,150,' + pulse + ')';
+    ctx.beginPath(); ctx.moveTo(16 * d, 0); ctx.lineTo(4 * d, -9 * d); ctx.lineTo(4 * d, 9 * d); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.save(); ctx.font = (13 * d) + 'px "Bebas Neue", sans-serif'; ctx.fillStyle = '#efe6d0'; ctx.textAlign = 'center';
+    ctx.fillText(s.name.split(' ')[0].toUpperCase(), U.clamp(mx, L + 40 * d, Rr - 40 * d), my + (my > B - 60 * d ? -30 : 38) * d);
+    ctx.restore();
+    R.offMarker = { x: mx / d, y: my / d };
+  }
 
   // ============================================================ visiteurs
   // Ceux qui frappent à la porte sont dans la rue, devant l'entrée : le

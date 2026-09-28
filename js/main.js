@@ -301,13 +301,13 @@
       if (Main.mode !== 'game' || C.UI.modalOpen) return;
       e.preventDefault();
       var z = C.Render.cam.z * (e.deltaY < 0 ? 1.15 : 1 / 1.15);
-      C.Render.zoomAt(e.clientX, e.clientY, z < 1.04 ? 1 : z);
+      C.Render.zoomAt(e.clientX, e.clientY, z > 0.96 && z < 1.04 ? 1 : z);
       var sel = C.UI.selectedSurv && C.UI.selectedSurv();
       if (C.Explore && C.Explore.active && sel) C.Render.cam.follow = sel.id;
     }, { passive: false });
     var drag = null;
     cv.addEventListener('mousedown', function (e) {
-      if (Main.mode !== 'game' || (e.button !== 1 && e.button !== 2) || C.Render.cam.z <= 1.001) return;
+      if (Main.mode !== 'game' || (e.button !== 1 && e.button !== 2) || (C.Render.cam.z <= 1.001 && !C.WORLD.view)) return;
       e.preventDefault();
       drag = { x: e.clientX, y: e.clientY, moved: false };
     });
@@ -330,6 +330,8 @@
         if (slot) C.UI.placeAt(slot);
         return;
       }
+      var om = C.Render.offMarker;
+      if (st.phase === 'explore' && om && Math.abs(e.clientX - om.x) < 26 && Math.abs(e.clientY - om.y) < 26) { C.Render.camFollow(C.Explore.s); C.Render.offMarker = null; return; }
       var wasOpen = C.UI.contextOpen();
       C.UI.closeContext();
       var hit = C.Render.pick(w.x, w.y);
@@ -361,8 +363,8 @@
       var f = C.Render.floorAt(w.x, w.y);
       if (s && f != null && (st.phase === 'day' || st.phase === 'explore')) {
         C.Actions.moveTo(s, f, C.Nav.clampX(f, w.x));
-        // Exploration : double-clic = courir (plus vite, mais bruyant)
-        if (st.phase === 'explore') s.run = e.detail >= 2;
+        // Exploration : double-clic = courir (plus vite, mais bruyant) ; la caméra le suit de nouveau
+        if (st.phase === 'explore') { s.run = e.detail >= 2; if (C.WORLD.view || C.Render.cam.z > 1.05) C.Render.cam.follow = s.id; }
       }
     });
 
@@ -408,6 +410,12 @@
           else if (zs) C.Render.camFollow(zs, 1.8);
           break;
         case 'a': case 'A': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.cycleWeapon(); break;
+        // Flèches (ou Q / D) : faire défiler la vue ; F : revenir sur le pilleur
+        case 'ArrowLeft': case 'q': case 'Q': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(260, 0); } break;
+        case 'ArrowRight': case 'd': case 'D': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(-260, 0); } break;
+        case 'ArrowUp': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(0, 180); } break;
+        case 'ArrowDown': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(0, -180); } break;
+        case 'f': case 'F': if (!C.UI.modalOpen) { var fs = st.phase === 'explore' ? C.Explore.s : C.UI.selectedSurv && C.UI.selectedSurv(); if (fs) C.Render.camFollow(fs); } break;
       }
     });
   }
