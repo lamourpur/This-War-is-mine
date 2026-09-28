@@ -192,7 +192,7 @@
       warn: 'Ce sont les vivres des réfugiés de l\'église. Onze personnes en dépendent, dont des enfants.'
     },
     hopital: {
-      text: ' a volé la pharmacie de l\'hôpital. Les blessés n\'auront rien cette nuit.', moral: -15, key: 'stole_hospital',
+      text: ' a volé les réserves de l\'hôpital. Les blessés n\'auront rien cette nuit.', moral: -15, key: 'stole_hospital',
       desc: 'Les réserves de l\'hôpital. Des blessés en dépendent.',
       warn: 'Ces médicaments et ces bandages sont ceux des blessés de l\'hôpital. Le docteur n\'a rien d\'autre.',
       furn: 'Un meuble de l\'hôpital. Le démonter, c\'est voler les soignants.',
