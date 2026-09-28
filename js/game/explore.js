@@ -114,7 +114,10 @@
     map.objects.forEach(function (d) {
       var o = U.copy(d);
       var saved = ls.map[d.key];
-      if (saved === 'gone') return;                       // gravats déblayés, meuble démonté
+      // Gravats déblayés, meuble démonté, habitant tué ou parti. Un habitant
+      // effacé sans raison connue (vieille sauvegarde) revient.
+      if (saved === 'gone' && !(d.kind === 'guard' && !(ls.gone || {})[d.key])) return;
+      if (saved === 'gone') saved = null;
       if (saved) for (var k in saved) o[k] = saved[k];
       G().spawnObject(o);
     });

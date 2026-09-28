@@ -135,6 +135,11 @@
   K.guards = function () { return G().st.objects.filter(function (o) { return o.kind === 'guard'; }); };
   K.active = function () { return E() && E().active && K.guards().length > 0; };
 
+  // Un habitant du lieu ne reviendra pas : tué, ou épargné et parti (mémorisé)
+  K.gone = function (g, why) {
+    var ls = E() && E().home && E().home.locations[E().loc];
+    if (ls && g.key) (ls.gone = ls.gone || {})[g.key] = why;
+  };
   // Prépare un soldat posé par le plan (à l'entrée dans le lieu)
   K.init = function (g, ls) {
     var T = K.type(g);
@@ -429,6 +434,7 @@
     else kind = 'unprovoked';
     E().kills.push({ type: g.type, name: g.name ? T.name : T.name, who: K.nameOf(g), kind: kind });
     E().ev('kill', { kind: kind, name: K.nameOf(g), who: K.whoOf(g), cat: K.catOf(g) });
+    K.gone(g, 'dead');
     G().removeObject(g);
     // Le corps : on peut le fouiller (arme, munitions, affaires)
     var loot = U.copy(T.loot);
@@ -782,6 +788,7 @@
     sayG(g, 'spared', 4);
     E().spared.push(g.type);
     E().ev('spare', { name: K.nameOf(g), who: K.whoOf(g) });
+    K.gone(g, 'left');
     G().removeObject(g);
     G().markDirty();
   };
