@@ -8,12 +8,6 @@
 (function (C) {
   'use strict';
 
-  var STAIRS = [
-    { a: { f: 1, x: 420 }, b: { f: 2, x: 260 } },
-    { a: { f: 1, x: 1180 }, b: { f: 0, x: 1340 } },
-    { a: { f: 2, x: 1200 }, b: { f: 3, x: 1360 } }
-  ];
-
   // ------------------------------------------------------------ squatteurs
   C.GUARD_TYPES.squatteur = {
     name: 'Squatteur', hp: 75, weapon: null, tool: 'knife', mdmg: [10, 20], ammo: 0, tolerant: true, noun: 'squatteur', cat: 'civ',
@@ -111,102 +105,5 @@
     later: { days: 4, text: 'On raconte que les Morrow ont quitté la ville à pied, sans rien. Nina toussait encore.', moral: -5, key: 'stole_kids' }
   };
 
-  // ------------------------------------------------------------ Hôtel
-  C.MAPS.hotel = {
-    theme: { walls: ['wallpaper', 'wallpaper', 'wallpaper', 'peeling'], dirt: 0.25 },
-    stairs: STAIRS,
-    walls: [{ f: 0, x: 800 }, { f: 1, x: 760 }, { f: 2, x: 780 }, { f: 3, x: 760 }],
-    windows: [{ f: 1, x: 560 }, { f: 1, x: 1000, broken: true }, { f: 2, x: 460 }, { f: 2, x: 1020 }, { f: 3, x: 330, broken: true }, { f: 3, x: 1010, broken: true }, { f: 0, x: 420, vent: true }, { f: 0, x: 1020, vent: true }],
-    zones: [
-      { id: 'etage_officiers', f: 2, x0: 140, x1: 1460, group: 'hotel', label: 'Étage des officiers' },
-      { id: 'suites', f: 3, x0: 140, x1: 1460, group: 'hotel', label: 'Suites occupées' }
-    ],
-    decor: [
-      { f: 1, x: 640, p: 'vintage_oil_lamp', h: 30 }, { f: 1, x: 1400, p: 'vintage_suitcase', h: 26 },
-      { f: 0, x: 560, p: 'wine_bottles_01', h: 20 }, { f: 2, x: 640, p: 'old_military_crate', h: 30 },
-      { f: 3, x: 480, p: 'Television_01', h: 28 }
-    ],
-    objects: [
-      { key: 'exit', kind: 'exit', f: 1, x: 175, w: 44, h: 104 },
-      { key: 'fauteuil', kind: 'armchair', f: 1, x: 330, deco: true },
-      { key: 'irene', kind: 'npc', npc: 'irene', f: 1, x: 560, w: 40, h: 90, facing: 1 },
-      { key: 'reception', kind: 'cache', variant: 'commode', label: 'Comptoir de la réception', f: 1, x: 900, w: 64, h: 60, owner: 'hotel_refugies', loot: { cigarettes: 2, sucre: 1, livres: 2 } },
-      { key: 'recoin_hall', kind: 'hide', f: 1, x: 1040, w: 46, h: 108 },
-      { key: 'bagagerie', kind: 'cache', variant: 'valise', label: 'Bagages abandonnés', f: 1, x: 1320, w: 62, h: 36, loot: { livres: 1, bijoux: 1, cafe: 1 } },
-      { key: 'cave_bar', kind: 'cache', variant: 'etagere', label: 'Réserve du bar', f: 0, x: 420, w: 70, h: 104, loot: { alcool: 2, sucre: 1, conserve: 1 } },
-      { key: 'porte_cuisines', kind: 'door', f: 0, x: 800, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
-      { key: 'chambre_froide', kind: 'cache', variant: 'armoire', label: 'Chambre froide', f: 0, x: 1050, w: 58, h: 112, owner: 'armee', loot: { conserve: 4, viande: 2, eau: 3 } },
-      { key: 'soldat_cuisine', kind: 'guard', type: 'soldat', f: 0, x: 1180, facing: -1, attitude: 'neutral', group: 'hotel', sleep: true },
-      { key: 'sentinelle_hotel', kind: 'guard', type: 'soldat', f: 2, x: 500, facing: 1, attitude: 'neutral', group: 'hotel', patrol: [360, 740] },
-      { key: 'recoin_couloir', kind: 'hide', f: 2, x: 820, w: 46, h: 108 },
-      { key: 'chambre_12', kind: 'cache', variant: 'armoire', label: 'Chambre 12', f: 2, x: 1000, w: 58, h: 112, owner: 'armee', loot: { munitions: 8, medicaments: 1, cigarettes: 2 } },
-      { key: 'soldat_etage', kind: 'guard', type: 'soldat', f: 2, x: 1300, facing: -1, attitude: 'neutral', group: 'hotel', patrol: [1000, 1420] },
-      { key: 'lit_officier', kind: 'bed', f: 3, x: 560, deco: true },
-      { key: 'officier', kind: 'guard', type: 'intendant', name: 'Lieutenant Kerr', f: 3, x: 620, facing: 1, attitude: 'neutral', group: 'hotel', sleep: true },
-      { key: 'suite_coffre', kind: 'cache', variant: 'coffre', label: 'Coffre de la suite', f: 3, x: 1000, w: 60, h: 48, owner: 'armee', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } },
-      { key: 'suite_bar', kind: 'cache', variant: 'etagere', label: 'Minibar', f: 3, x: 1200, w: 70, h: 104, owner: 'armee', loot: { alcool: 2, cafe: 2, cigarettes: 3 } }
-    ]
-  };
-
-  // ------------------------------------------------------------ Squat délabré
-  C.MAPS.squat = {
-    theme: { walls: ['brickPlaster', 'plaster2', 'peeling', 'brickPlaster'], dirt: 0.55 },
-    stairs: STAIRS,
-    walls: [{ f: 0, x: 760 }, { f: 1, x: 820 }, { f: 2, x: 700 }, { f: 3, x: 640 }],
-    windows: [{ f: 1, x: 560, broken: true }, { f: 1, x: 1000, broken: true }, { f: 2, x: 460, broken: true }, { f: 2, x: 1020, broken: true }, { f: 3, x: 330, broken: true }, { f: 3, x: 1010, broken: true }, { f: 0, x: 420, vent: true }, { f: 0, x: 1020, vent: true }],
-    zones: [
-      { id: 'chez_eux', f: 1, x0: 830, x1: 1460, group: 'squat', label: 'Le coin du squat', sign: 'CHEZ NOUS', signHostile: 'ILS VOUS EN VEULENT' },
-      { id: 'dortoir', f: 2, x0: 710, x1: 1460, group: 'squat', label: 'Le dortoir', sign: 'CHEZ NOUS', signHostile: 'ILS VOUS EN VEULENT' }
-    ],
-    decor: [
-      { f: 1, x: 300, p: 'metal_trash_can', h: 34 }, { f: 1, x: 1400, p: 'cardboard_box_01', h: 30 },
-      { f: 0, x: 560, p: 'old_tyre', h: 26 }, { f: 2, x: 480, p: 'cardboard_box_01', h: 30 }, { f: 3, x: 1400, p: 'metal_jerrycan', h: 28 }
-    ],
-    objects: [
-      { key: 'exit', kind: 'exit', f: 1, x: 175, w: 44, h: 104 },
-      { key: 'detritus', kind: 'rubble', f: 1, x: 560, w: 96, h: 42, work: 60, loot: { bois: 3, composants: 2 } },
-      { key: 'recoin_entree', kind: 'hide', f: 1, x: 760, w: 46, h: 108 },
-      { key: 'squatteur_feu', kind: 'guard', type: 'squatteur', name: 'Gus', f: 1, x: 1050, facing: -1, attitude: 'neutral', group: 'squat', patrol: [900, 1250] },
-      { key: 'reserve_commune', kind: 'cache', variant: 'caisse', label: 'Réserve commune', f: 1, x: 1320, w: 78, h: 48, owner: 'squat', loot: { conserve: 2, bois: 3, cigarettes: 1 } },
-      { key: 'joe', kind: 'npc', npc: 'joe', f: 2, x: 520, w: 90, h: 30, facing: 1 },
-      { key: 'squatteur_dortoir', kind: 'guard', type: 'squatteur', name: 'Marv', f: 2, x: 1000, facing: 1, attitude: 'neutral', group: 'squat', sleep: true },
-      { key: 'matelas', kind: 'cache', variant: 'valise', label: 'Affaires sous un matelas', f: 2, x: 1300, w: 62, h: 36, owner: 'squat', loot: { bandage: 1, tabac: 2, bijoux: 1 } },
-      { key: 'cave_bric', kind: 'cache', variant: 'caisse', label: 'Bric-à-brac', f: 0, x: 420, w: 78, h: 48, loot: { composants: 3, pieces_meca: 1 } },
-      { key: 'planches_cave', kind: 'rubble', f: 0, x: 900, w: 90, h: 40, work: 60, loot: { bois: 2 } },
-      { key: 'caisse_cachee', kind: 'cache', variant: 'caisse', label: 'Caisse cachée des squatteurs', f: 0, x: 1150, w: 78, h: 48, owner: 'squat', loot: { conserve: 2, medicaments: 1, munitions: 4 } },
-      { key: 'eboulis_toit', kind: 'rubble', f: 3, x: 900, w: 104, h: 150, block: true, work: 150, loot: { bois: 3, composants: 2 } },
-      { key: 'squatteur_toit', kind: 'guard', type: 'squatteur', name: 'Lou', f: 3, x: 1200, facing: -1, attitude: 'neutral', group: 'squat_toit', patrol: [1000, 1400] },
-      { key: 'pigeonnier', kind: 'cache', variant: 'caisse', label: 'Pigeonnier', f: 3, x: 420, w: 78, h: 48, loot: { viande: 2, bois: 2 } }
-    ]
-  };
-
-  // ------------------------------------------------------------ Maison mitoyenne
-  // Côté ouest : les Morrow. Côté est : la moitié éventrée (les Kowalski, morts
-  // dans le bombardement) — on s'y sert sans voler personne.
-  C.MAPS.maison_mitoyenne = {
-    theme: { walls: ['wallpaper', 'wallpaper', 'peeling', 'plaster2'], dirt: 0.3 },
-    stairs: STAIRS,
-    walls: [{ f: 0, x: 800 }, { f: 1, x: 800 }, { f: 2, x: 800 }, { f: 3, x: 800 }],
-    windows: [{ f: 1, x: 560 }, { f: 1, x: 1000, broken: true }, { f: 2, x: 460 }, { f: 2, x: 1020, broken: true }, { f: 3, x: 330 }, { f: 3, x: 1010, broken: true }, { f: 0, x: 420, vent: true }, { f: 0, x: 1020, vent: true }],
-    decor: [
-      { f: 1, x: 640, p: 'wooden_stool_01', h: 28 }, { f: 1, x: 1400, p: 'cardboard_box_01', h: 30 },
-      { f: 0, x: 600, p: 'wooden_barrels_01', h: 30 }, { f: 2, x: 700, p: 'vintage_oil_lamp', h: 30 }, { f: 3, x: 1400, p: 'vintage_suitcase', h: 26 }
-    ],
-    objects: [
-      { key: 'exit', kind: 'exit', f: 1, x: 175, w: 44, h: 104 },
-      { key: 'ed', kind: 'npc', npc: 'ed', f: 1, x: 560, w: 40, h: 90, facing: 1 },
-      { key: 'poele', kind: 'stove', f: 1, x: 680, deco: true },
-      { key: 'cuisine_morrow', kind: 'cache', variant: 'armoire', label: 'Cuisine des Morrow', f: 1, x: 330, w: 58, h: 112, owner: 'morrow', loot: { conserve: 2, legumes: 2, eau: 2 } },
-      { key: 'gravats_salon', kind: 'rubble', f: 1, x: 1000, w: 96, h: 42, work: 90, loot: { bois: 3, composants: 2 } },
-      { key: 'salon_kowalski', kind: 'cache', variant: 'commode', label: 'Commode des Kowalski', f: 1, x: 1320, w: 64, h: 60, loot: { livres: 2, bijoux: 1, cigarettes: 1 } },
-      { key: 'cave_morrow', kind: 'cache', variant: 'etagere', label: 'Conserves des Morrow', f: 0, x: 420, w: 70, h: 104, owner: 'morrow', loot: { conserve: 2, sucre: 1, engrais: 1 } },
-      { key: 'mur_cave', kind: 'rubble', f: 0, x: 800, w: 104, h: 150, block: true, work: 120, loot: { bois: 2, composants: 3 } },
-      { key: 'cave_kowalski', kind: 'cache', variant: 'coffre', label: 'Malle des Kowalski', f: 0, x: 1100, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_elec: 2, medicaments: 1, munitions: 4, alcool: 1 } },
-      { key: 'lit_nina', kind: 'bed', f: 2, x: 500, deco: true },
-      { key: 'nina', kind: 'npc', npc: 'nina', f: 2, x: 500, w: 90, h: 44, facing: 1, onBed: true },
-      { key: 'armoire_nina', kind: 'furniture', variant: 'armoire', f: 2, x: 700, w: 58, h: 112, work: 60, owner: 'morrow', loot: { bois: 3 } },
-      { key: 'chambre_kowalski', kind: 'cache', variant: 'armoire', label: 'Chambre éventrée', f: 2, x: 1300, w: 58, h: 112, loot: { bandage: 1, livres: 2, tabac: 1 } },
-      { key: 'grenier', kind: 'cache', variant: 'valise', label: 'Grenier', f: 3, x: 1150, w: 62, h: 36, loot: { composants: 2, pieces_meca: 1, bois: 2 } }
-    ]
-  };
+  // Plans : voir lieux.js
 })(window.CQR);

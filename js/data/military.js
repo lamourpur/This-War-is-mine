@@ -109,12 +109,6 @@
     warn: 'Un soldat vous regarde. Vous servir maintenant, c\'est déclencher la fusillade : toute la garnison deviendra hostile.'
   };
 
-  var STAIRS = [
-    { a: { f: 1, x: 420 }, b: { f: 2, x: 260 } },
-    { a: { f: 1, x: 1180 }, b: { f: 0, x: 1340 } },
-    { a: { f: 2, x: 1200 }, b: { f: 3, x: 1360 } }
-  ];
-
   // ------------------------------------------------------------ Entrepôt du port (soldats neutres)
   // Plan libre (js/render/layout.js), comme dans le jeu d'origine : une cour
   // grillagée, un grand hangar à sheds avec mezzanine et pont roulant, une
@@ -249,42 +243,5 @@
     ]
   };
 
-  // ------------------------------------------------------------ Avant-poste militaire (soldats hostiles)
-  C.MAPS.avant_poste = {
-    theme: { walls: ['brickPlaster', 'plaster2', 'plaster', 'brickPlaster'], dirt: 0.3, military: true },
-    stairs: STAIRS,
-    walls: [{ f: 0, x: 780 }, { f: 1, x: 900 }, { f: 2, x: 680 }, { f: 3, x: 640 }],
-    windows: [{ f: 1, x: 560, broken: true }, { f: 1, x: 1040 }, { f: 2, x: 460 }, { f: 2, x: 1040, broken: true }, { f: 3, x: 330, broken: true }, { f: 3, x: 1010 }, { f: 0, x: 420, vent: true }, { f: 0, x: 1020, vent: true }],
-    zones: [],
-    decor: [
-      { f: 1, x: 470, p: 'old_military_crate', h: 30 }, { f: 1, x: 1400, p: 'metal_jerrycan', h: 28 },
-      { f: 0, x: 300, p: 'ammo_box', h: 16 }, { f: 0, x: 1180, p: 'wooden_barrels_01', h: 30 },
-      { f: 2, x: 1400, p: 'vintage_radio_transceiver', h: 22 }, { f: 2, x: 900, p: 'old_gas_mask', h: 16 },
-      { f: 3, x: 1400, p: 'old_military_crate', h: 30 }, { f: 3, x: 300, p: 'metal_jerrycan', h: 28 }
-    ],
-    objects: [
-      { key: 'exit', kind: 'exit', f: 1, x: 175, w: 44, h: 104 },
-      { key: 'recoin_entree', kind: 'hide', f: 1, x: 300, w: 46, h: 108 },
-      { key: 'sacs', kind: 'sandbags', f: 1, x: 530, w: 90, h: 40, deco: true },
-      { key: 'sentinelle', kind: 'guard', type: 'soldat', f: 1, x: 690, facing: 1, attitude: 'hostile', group: 'poste', lookBack: 9 },
-      { key: 'caisse_rations', kind: 'cache', variant: 'caisse', label: 'Caisse de rations', f: 1, x: 820, w: 78, h: 48, loot: { conserve: 3, eau: 2 } },
-      { key: 'recoin_couloir', kind: 'hide', f: 1, x: 1060, w: 46, h: 108 },
-      { key: 'ronde', kind: 'guard', type: 'soldat', f: 1, x: 1300, facing: -1, attitude: 'hostile', group: 'poste', patrol: [960, 1400] },
-      { key: 'infirmerie', kind: 'cache', variant: 'pharmacie', f: 1, x: 1330, w: 60, h: 112, loot: { medicaments: 2, bandage: 3 } },
-      { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 0, x: 560, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil_assaut: 1, munitions: 12, gilet: 1, casque: 1 } },
-      { key: 'recoin_cave', kind: 'hide', f: 0, x: 840, w: 46, h: 108 },
-      { key: 'lit_camp', kind: 'bed', f: 0, x: 1010, metal: true, deco: true },
-      { key: 'dormeur', kind: 'guard', type: 'soldat', f: 0, x: 1010, facing: 1, attitude: 'hostile', group: 'poste', sleep: true },
-      { key: 'vivres', kind: 'cache', variant: 'etagere', f: 0, x: 1240, w: 70, h: 104, loot: { conserve: 3, sucre: 2, cafe: 1 } },
-      { key: 'etage', kind: 'guard', type: 'soldat', f: 2, x: 400, facing: 1, attitude: 'hostile', group: 'poste', patrol: [300, 640] },
-      { key: 'recoin_etage', kind: 'hide', f: 2, x: 740, w: 46, h: 108 },
-      { key: 'lit_officier', kind: 'bed', f: 2, x: 860, metal: true, deco: true },
-      { key: 'bureau_officier', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'officier', f: 2, x: 1030, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 2, cafe: 2, cigarettes: 3, pistolet: 1 } },
-      { key: 'caisse_etage', kind: 'cache', variant: 'caisse', label: 'Caisse de munitions', f: 2, x: 1310, w: 78, h: 48, loot: { munitions: 6, conserve: 2 } },
-      { key: 'caisse_toit', kind: 'cache', variant: 'caisse', f: 3, x: 400, w: 78, h: 48, loot: { carburant: 2, munitions: 4 } },
-      { key: 'guetteur', kind: 'guard', type: 'soldat', f: 3, x: 820, facing: -1, attitude: 'hostile', group: 'poste' },
-      { key: 'caisse_radio', kind: 'cache', variant: 'caisse', f: 3, x: 1080, w: 78, h: 48, loot: { pieces_elec: 3, composants: 3 } },
-      { key: 'recoin_toit', kind: 'hide', f: 3, x: 1230, w: 46, h: 108 }
-    ]
-  };
+  // Avant-poste : voir lieux.js
 })(window.CQR);

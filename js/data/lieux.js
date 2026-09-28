@@ -1024,4 +1024,231 @@
       { key: 'squatteur_toit', kind: 'guard', type: 'squatteur', name: 'Lou', f: 3, x: 1450, facing: -1, attitude: 'neutral', group: 'squat_toit', patrol: [1250, 1600] }
     ]
   });
+
+  // ============================================================ Chantier
+  // Un immeuble resté à l'état de squelette de béton : dalles nues, poteaux,
+  // fers en attente, l'échafaudage sur le flanc, la grue figée au-dessus.
+  // En bas le parking des fondations (grille soudée), à côté la cabane.
+  C.MAPS.chantier = keepNpcs('chantier', {
+    theme: { dirt: 0.4 },
+    world: { W: 2600, H: 1010, left: 40, right: 2560, ground: G, walkMin: 60, walkMax: 2540, view: 1500 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Chantier', y: G, ceil: 560, x0: 60, x1: 2540, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 900, out: true, tex: 'rubble' }, { x0: 900, x1: 1900, tex: 'concrete' }, { x0: 1900, x1: 2540, out: true, tex: 'rubble' }] },
+      { name: 'Fondations', y: 985, ceil: 848, x0: 1012, x1: 1788, thick: 25, tex: 'concrete' },
+      { name: '1er niveau', y: 640, ceil: 476, x0: 900, x1: 1900, tex: 'concrete' },
+      { name: '2e niveau', y: 460, ceil: 296, x0: 900, x1: 1900, tex: 'concrete' },
+      { name: 'Dalle du haut', y: 280, ceil: 100, x0: 900, x1: 1700, tex: 'concrete', out: true, broken: ['right'] },
+      { name: 'Échafaudage', y: 460, ceil: 300, x0: 1915, x1: 2160, scaffold: true, support: G }
+    ],
+    rooms: [
+      R(900, 1900, 100, G, 'concrete', { frame: 250, rebar: true }),
+      R(1000, 1800, 848, 985, 'concrete', { tone: '#5f5c56', border: true, signs: [{ t: 'PARKING — NIVEAU -1', x: 1200, y: 900, size: 20 }] }),
+      R(280, 560, 700, G, 'corrugated2', { tone: '#5d5a52', posters: [{ x: 360, y: 750, t: 'CASQUE\nOBLIGATOIRE' }] })
+    ],
+    shells: [
+      { x0: 280, x1: 560, top: 700, bottom: G, wall: 'corrugated', roof: 'flat', thick: 10, gaps: { right: [{ y0: 712, y1: G }] } }
+    ],
+    fences: [{ f: 0, x0: 600, x1: 880, h: 110 }],
+    things: [
+      { kind: 'crane', f: 0, x: 2380, h: 720, arm: 560, back: true, flip: true, load: true, drop: 260 },
+      { kind: 'container', f: 0, x: 760, w: 200, h: 100, text: 'BÂTIR 91', color: '#6b5f45' },
+      { kind: 'crater', f: 0, x: 2350, w: 150 }
+    ],
+    lights: [{ kind: 'brasero', x: 640, y: 790, r: 190 }, { kind: 'candle', x: 1750, y: 420, r: 100 }],
+    backdrop: { far: 'city', mid: ['towers', 'cranes'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 960 }, b: { f: 2, x: 960 }, type: 'ladder' },
+      { a: { f: 2, x: 1850 }, b: { f: 3, x: 1680 }, type: 'metal' },
+      { a: { f: 3, x: 1000 }, b: { f: 4, x: 1000 }, type: 'ladder' },
+      { a: { f: 0, x: 1850 }, b: { f: 1, x: 1700 } },
+      { a: { f: 0, x: 2120 }, b: { f: 5, x: 2120 }, type: 'ladder' },
+      { a: { f: 5, x: 1925 }, b: { f: 3, x: 1890 }, type: 'link' }
+    ],
+    walls: [],
+    windows: [],
+    zones: [{ id: 'coin_rick', f: 3, x0: 1300, x1: 1900, group: 'rick', label: 'Le coin de Rick', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' }],
+    decor: [
+      { f: 0, x: 200, p: 'street_lamp_01', h: 200 }, { f: 0, x: 1080, p: 'cement_bag', h: 22 }, { f: 0, x: 1650, p: 'wooden_ladder', h: 90 },
+      { f: 0, x: 2250, p: 'portable_generator', h: 44 }, { f: 0, x: 2480, p: 'old_tyre', h: 26 }, { f: 1, x: 1400, p: 'old_tyre', h: 26 },
+      { f: 2, x: 1300, p: 'cement_bag', h: 22 }, { f: 2, x: 1650, p: 'wooden_barrels_01', h: 30 }, { f: 4, x: 1450, p: 'propane_tank', h: 40 },
+      { f: 5, x: 2050, p: 'cement_bag', h: 20 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'cabane', kind: 'cache', variant: 'armoire', label: 'Cabane de chantier', f: 0, x: 470, w: 58, h: 112, loot: { conserve: 1, engrais: 2, carburant: 1 } },
+      { key: 'planches', kind: 'rubble', label: 'Tas de planches', f: 0, x: 1150, w: 96, h: 42, work: 60, loot: { bois: 4, composants: 2 } },
+      { key: 'outils', kind: 'cache', variant: 'caisse', label: 'Caisse à outils', f: 0, x: 1350, w: 78, h: 48, loot: { pieces_meca: 2, composants: 3 } },
+      { key: 'recoin_rdc', kind: 'hide', variant: 'palettes', label: 'Derrière les palettes', f: 0, x: 1550, w: 80, h: 92 },
+      // Fondations
+      { key: 'gravats_cave', kind: 'rubble', f: 1, x: 1520, w: 90, h: 40, work: 60, loot: { composants: 3, bois: 2 } },
+      { key: 'grille', kind: 'grate', f: 1, x: 1300, w: 26, h: 132, tools: ['scie'] },
+      { key: 'depot', kind: 'cache', variant: 'coffre', label: 'Dépôt du chef de chantier', f: 1, x: 1120, w: 60, h: 48, loot: { pieces_meca: 4, pieces_elec: 2, carburant: 2 } },
+      // 1er niveau
+      { key: 'ferraille', kind: 'rubble', label: 'Ferraille', f: 2, x: 1150, w: 90, h: 40, work: 60, loot: { composants: 4, pieces_meca: 1 } },
+      { key: 'recoin_etage', kind: 'hide', variant: 'palettes', label: 'Derrière les palettes', f: 2, x: 1450, w: 80, h: 92 },
+      // 2e niveau : Rick
+      { key: 'rick', kind: 'guard', type: 'pilleur', name: 'Rick', f: 3, x: 1600, facing: -1, attitude: 'neutral', group: 'rick', patrol: [1350, 1850] },
+      { key: 'sac_rick', kind: 'cache', variant: 'valise', label: 'Sac de Rick', f: 3, x: 1790, w: 62, h: 36, owner: 'pilleur', loot: { conserve: 1, bois: 2, composants: 2 } },
+      // Dalle du haut
+      { key: 'palette_toit', kind: 'cache', variant: 'palettes', label: 'Palettes', f: 4, x: 1150, w: 90, h: 92, loot: { bois: 4, composants: 3 } },
+      { key: 'eboulis', kind: 'rubble', label: 'Coffrage effondré', f: 4, x: 1350, w: 104, h: 118, block: true, work: 150, loot: { bois: 3, composants: 2 } },
+      { key: 'bidons', kind: 'cache', variant: 'bac', label: 'Bidons', f: 4, x: 1560, w: 76, h: 40, loot: { carburant: 1, engrais: 1, conserve: 1 } }
+    ]
+  });
+
+  // ============================================================ Carrefour sous le feu (tireur embusqué)
+  // Une large rue entre deux immeubles, jonchée d'épaves : le tireur, posté
+  // dans l'immeuble d'en face, abat qui reste à découvert. On court d'abri
+  // en abri, ou on passe sous la rue par le métro (dégager les gravats).
+  C.MAPS.carrefour = keepNpcs('carrefour', {
+    theme: { dirt: 0.45 },
+    world: { W: 3000, H: 1010, left: 40, right: 2960, ground: G, walkMin: 60, walkMax: 2940, view: 1500 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Carrefour', y: G, ceil: 560, x0: 60, x1: 2928, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 2400, out: true }, { x0: 2400, x1: 2940, tex: 'floor' }] },
+      { name: 'Station de métro', y: 985, ceil: 848, x0: 512, x1: 2288, thick: 25, tex: 'tiles' },
+      { name: 'Appartement du coin', y: 640, ceil: 476, x0: 2412, x1: 2928, tex: 'floor' },
+      { name: 'Nid du tireur', y: 460, ceil: 296, x0: 2412, x1: 2928, tex: 'floor' }
+    ],
+    rooms: [
+      R(200, 560, 300, G, 'brickPlaster', { tone: '#6c665c', breach: [{ x: 380, y: 420, r: 50 }] }),
+      R(2400, 2940, 656, G, 'peeling', { tone: '#77726a', bulbs: [2650] }),
+      R(2400, 2940, 476, 640, 'wallpaper', { tone: '#827a6b', paper: 12, frames: 2, skirt: true }),
+      R(2400, 2940, 296, 460, 'wallpaper', { tone: '#6f685c', paper: 12 }),
+      R(500, 2300, 848, 985, 'tiles', { tone: '#7a7870', wainscot: { h: 137, tone: '#86847c', grid: 14 }, tubes: [800, 1200, 1600, 2000],
+        signs: [{ t: 'MÉTRO — LIGNE 2 — PLACE DE LA LIBERTÉ', x: 700, y: 890, size: 22 }], posters: [{ x: 1750, y: 910, t: 'PLAN DU\nRÉSEAU' }] })
+    ],
+    shells: [
+      { x0: 200, x1: 560, top: 300, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 690, y1: G }], right: [{ y0: 690, y1: G }] } },
+      { x0: 2400, x1: 2940, top: 296, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 702, y1: G }] } }
+    ],
+    things: [
+      { kind: 'kiosk', f: 0, x: 640, back: true },
+      { kind: 'bus', f: 0, x: 960, back: true },
+      { kind: 'crater', f: 0, x: 1350, w: 170 },
+      { kind: 'tank', f: 0, x: 1900, back: true, flip: true },
+      { kind: 'hedgehog', f: 0, x: 2300, n: 1 }
+    ],
+    lights: [{ kind: 'brasero', x: 2200, y: 790, r: 170 }],
+    backdrop: { far: 'city', mid: ['towers', 'steeples'], near: ['ruins'] },
+    exposed: [{ f: 0, x0: 740, x1: 2380, label: 'À découvert', ceil: 560 }],
+    stairs: [
+      { a: { f: 0, x: 690 }, b: { f: 1, x: 850 } },
+      { a: { f: 0, x: 2340 }, b: { f: 1, x: 2180 } },
+      { a: { f: 0, x: 2880 }, b: { f: 2, x: 2720 } }
+    ],
+    walls: [],
+    windows: [
+      { f: 0, x: 300, y: 350 }, { f: 0, x: 470, y: 350, broken: true }, { f: 0, x: 300, y: 520, boarded: true }, { f: 0, x: 470, y: 520 },
+      { f: 2, x: 2550, broken: true }, { f: 3, x: 2600, broken: true }, { f: 3, x: 2800, boarded: true }
+    ],
+    decor: [
+      { f: 0, x: 170, p: 'street_lamp_01', h: 210 }, { f: 0, x: 1150, p: 'old_tyre', h: 26 }, { f: 0, x: 1640, p: 'street_lamp_01', h: 200 },
+      { f: 0, x: 2050, p: 'rusted_wheel_rim_01', h: 26 }, { f: 0, x: 2600, p: 'trashbag', h: 30 }, { f: 1, x: 1250, p: 'trashbag', h: 32 },
+      { f: 1, x: 2000, p: 'cardboard_box_01', h: 30, shade: 0.3 }, { f: 2, x: 2850, p: 'cardboard_box_01', h: 30, shade: 0.3 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'kiosque', kind: 'cache', variant: 'caisse', label: 'Kiosque à journaux', f: 0, x: 560, w: 78, h: 48, loot: { cafe: 1, livres: 2 } },
+      { key: 'epave_bus', kind: 'cache', variant: 'valise', label: 'Bagages dans l\'autobus', f: 0, x: 900, w: 62, h: 36, loot: { conserve: 3, medicaments: 1 } },
+      { key: 'abri1', kind: 'hide', variant: 'sacs', label: 'Derrière les sacs de sable', f: 0, x: 1180, w: 90, h: 60 },
+      { key: 'epave_ambulance', kind: 'cache', variant: 'epave', label: 'Ambulance abandonnée', f: 0, x: 1530, w: 150, h: 60, loot: { medicaments: 2, bandage: 2, pieces_elec: 1 } },
+      { key: 'abri2', kind: 'hide', variant: 'voiture', label: 'Derrière le char', f: 0, x: 1800, w: 90, h: 70 },
+      { key: 'epave_militaire', kind: 'cache', variant: 'epave', label: 'Jeep militaire', f: 0, x: 2120, w: 150, h: 60, loot: { munitions: 8, carburant: 2, pieces_meca: 2 } },
+      // Métro
+      { key: 'metro', kind: 'cache', variant: 'etagere', label: 'Guichet du métro', f: 1, x: 1000, w: 70, h: 104, loot: { eau: 2, conserve: 1 } },
+      { key: 'gravats_metro', kind: 'rubble', label: 'Tunnel effondré', f: 1, x: 1500, w: 104, h: 128, block: true, work: 90, loot: { pieces_meca: 3, pieces_elec: 2, composants: 2 } },
+      { key: 'epave_cave', kind: 'cache', variant: 'caisse', label: 'Caisses d\'un marchand', f: 1, x: 1950, w: 78, h: 48, loot: { conserve: 2, cafe: 1, carburant: 1 } },
+      // Immeuble d'en face
+      { key: 'balcon', kind: 'cache', variant: 'armoire', label: 'Appartement du coin', f: 2, x: 2480, w: 58, h: 112, loot: { conserve: 1, pieces_meca: 2 } },
+      { key: 'eboulis_haut', kind: 'rubble', f: 2, x: 2580, w: 104, h: 150, block: true, work: 150, loot: { bois: 2, composants: 2 } },
+      { key: 'tireur', kind: 'guard', type: 'tireur', f: 3, x: 2700, facing: -1, attitude: 'hostile', group: 'tireur' }
+    ]
+  });
+
+  // ============================================================ Avant-poste militaire (hostile)
+  // Une cour barricadée (grillage, hérissons, sacs de sable, tente) devant
+  // un bâtiment de béton : poste de garde et infirmerie, chambrée et bureau
+  // de l'officier à l'étage, armurerie à la cave, guetteur sur le toit.
+  C.MAPS.avant_poste = keepNpcs('avant_poste', {
+    theme: { dirt: 0.3, military: true },
+    world: { W: 2560, H: 1010, left: 40, right: 2520, ground: G, walkMin: 60, walkMax: 2500, view: 1500 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Cour et poste de garde', y: G, ceil: 656, x0: 60, x1: 2500, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 1000, out: true }, { x0: 1000, x1: 2400, tex: 'concrete' }, { x0: 2400, x1: 2500, out: true }] },
+      { name: 'Cave', y: 985, ceil: 848, x0: 1012, x1: 2388, thick: 25, tex: 'concrete' },
+      { name: 'Étage', y: 640, ceil: 476, x0: 1012, x1: 2388, tex: 'concrete' },
+      { name: 'Toit', y: 462, ceil: 200, x0: 1005, x1: 2395, out: true, noSlab: true }
+    ],
+    rooms: [
+      R(1000, 1700, 656, G, 'paintedConcrete', { tone: '#77746b', tubes: [1200, 1500], posters: [{ x: 1120, y: 720, t: 'CONSIGNES\nDE GARDE' }], signs: [{ t: 'POSTE 12', x: 1300, y: 700, size: 26 }] }),
+      R(1700, 2400, 656, G, 'paintedConcrete', { tone: '#7c7a72', wainscot: { h: 70, tone: '#8a8981', grid: 16 }, tubes: [2050] }),
+      R(1000, 2400, 476, 640, 'precast', { tone: '#6f6c64', bulbs: [1300, 1800, 2200], posters: [{ x: 1600, y: 540, t: 'CARTE DU\nSECTEUR' }] }),
+      R(1000, 2400, 848, 985, 'concrete', { tone: '#5e5b55', border: true, tubes: [1400, 2000] })
+    ],
+    shells: [
+      { x0: 1000, x1: 2400, top: 476, bottom: 985, wall: 'precast', roof: 'flat', flag: { x: 2250, kind: 'army', h: 100, torn: true },
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } }
+    ],
+    fences: [{ f: 0, x0: 160, x1: 960, h: 120 }],
+    things: [
+      { kind: 'hedgehog', f: 0, x: 230, n: 1 },
+      { kind: 'sandwall', f: 3, x: 1160, w: 110, rows: 2 },
+      { kind: 'tent', f: 0, x: 820, w: 180, h: 110 },
+      { kind: 'truck', f: 0, x: 2440, flip: true, back: true, s: 0.8 }
+    ],
+    lights: [
+      { kind: 'brasero', x: 950, y: 790, r: 190 }, { kind: 'lamp', x: 1350, y: 690, r: 170, a: 0.7 }, { kind: 'lamp', x: 1700, y: 510, r: 170, a: 0.6 },
+      { kind: 'searchlight', x: 1100, y: 430, a0: 2.7, spread: 0.3, speed: 0.35, len: 900 }
+    ],
+    backdrop: { far: 'city', mid: ['chimneys', 'towers'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 1100 }, b: { f: 2, x: 1260 } },
+      { a: { f: 0, x: 2340 }, b: { f: 1, x: 2200 } },
+      { a: { f: 2, x: 2350 }, b: { f: 3, x: 2350 }, type: 'ladder' }
+    ],
+    walls: [{ f: 0, x: 1700 }, { f: 1, x: 1500 }],
+    windows: [
+      { f: 0, x: 1450, boarded: true }, { f: 0, x: 2000 }, { f: 2, x: 1500, broken: true }, { f: 2, x: 2000 },
+      { f: 1, x: 1300, vent: true }, { f: 1, x: 1900, vent: true }
+    ],
+    zones: [],
+    decor: [
+      { f: 0, x: 440, p: 'ammo_box', h: 16 }, { f: 0, x: 700, p: 'metal_jerrycan_green', h: 26 }, { f: 0, x: 1580, p: 'old_military_crate', h: 30 },
+      { f: 1, x: 1350, p: 'ammo_box', h: 16 }, { f: 1, x: 2320, p: 'wooden_barrels_01', h: 30 },
+      { f: 2, x: 1800, p: 'vintage_radio_transceiver', h: 22 }, { f: 2, x: 1380, p: 'old_gas_mask', h: 16 },
+      { f: 3, x: 1250, p: 'portable_searchlight', h: 36 }, { f: 3, x: 1850, p: 'metal_jerrycan', h: 28 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'recoin_entree', kind: 'hide', variant: 'bidons', label: 'Derrière les bidons', f: 0, x: 360, w: 60, h: 70 },
+      { key: 'sacs', kind: 'sandbags', f: 0, x: 530, w: 90, h: 40, deco: true },
+      { key: 'sentinelle', kind: 'guard', type: 'soldat', f: 0, x: 650, facing: 1, attitude: 'hostile', group: 'poste', lookBack: 9 },
+      { key: 'caisse_rations', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de rations', f: 0, x: 820, w: 90, h: 50, loot: { conserve: 3, eau: 2 } },
+      { key: 'recoin_couloir', kind: 'hide', f: 0, x: 1640, w: 46, h: 108 },
+      { key: 'ronde', kind: 'guard', type: 'soldat', f: 0, x: 1850, facing: -1, attitude: 'hostile', group: 'poste', patrol: [1250, 2300] },
+      { key: 'infirmerie', kind: 'cache', variant: 'pharmacie', f: 0, x: 2150, w: 60, h: 112, loot: { medicaments: 2, bandage: 3 } },
+      // Cave : armurerie
+      { key: 'vivres', kind: 'cache', variant: 'etagere', f: 1, x: 2060, w: 70, h: 104, loot: { conserve: 3, sucre: 2, cafe: 1 } },
+      { key: 'lit_camp', kind: 'bed', f: 1, x: 1820, metal: true, deco: true },
+      { key: 'dormeur', kind: 'guard', type: 'soldat', f: 1, x: 1820, facing: 1, attitude: 'hostile', group: 'poste', sleep: true },
+      { key: 'recoin_cave', kind: 'hide', f: 1, x: 1580, w: 46, h: 108 },
+      { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 1, x: 1200, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil_assaut: 1, munitions: 12, gilet: 1, casque: 1 } },
+      // Étage
+      { key: 'caisse_etage', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de munitions', f: 2, x: 1450, w: 90, h: 50, loot: { munitions: 6, conserve: 2 } },
+      { key: 'etage', kind: 'guard', type: 'soldat', f: 2, x: 1600, facing: 1, attitude: 'hostile', group: 'poste', patrol: [1350, 1900] },
+      { key: 'recoin_etage', kind: 'hide', f: 2, x: 1960, w: 46, h: 108 },
+      { key: 'lit_officier', kind: 'bed', f: 2, x: 2100, metal: true, deco: true },
+      { key: 'bureau_officier', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'officier', f: 2, x: 2250, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 2, cafe: 2, cigarettes: 3, pistolet: 1 } },
+      // Toit
+      { key: 'recoin_toit', kind: 'hide', variant: 'sacs', label: 'Derrière les sacs de sable', f: 3, x: 1160, w: 90, h: 60 },
+      { key: 'caisse_toit', kind: 'cache', variant: 'caisse_mil', f: 3, x: 1400, w: 90, h: 50, loot: { carburant: 2, munitions: 4 } },
+      { key: 'guetteur', kind: 'guard', type: 'soldat', f: 3, x: 1700, facing: -1, attitude: 'hostile', group: 'poste' },
+      { key: 'caisse_radio', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 3, x: 2050, w: 90, h: 50, loot: { pieces_elec: 3, composants: 3 } }
+    ]
+  });
 })(window.CQR);

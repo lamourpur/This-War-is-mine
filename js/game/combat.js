@@ -1016,7 +1016,7 @@
     // Rue à découvert (tireur embusqué)
     var exps = (C.MAPS[E().loc] || {}).exposed || [];
     exps.forEach(function (z) {
-      var fy = C.FLOORS[z.f].y, ceil = C.FLOORS[z.f].ceil;
+      var fy = C.FLOORS[z.f].y, ceil = z.ceil != null ? z.ceil : C.FLOORS[z.f].ceil;
       var inside = s.f === z.f && s.x >= z.x0 && s.x <= z.x1;
       ctx.save();
       ctx.beginPath(); ctx.rect(z.x0, ceil, z.x1 - z.x0, fy - ceil); ctx.clip();
