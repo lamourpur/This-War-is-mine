@@ -641,6 +641,32 @@
       if (C.Props && C.Props.has('can_rusted')) C.Props.draw(ctx, 'can_rusted', o.x + 8, y - 2, 12, { line: 0.5, noShadow: true });
       return;
     }
+    if (o.variant === 'gondole') {
+      // Rayonnage de magasin : montants, étagères, marchandise (clairsemée une fois fouillé)
+      F(ctx, r, x, top, o.w, o.h, '#6d6c68', 0.2); SK.rect(ctx, r, x, top, o.w, o.h, { w: 1.3 });
+      if (C.Tex && C.Tex.ready) C.Tex.paint(ctx, { x: x, y: top, w: o.w, h: o.h }, 'plate', { tile: 70, alpha: 0.5, blend: 'overlay' });
+      var nl = 4;
+      for (var gl = 1; gl <= nl; gl++) {
+        var gy = top + o.h * gl / nl - 2;
+        SK.line(ctx, r, x - 2, gy, x + o.w + 2, gy, { w: 1.2, passes: 1 });
+        var gap = o.h / nl - 6;
+        for (var gx = x + 3; gx < x + o.w - 8; gx += 9) {
+          if (o.searched ? r.next() < 0.85 : r.next() < 0.2) continue;
+          var ph = r.range(gap * 0.4, gap * 0.9);
+          F(ctx, r, gx, gy - ph, 7, ph, ['#8a7d63', '#6f7a70', '#7b5f4c', '#8c8676', '#5e6a7a'][Math.floor(r.next() * 5)], 0.2);
+        }
+      }
+      if (o.label2) { ctx.save(); ctx.font = '12px "Bebas Neue", sans-serif'; ctx.fillStyle = 'rgba(222,212,190,0.6)'; ctx.fillText(o.label2, x + 3, top - 4); ctx.restore(); }
+      return;
+    }
+    if (o.variant === 'caisse_mag') {
+      // Caisse de magasin : comptoir, tapis, tiroir ouvert
+      F(ctx, r, x, y - 44, o.w, 44, '#5d5b55', 0.3); SK.rect(ctx, r, x, y - 44, o.w, 44, { w: 1.3 });
+      F(ctx, r, x - 4, y - 48, o.w + 8, 5, '#3d3b37', 0.2);
+      F(ctx, r, x + o.w - 30, y - 70, 24, 22, '#4a4845', 0.3); SK.rect(ctx, r, x + o.w - 30, y - 70, 24, 22, { w: 1.1 });
+      if (o.searched) { F(ctx, r, x + o.w - 34, y - 46, 30, 8, '#2a2826', 0.2); SK.rect(ctx, r, x + o.w - 34, y - 46, 30, 8, { w: 0.9 }); }
+      return;
+    }
     if (o.variant === 'palettes') { palettes(ctx, r, o, y, !o.searched); return; }
     if (o.variant === 'conteneur') { conteneur(ctx, r, o, y); return; }
     if (o.variant === 'casiers') { casiers(ctx, r, o, y); return; }

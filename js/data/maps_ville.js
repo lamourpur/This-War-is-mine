@@ -77,6 +77,41 @@
 
   // Plans : voir lieux.js
 
+  // Le geôlier de la bande (supermarché) : garde le garçon ligoté dans la réserve
+  C.GUARD_TYPES.geolier = {
+    name: 'Geôlier', noun: 'bandit', cat: 'bandit', hp: 110, weapon: null, tool: 'knife', mdmg: [16, 28], ammo: 0,
+    dmg: [0, 0], acc: 0, range: 0, sight: 260, walk: 44, run: 100,
+    look: { hair: 'short', build: 1.22, h: 1.04, coat: '#3a342e', pants: '#28251f', coatLen: 0.15, skin: '#9e8670', hairColor: '#221d19', beard: 'full', brow: 'heavy', top: 'overcoat', shirt: '#4d463c', hat: 'beanie', hatColor: '#262420' },
+    loot: { alcool: 1, cigarettes: 2, couteau: 1 },
+    talk: [],
+    say: {
+      idle: ['Arrête de pleurer, toi.', 'Ton père paiera. Ou pas.', '…', 'Il fait un froid de chien, dans cette réserve.'],
+      suspect: ['Qui c\'est ? Tony, c\'est toi ?'], greet: ['T\'as rien à faire là.'], warn: ['Dégage !'], warn2: ['Je te préviens !'],
+      attack: ['Tu veux le gamin ? Viens le chercher !'], lost: ['Où il est passé…'], hurt: ['Salopard !'],
+      surrender: ['Ok, ok ! Prends-le, ton gamin ! Me tue pas !'], spared: ['Je… je m\'en vais. Je dirai rien.']
+    }
+  };
+  // Bandits qui discutent autour du feu : leurs répliques
+  C.GUARD_TYPES.bandit.say.idle = C.GUARD_TYPES.bandit.say.idle.concat([
+    'Le chef veut qu\'on vide la pharmacie de l\'hôpital demain.', 'Le gamin, là… son père a de l\'or, paraît-il.',
+    'Si les soldats reviennent, on file par le quai.', 'J\'ai plus de clopes. Qui a des clopes ?'
+  ]);
+
+  C.NPCS.lukas = {
+    name: 'Lukas', title: 'Garçon de caisse, retenu par la bande',
+    look: { hair: 'messy', build: 0.78, h: 0.86, coat: '#56504a', pants: '#2f2c28', coatLen: 0.05, skin: '#b8a18c', hairColor: '#5a4330', top: 'hoodie', shirt: '#6a6258' },
+    pose: 'sit', cond: { wound: 25 }, captor: 'geolier',
+    greet: ['Pitié… ils m\'ont attaché ici il y a quatre jours.', 'Le gros qui me garde… quand il boit, il s\'endort. Mais il ne boit plus.', 'Ils croient que mon père a de l\'or. Mon père est mort.'],
+    thanks: 'Il est parti ? … Vous me détachez ? Merci… merci.',
+    giveLine: 'J\'avais caché ça derrière les cartons, avant qu\'ils arrivent. Prenez-le.',
+    rescued: ['Je connais un passage par le quai. Je vais chez ma tante, de l\'autre côté du fleuve.', 'Je ne vous oublierai pas.'],
+    reward: { conserve: 2, medicaments: 1, cafe: 1 },
+    freedNote: ' des bandits qui le retenaient dans la réserve.',
+    abandonNote: ' a laissé le garçon ligoté dans la réserve. Personne n\'en parle.',
+    rescueJournal: 'Lukas est libre. Il a sorti de derrière les cartons ce qu\'il avait caché :',
+    abandonJournal: 'J\'ai laissé le garçon attaché dans la réserve. Je l\'entends encore.'
+  };
+
   C.OWNERS.bande = {
     text: ' a volé le butin des bandits.', moral: 0, key: null, military: true,
     desc: 'Ce que la bande a entassé. Si l\'un d\'eux vous voit, ils vous tomberont dessus.',

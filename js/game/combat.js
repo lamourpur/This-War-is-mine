@@ -472,7 +472,7 @@
       K.thankT = 0.5;
       G().st.objects.forEach(function (o) {
         var d = o.kind === 'npc' && C.NPCS[o.npc];
-        if (!d || !d.rescued || !K.freed('brute')) return;
+        if (!d || !d.rescued || !K.freed(d.captor || 'brute')) return;
         var ns = E().npcState(o);
         if (ns.rescued || s.f !== o.f || Math.abs(s.x - o.x) > 260) return;
         E().talk(s, o);

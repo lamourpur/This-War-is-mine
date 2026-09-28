@@ -217,13 +217,18 @@
 
     var bag = reason === 'dead' ? {} : est.inventory;
     // Mila : libérée, ou laissée au soldat ivre
-    var mila = ls.npc.mila;
-    if (mila && !mila.rescued && mila.talk && !mila.abandoned && !C.Combat.freed('brute')) {
-      mila.abandoned = true;
-      E.ev('abandon');
-      E.notes.push({ t: first(s) + ' a laissé la jeune femme avec le soldat ivre. Personne n\'en parle.', k: 'bad' });
-      E.effects.push(function () { G().moralAll(-6, { bad: true, key: 'abandoned' }); });
-    }
+    // Otages (Mila, le garçon du supermarché…) : laissés à leurs geôliers
+    est.objects.forEach(function (o) {
+      var d = o.kind === 'npc' && C.NPCS[o.npc];
+      if (!d || !d.rescued) return;
+      var ns = ls.npc[o.npc];
+      if (ns && !ns.rescued && ns.talk && !ns.abandoned && !C.Combat.freed(d.captor || 'brute')) {
+        ns.abandoned = true;
+        E.ev('abandon', { name: d.name, line: d.abandonJournal });
+        E.notes.push({ t: first(s) + (d.abandonNote || ' a laissé la jeune femme avec le soldat ivre. Personne n\'en parle.'), k: 'bad' });
+        E.effects.push(function () { G().moralAll(-6, { bad: true, key: 'abandoned' }); });
+      }
+    });
     C.Combat.consequences(s, E.notes, E.effects);
     E.ev('leave', { reason: reason });
     // Restaure le refuge
@@ -369,8 +374,8 @@
           }[e.kind] || 'J\'ai tué quelqu\'un.', e.kind === 'villain' ? '' : 'bad');
           break;
         case 'spare': add(e.m, cap1(e.who || 'un soldat') + ' s\'est rendu, à genoux. Je l\'ai laissé partir.', 'good'); break;
-        case 'rescue': add(e.m, e.name + ' est libre. Elle m\'a serré la main sans un mot, puis m\'a donné ' + C.itemsText(e.items) + '.', 'good'); break;
-        case 'abandon': add(e.m, 'J\'ai laissé la jeune femme là-haut avec lui. Je n\'ai rien fait.', 'bad'); break;
+        case 'rescue': add(e.m, e.line ? e.line + ' ' + cap1(C.itemsText(e.items)) + '.' : e.name + ' est libre. Elle m\'a serré la main sans un mot, puis m\'a donné ' + C.itemsText(e.items) + '.', 'good'); break;
+        case 'abandon': add(e.m, e.line || 'J\'ai laissé la jeune femme là-haut avec lui. Je n\'ai rien fait.', 'bad'); break;
         case 'bell': add(e.m, '4 h. Le ciel pâlit déjà. Il faut rentrer.'); break;
         case 'leave':
           if (reason === 'dead') { add(e.m, 'Le carnet s\'arrête là.', 'dead'); break; }
@@ -401,14 +406,14 @@
     // Retenue par un soldat : libre quand il n'est plus là
     if (d.rescued) {
       ns.talk = (ns.talk || 0) + 1;
-      if (!C.Combat.freed('brute')) { E.say(o, d.greet[(ns.talk - 1) % d.greet.length], 5); return; }
+      if (!C.Combat.freed(d.captor || 'brute')) { E.say(o, d.greet[(ns.talk - 1) % d.greet.length], 5); return; }
       if (!ns.rescued) {
         ns.rescued = true; ns.helped = true; ns.after = 0;
         E.say(o, d.thanks, 3.5);
         E.giveLater(s, o, d.reward, 'Cadeau de ' + d.name, 3.2, d.giveLine);
         E.home.stats.helped++;
-        E.notes.push({ t: first(s) + ' a libéré ' + d.name + ' du soldat qui la retenait.', k: 'good' });
-        E.ev('rescue', { name: d.name, items: U.copy(d.reward) });
+        E.notes.push({ t: first(s) + ' a libéré ' + d.name + (d.freedNote || ' du soldat qui la retenait.'), k: 'good' });
+        E.ev('rescue', { name: d.name, items: U.copy(d.reward), line: d.rescueJournal });
         E.effects.push(function () { G().moralAll(10, { good: true, key: 'helped' }); });
         return;
       }

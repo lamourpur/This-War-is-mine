@@ -727,26 +727,28 @@
   });
 
   // ============================================================ Supermarché pillé (bandits)
-  // Tout en largeur : le parking et ses carcasses, la grande surface aux
-  // gondoles vidées, la réserve et son quai, le bureau du gérant au-dessus
-  // (le chef de la bande), la chambre froide en bas, le toit plat.
-  var GF = { y: G, ceil: 470 };
+  // Tout en largeur : le parking, la grande surface aux gondoles à moitié
+  // vidées, la réserve où la bande garde un garçon ligoté, le bureau du chef
+  // au-dessus, la chambre froide en bas. Par l'échelle de secours on gagne le
+  // toit : la verrière crevée redescend dans les rayons, et au bout, une
+  // échelle mène au quai de livraison et à la porte de la réserve.
   C.MAPS.supermarche = keepNpcs('supermarche', {
     theme: { dirt: 0.42 },
-    world: { W: 2800, H: 1010, left: 40, right: 2760, ground: G, walkMin: 60, walkMax: 2740, view: 1500 },
+    world: { W: 2860, H: 1010, left: 40, right: 2820, ground: G, walkMin: 60, walkMax: 2800, view: 1500 },
     start: { f: 0, x: 100 },
     floors: [
-      { name: 'Parking et magasin', y: G, ceil: GF.ceil, x0: 60, x1: 2740, ground: true, thick: 28,
-        segs: [{ x0: 60, x1: 600, out: true }, { x0: 600, x1: 2000, tex: 'tiles' }, { x0: 2000, x1: 2600, tex: 'concrete' }, { x0: 2600, x1: 2740, out: true }] },
+      { name: 'Parking, magasin et quai', y: G, ceil: 470, x0: 60, x1: 2800, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 600, out: true }, { x0: 600, x1: 2000, tex: 'tiles' }, { x0: 2000, x1: 2600, tex: 'concrete' }, { x0: 2600, x1: 2800, out: true, tex: 'concrete' }] },
       { name: 'Chambre froide', y: 985, ceil: 848, x0: 2012, x1: 2588, thick: 25, tex: 'tiles' },
       { name: 'Bureau du gérant', y: 640, ceil: 484, x0: 2012, x1: 2588, tex: 'planks' },
-      { name: 'Toit', y: 456, ceil: 200, x0: 605, x1: 2595, out: true, noSlab: true }
+      { name: 'Toit', y: 456, ceil: 200, x0: 575, x1: 2625, out: true, noSlab: true }
     ],
     rooms: [
-      R(600, 2000, 470, G, 'plaster2', { tone: '#8a877e', wainscot: { h: 40, tone: '#7a776f', grid: 20 }, tubes: [760, 1010, 1260, 1510, 1760],
-        shelves: [{ x0: 860, x1: 1060, h: 130, label: 'CONSERVES' }, { x0: 1160, x1: 1400, h: 150, label: 'BOISSONS' }, { x0: 1500, x1: 1720, h: 120, label: 'HYGIÈNE' }],
-        signs: [{ t: 'PROMOTIONS', x: 660, y: 560, size: 26 }], posters: [{ x: 1830, y: 640, t: '-30 %\nSUR TOUT', rot: -0.05 }] }),
-      R(2000, 2600, 656, G, 'concrete', { tone: '#6d6a63', tubes: [2300], racks: [{ x0: 2150, x1: 2480, h: 150, levels: 2 }] }),
+      R(600, 2000, 470, G, 'paintedConcrete', { tone: '#8e8b83', wainscot: { h: 40, tone: '#7a776f', grid: 20 }, tubes: [760, 1010, 1260, 1510, 1760],
+        shelves: [{ x0: 1180, x1: 1330, h: 150, label: 'BOISSONS' }, { x0: 1720, x1: 1900, h: 120, label: 'SURGELÉS' }],
+        signs: [{ t: 'PROMOTIONS', x: 660, y: 560, size: 26 }, { t: 'ILS REVIENDRONT', x: 1500, y: 540, font: '"Special Elite", monospace', size: 18, color: 'rgba(196,70,58,0.5)' }],
+        posters: [{ x: 1950, y: 640, t: '-30 %\nSUR TOUT', rot: -0.05 }] }),
+      R(2000, 2600, 656, G, 'concrete', { tone: '#6d6a63', tubes: [2300], racks: [{ x0: 2120, x1: 2560, h: 150, levels: 2 }] }),
       R(2000, 2600, 484, 640, 'paintedConcrete', { tone: '#7f7b72', frames: 1, bulbs: [2300], posters: [{ x: 2150, y: 540, t: 'PLANNING\nÉQUIPES' }] }),
       R(2000, 2600, 848, 985, 'tiles', { tone: '#77766f', wainscot: { h: 137, tone: '#85847c', grid: 16 }, border: true })
     ],
@@ -756,35 +758,46 @@
     ],
     things: [
       { kind: 'car', f: 0, x: 240, burnt: true },
-      { kind: 'car', f: 0, x: 470, color: '#5f5a50', door: true },
-      { kind: 'barricade', f: 0, x: 2680, w: 100 }
+      { kind: 'car', f: 0, x: 440, color: '#5f5a50', door: true },
+      { kind: 'truck', f: 0, x: 2760, flip: true, back: true, s: 0.8 }
     ],
-    lights: [{ kind: 'brasero', x: 2300, y: 790, r: 210 }, { kind: 'candle', x: 2400, y: 600, r: 90 }],
+    lights: [{ kind: 'brasero', x: 2250, y: 790, r: 220 }, { kind: 'candle', x: 2400, y: 600, r: 90 }, { kind: 'brasero', x: 2250, y: 438, r: 140 }],
     backdrop: { far: 'city', mid: ['towers'], near: ['ruins'] },
     stairs: [
       { a: { f: 0, x: 2060 }, b: { f: 2, x: 2230 }, type: 'metal' },
       { a: { f: 0, x: 2550 }, b: { f: 1, x: 2400 } },
-      { a: { f: 2, x: 2040 }, b: { f: 3, x: 2040 }, type: 'ladder' }
+      { a: { f: 2, x: 2040 }, b: { f: 3, x: 2040 }, type: 'ladder' },
+      // Échelles de secours (dehors) et verrière crevée
+      { a: { f: 0, x: 585 }, b: { f: 3, x: 585 }, type: 'ladder' },
+      { a: { f: 0, x: 2615 }, b: { f: 3, x: 2615 }, type: 'ladder' },
+      { a: { f: 3, x: 1250 }, b: { f: 0, x: 1250 }, type: 'hole', w: 64 }
     ],
-    walls: [{ f: 0, x: 2000 }, { f: 1, x: 2200 }],
+    walls: [{ f: 0, x: 2000 }, { f: 1, x: 2200 }, { f: 0, x: 2600 }],
     windows: [
-      { f: 0, x: 760, kind: 'shop', w: 180, h: 110, text: 'SOLDES', broken: true }, { f: 0, x: 1300, kind: 'strip', y: 486, w: 320, h: 36, broken: true },
+      { f: 0, x: 760, kind: 'shop', w: 180, h: 110, text: 'SOLDES', broken: true }, { f: 0, x: 1500, kind: 'strip', y: 486, w: 320, h: 36, broken: true },
       { f: 2, x: 2460 }, { f: 1, x: 2300, vent: true }
     ],
     decor: [
-      { f: 0, x: 380, p: 'metal_trash_can', h: 34 }, { f: 0, x: 560, p: 'industrial_storage_cart', h: 56 }, { f: 0, x: 1120, p: 'trashbag', h: 30 },
-      { f: 0, x: 1450, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 0, x: 1800, p: 'plastic_crate_01', h: 24 }, { f: 0, x: 2450, p: 'hand_truck', h: 60 },
+      { f: 0, x: 360, p: 'metal_trash_can', h: 34 }, { f: 0, x: 520, p: 'industrial_storage_cart', h: 56 }, { f: 0, x: 1080, p: 'trashbag', h: 30 },
+      { f: 0, x: 1340, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 0, x: 1780, p: 'plastic_crate_01', h: 24 }, { f: 0, x: 2470, p: 'hand_truck', h: 60 },
+      { f: 0, x: 2700, p: 'plastic_crate_02', h: 22 }, { f: 0, x: 2210, p: 'barrel_stove', h: 44 },
       { f: 1, x: 2150, p: 'russian_food_cans_01', h: 16 }, { f: 1, x: 2330, p: 'wine_bottles_01', h: 20 },
-      { f: 3, x: 900, p: 'utility_box_01', h: 60 }, { f: 3, x: 1900, p: 'power_box_01', h: 50 }, { f: 3, x: 2300, p: 'cardboard_box_01', h: 28, shade: 0.3 }
+      { f: 3, x: 800, p: 'utility_box_01', h: 60 }, { f: 3, x: 1550, p: 'power_box_01', h: 50 }, { f: 3, x: 2250, p: 'barrel_stove', h: 40 }
     ],
     objects: [
       { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
       // Surface de vente
-      { key: 'caisse_enreg', kind: 'cache', variant: 'coffre', label: 'Caisse enregistreuse', f: 0, x: 700, w: 60, h: 48, loot: { cigarettes: 3 } },
-      { key: 'rayon1', kind: 'cache', variant: 'etagere', label: 'Rayon vidé', f: 0, x: 960, w: 70, h: 104, loot: { conserve: 2, sucre: 1 } },
-      { key: 'recoin_rayons', kind: 'hide', variant: 'palettes', label: 'Derrière les rayons', f: 0, x: 1110, w: 70, h: 92 },
-      { key: 'rayon2', kind: 'cache', variant: 'etagere', label: 'Rayon renversé', f: 0, x: 1300, w: 70, h: 104, loot: { legumes: 2, eau: 2, composants: 2 } },
-      { key: 'guetteur', kind: 'guard', type: 'bandit', f: 0, x: 1700, facing: -1, attitude: 'hostile', group: 'bande', patrol: [1400, 1950] },
+      { key: 'caisse_enreg', kind: 'cache', variant: 'caisse_mag', label: 'Caisse enregistreuse', f: 0, x: 700, w: 90, h: 48, loot: { cigarettes: 3 } },
+      { key: 'rayon1', kind: 'cache', variant: 'gondole', label: 'Rayon des conserves', label2: 'CONSERVES', f: 0, x: 900, w: 110, h: 130, loot: { conserve: 2, sucre: 1 } },
+      { key: 'recoin_rayons', kind: 'hide', variant: 'palettes', label: 'Derrière la gondole', f: 0, x: 1030, w: 70, h: 92 },
+      { key: 'rayon2', kind: 'cache', variant: 'gondole', label: 'Rayon renversé', label2: 'FRUITS ET LÉGUMES', f: 0, x: 1400, w: 110, h: 110, loot: { legumes: 2, eau: 2, composants: 2 } },
+      { key: 'rayon3', kind: 'cache', variant: 'gondole', label: 'Rayon hygiène', label2: 'HYGIÈNE', f: 0, x: 1580, w: 100, h: 130, loot: { bandage: 1, filtre: 1, herbes: 1 } },
+      { key: 'guetteur', kind: 'guard', type: 'bandit', f: 0, x: 1700, facing: -1, attitude: 'hostile', group: 'bande', patrol: [1300, 1950] },
+      { key: 'rayon4', kind: 'cache', variant: 'gondole', label: 'Rayon confiserie', label2: 'CONFISERIE', f: 0, x: 1840, w: 100, h: 110, loot: { sucre: 2, cafe: 1 } },
+      // Réserve : le garçon ligoté et son geôlier
+      { key: 'geolier', kind: 'guard', type: 'geolier', f: 0, x: 2300, facing: 1, attitude: 'hostile', group: 'geolier', patrol: [2120, 2480] },
+      { key: 'lukas', kind: 'npc', npc: 'lukas', f: 0, x: 2420, w: 50, h: 70, facing: -1 },
+      { key: 'porte_quai', kind: 'door', label: 'Porte du quai', f: 0, x: 2600, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
       // Chambre froide
       { key: 'chambre_froide', kind: 'cache', variant: 'armoire', label: 'Chambre froide', f: 1, x: 2100, w: 58, h: 112, loot: { conserve: 4, cafe: 2, tabac: 3 } },
       { key: 'porte_froide', kind: 'door', f: 1, x: 2200, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
@@ -797,9 +810,11 @@
       { key: 'recoin_bureau', kind: 'hide', f: 2, x: 2440, w: 46, h: 108 },
       { key: 'chef', kind: 'guard', type: 'bandit_arme', f: 2, x: 2300, facing: 1, attitude: 'hostile', group: 'bande', patrol: [2250, 2520] },
       { key: 'butin_bande', kind: 'cache', variant: 'coffre', label: 'Butin de la bande', f: 2, x: 2535, w: 60, h: 48, owner: 'bande', loot: { alcool: 1, cigarettes: 3, conserve: 2, cafe: 1 } },
-      // Toit
-      { key: 'eboulis', kind: 'rubble', label: 'Verrière effondrée', f: 3, x: 1600, w: 104, h: 90, block: true, work: 150, loot: { bois: 3, composants: 2 } },
-      { key: 'cartons', kind: 'cache', variant: 'caisse', label: 'Cartons', f: 3, x: 1100, w: 78, h: 48, loot: { legumes: 2, eau: 2 } }
+      // Toit : cartons, verrière, guetteur au feu
+      { key: 'cartons', kind: 'cache', variant: 'caisse', label: 'Cartons', f: 3, x: 900, w: 78, h: 48, loot: { legumes: 2, eau: 2 } },
+      { key: 'eboulis', kind: 'rubble', label: 'Tôles effondrées', f: 3, x: 1800, w: 104, h: 60, block: true, work: 150, loot: { bois: 3, composants: 2 } },
+      { key: 'recoin_toit', kind: 'hide', variant: 'bidons', label: 'Derrière les bidons', f: 3, x: 1980, w: 60, h: 70 },
+      { key: 'guetteur_toit', kind: 'guard', type: 'bandit_arme', f: 3, x: 2350, facing: -1, attitude: 'hostile', group: 'bande', patrol: [2100, 2560] }
     ]
   });
 
