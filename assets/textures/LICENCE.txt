@@ -23,3 +23,5 @@ rusty_corrugated_iron, corrugated_iron_02, factory_wall, hangar_concrete_floor,
 dirty_concrete, metal_grate_rusty, rusty_metal_shutter, road_damaged,
 factory_brick, precast_concrete_wall, painted_concrete, dirty_tiles, metal_plate
 → https://polyhaven.com/a/<nom>
+gingham_check.jpg               https://polyhaven.com/a/gingham_check
+hessian_230.jpg                 https://polyhaven.com/a/hessian_230

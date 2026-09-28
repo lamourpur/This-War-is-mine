@@ -71,8 +71,6 @@
       if (plan.scav.ammo) bag.munitions = plan.scav.ammo;
     }
     G().removeItems(bag);
-    // Son équipement personnel part avec lui (et lui reste)
-    if (plan.merc) { var mg = C.Merc.gear(plan.merc); for (var gk in mg) bag[gk] = (bag[gk] || 0) + mg[gk]; }
 
     E.active = true;
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home; E.merc = !!plan.merc;
@@ -464,7 +462,7 @@
     var key = (o.key || 'pnj') + '_don';
     var pile = G().st.objects.filter(function (x) { return x.key === key; })[0];
     if (pile) { for (var k in items) pile.loot[k] = (pile.loot[k] || 0) + items[k]; }
-    else pile = G().spawnObject({ key: key, kind: 'cache', variant: 'baluchon', label: label, f: o.f, x: U.clamp(o.x + (s.x < o.x ? -48 : 48), C.Nav.minX(o.f) + 20, C.Nav.maxX(o.f) - 20), w: 44, h: 26, searched: true, loot: U.copy(items) });
+    else pile = G().spawnObject({ key: key, kind: 'cache', variant: 'baluchon', label: label, f: o.f, x: U.clamp(o.x + (s.x < o.x ? -52 : 52), C.Nav.minX(o.f) + 24, C.Nav.maxX(o.f) - 24), w: 56, h: 38, searched: true, loot: U.copy(items) });
     G().markDirty();
     if (C.Render.pop) C.Render.pop(s, [], 'Sac plein : posé à terre', 'warn');
     if (C.Audio.ready) C.Audio.sfx.deny();

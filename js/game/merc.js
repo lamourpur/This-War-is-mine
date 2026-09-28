@@ -5,7 +5,7 @@
    la nuit pour qui les paie. Chaque matin, un mercenaire est disponible.
    - Il se paie d'avance, et cher : toujours une ressource en pénurie
      (ce qui s'arrache au marché en ce moment), plus des vivres ou du bois.
-   - Il vient avec son équipement (qui reste à lui) et ses talents.
+   - Il vient avec ses talents ; son sac, c'est nous qui le composons.
    - Pendant ce temps, tout le groupe dort ou monte la garde.
    - S'il meurt, le groupe n'en porte pas le deuil ; ce qu'on lui avait
      confié est perdu, et Milo propose quelqu'un d'autre le lendemain.
@@ -22,15 +22,15 @@
 
   K.DAY = 10;
 
-  // Profils : talents (traits du jeu), équipement personnel, caractère
+  // Profils : talents (traits du jeu), caractère
   var ARCH = {
-    ombre: { label: 'L\'Ombre', traits: ['discret', 'rapide'], gear: { couteau: 1, passe_partout: 1 }, cost: 1,
-      desc: 'Ne se fait jamais voir. Évite les combats, ouvre les serrures sans bruit.' },
-    colosse: { label: 'Le Colosse', traits: ['costaud', 'combattant'], gear: { hachette: 1 }, cost: 1.05,
+    ombre: { label: 'L\'Ombre', traits: ['discret', 'rapide'], cost: 1,
+      desc: 'Ne se fait jamais voir. Se faufile partout et évite les combats.' },
+    colosse: { label: 'Le Colosse', traits: ['costaud', 'combattant'], cost: 1.05,
       desc: 'Porte lourd et frappe fort. Pas très discret.' },
-    veteran: { label: 'Le Vétéran', traits: ['combattant', 'endurant'], gear: { pistolet: 1, munitions: 8, couteau: 1 }, cost: 1.2,
-      desc: 'Ancien soldat. Sait se servir d\'une arme et garde son sang-froid.' },
-    fouineur: { label: 'Le Fouineur', traits: ['grand_sac', 'discret'], gear: { pied_de_biche: 1, couteau: 1 }, cost: 1.1,
+    veteran: { label: 'Le Vétéran', traits: ['combattant', 'endurant'], cost: 1.2,
+      desc: 'Ancien soldat. Tire juste si on lui confie une arme, et garde son sang-froid.' },
+    fouineur: { label: 'Le Fouineur', traits: ['grand_sac', 'discret'], cost: 1.1,
       desc: 'Connaît toutes les caches de la ville. Rapporte des sacs pleins.' }
   };
   K.ARCH = ARCH;
@@ -162,20 +162,13 @@
       id: 'merc', defId: 'v_' + o.face, merc: true, name: o.name, traits: a.traits.slice(), look: U.copy(o.look),
       hunger: 10, fatigue: 5, wound: 0, sick: 0, moral: 70, alive: true, cause: null,
       f: 0, x: 0, y: 0, facing: 1, path: [], act: null, anim: 0, away: null, bandaged: 0,
-      gearSlots: C.Explore ? C.Explore.slots(ARCH[o.arch].gear) : 2,
       thoughts: [], grief: 0, story: [], lastSmoke: 0, lastCoffee: 0, lastBook: -1, brokenDays: 0, readToday: 0, restToday: 0
     };
   };
-  K.gear = function (o) { return U.copy(ARCH[o.arch].gear); };
+  K.gear = function () { return {}; };   // (anciennes sauvegardes)
 
-  // Ce qu'il rapporte, moins son équipement personnel (qui reste à lui)
-  K.strip = function (o, items) {
-    var out = U.copy(items || {});
-    if (!o) return out;
-    var g = K.gear(o);
-    Object.keys(g).forEach(function (k) { if (out[k]) { out[k] = Math.max(0, out[k] - g[k]); if (!out[k]) delete out[k]; } });
-    return out;
-  };
+  // Ce qu'il rapporte : tout le sac revient au refuge (on l'a composé nous-mêmes)
+  K.strip = function (o, items) { return U.copy(items || {}); };
   // Au retour : le butin va à la réserve ; il pourra revenir proposer ses services
   K.back = function (st, items) {
     var o = st.merc && st.merc.offer;

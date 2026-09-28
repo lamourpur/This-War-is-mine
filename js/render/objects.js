@@ -648,10 +648,43 @@
       return;
     }
     if (o.variant === 'baluchon') {
-      // Objets donnés, noués dans un tissu et posés par terre
-      var bn = [[o.x - 20, y], [o.x - 17, y - 16], [o.x - 6, y - 24], [o.x + 8, y - 23], [o.x + 18, y - 14], [o.x + 20, y]];
-      P(ctx, r, bn, '#7a6e5c', 0.8); SK.hatchPoly(ctx, r, bn, { gap: 3, alpha: 0.28, angle: 0.8 }); SK.poly(ctx, r, bn, true, { w: 1.1 });
-      SK.line(ctx, r, o.x - 4, y - 24, o.x - 10, y - 32, { w: 1.4, passes: 1 }); SK.line(ctx, r, o.x + 2, y - 24, o.x + 9, y - 31, { w: 1.4, passes: 1 });
+      // Baluchon : un grand tissu à carreaux noué par les quatre coins,
+      // posé par terre avec ce qu'on n'a pas pu porter
+      var bw = Math.min(o.w, 60), bhh = Math.min(o.h + 8, 46), cx = o.x;
+      var q = function (p0, c, p1, n) { var out = []; for (var i = 1; i <= n; i++) { var t = i / n, u = 1 - t; out.push([u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1]]); } return out; };
+      var neckY = y - bhh * 0.7, kx = cx + bw * 0.02;
+      var BL = [cx - bw * 0.46, y], NL = [kx - bw * 0.1, neckY], NR = [kx + bw * 0.1, neckY], BR = [cx + bw * 0.48, y];
+      var body = [BL].concat(q(BL, [cx - bw * 0.66, y - bhh * 0.46], NL, 10), q(NL, [kx, neckY - 3], NR, 3), q(NR, [cx + bw * 0.68, y - bhh * 0.42], BR, 10), q(BR, [cx, y + 3], BL, 6));
+      // Ombre au sol
+      ctx.fillStyle = 'rgba(20,18,16,0.35)'; ctx.beginPath(); ctx.ellipse(cx + 3, y, bw * 0.55, 4, 0, 0, Math.PI * 2); ctx.fill();
+      P(ctx, r, body, '#8c7d66', 0.6);
+      if (C.Tex && C.Tex.ready) C.Tex.paint(ctx, body, 'cloth', { tile: 28, alpha: 0.78, blend: 'multiply', rot: 0.18 });
+      // Volume : ombre sur la droite et en bas, lumière en haut à gauche
+      ctx.save(); ctx.beginPath(); body.forEach(function (pt, i) { if (i) ctx.lineTo(pt[0], pt[1]); else ctx.moveTo(pt[0], pt[1]); }); ctx.closePath(); ctx.clip();
+      var gsh = ctx.createRadialGradient(cx - bw * 0.2, y - bhh * 0.55, 2, cx + bw * 0.1, y - bhh * 0.2, bw * 0.75);
+      gsh.addColorStop(0, 'rgba(255,245,225,0.18)'); gsh.addColorStop(0.55, 'rgba(0,0,0,0)'); gsh.addColorStop(1, 'rgba(18,14,10,0.5)');
+      ctx.fillStyle = gsh; ctx.fillRect(cx - bw, y - bhh * 1.2, bw * 2, bhh * 1.3);
+      ctx.restore();
+      // Plis qui convergent vers le nœud
+      [[-0.36, 0.08], [-0.16, 0.02], [0.12, 0.05], [0.33, 0.12]].forEach(function (f) {
+        var fx = cx + bw * f[0], fy = y - bhh * f[1];
+        SK.line(ctx, r, kx + f[0] * 6, neckY + 3, fx, fy - bhh * 0.18, { w: 0.8, passes: 1, alpha: 0.55 });
+      });
+      SK.poly(ctx, r, body, true, { w: 1.2 });
+      // Les deux coins noués (oreilles) et le nœud
+      var ear = function (tip, side) {
+        var base1 = [kx - 5 * side, neckY + 2], base2 = [kx + 5 * side, neckY - 3];
+        var pts = [base1].concat(q(base1, [tip[0] - 9 * side, tip[1] + 12], tip, 6), q(tip, [tip[0] + 9 * side, tip[1] + 14], base2, 6));
+        P(ctx, r, pts, '#857660', 0.4);
+        if (C.Tex && C.Tex.ready) C.Tex.paint(ctx, pts, 'cloth', { tile: 28, alpha: 0.75, blend: 'multiply', rot: -0.5 * side });
+        ctx.fillStyle = 'rgba(18,14,10,0.22)'; ctx.beginPath(); pts.forEach(function (pt, i) { if (i) ctx.lineTo(pt[0], pt[1]); else ctx.moveTo(pt[0], pt[1]); }); ctx.closePath(); ctx.fill();
+        SK.poly(ctx, r, pts, true, { w: 1 });
+      };
+      ear([kx - bw * 0.3, neckY - bhh * 0.42], -1);
+      ear([kx + bw * 0.26, neckY - bhh * 0.5], 1);
+      ctx.fillStyle = '#6f624f'; ctx.beginPath(); ctx.ellipse(kx, neckY - 1, 5.5, 4.2, 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = SK.INK; ctx.lineWidth = 1; ctx.stroke();
+      SK.line(ctx, r, kx - 3, neckY - 3, kx + 3, neckY + 1, { w: 0.7, passes: 1, alpha: 0.7 });
       return;
     }
     if (o.variant === 'corps') {

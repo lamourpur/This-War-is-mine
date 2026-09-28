@@ -16,7 +16,9 @@
     corrugated: 'rusty_corrugated_iron', corrugated2: 'corrugated_iron_02', factory: 'factory_wall',
     hangarFloor: 'hangar_concrete_floor', concrete: 'dirty_concrete', grate: 'metal_grate_rusty',
     shutter: 'rusty_metal_shutter', asphalt: 'road_damaged', factoryBrick: 'factory_brick',
-    precast: 'precast_concrete_wall', paintedConcrete: 'painted_concrete', tiles: 'dirty_tiles', plate: 'metal_plate'
+    precast: 'precast_concrete_wall', paintedConcrete: 'painted_concrete', tiles: 'dirty_tiles', plate: 'metal_plate',
+    // Tissus (baluchon, sacs)
+    cloth: 'gingham_check', hessian: 'hessian_230'
   };
   // Réglages de couleur : tout reste dans la palette « crayon » grise et terreuse
   var FILTER = {
@@ -27,6 +29,7 @@
     corrugated: 'grayscale(0.6) sepia(0.25) contrast(1.15)', shutter: 'grayscale(0.6) sepia(0.25) contrast(1.15)',
     factoryBrick: 'grayscale(0.6) sepia(0.2) contrast(1.1)',
     paintedConcrete: 'grayscale(1) sepia(0.15) contrast(1.05) brightness(1.05)', grate: 'grayscale(0.6) sepia(0.25) contrast(1.2)',
+    cloth: 'grayscale(0.55) sepia(0.35) contrast(1.1) brightness(0.95)', hessian: 'grayscale(0.5) sepia(0.3) contrast(1.1)',
     _: 'grayscale(0.8) sepia(0.12) contrast(1.15)'
   };
   var SIZE = 512;

@@ -134,8 +134,7 @@
       c.appendChild(UI.portrait(body, 56, 68));
       c.appendChild(U.el('h4', '', U.esc(o.name.split(' ')[0]) + ' <small>' + U.esc(C.Merc.archLabel(o)) + '</small>'));
       var talents = C.Merc.ARCH[o.arch].traits.map(function (t) { return C.TRAITS[t].name; }).join(', ');
-      var gear = C.Merc.gear(o), gearTxt = C.itemsText(gear);
-      c.appendChild(U.el('div', 'ns', '<b>Mercenaire</b>' + (o.returning ? ' · déjà venu (' + o.jobs + ' sortie' + (o.jobs > 1 ? 's' : '') + ')' : '') + '<br><i>' + U.esc(talents) + '</i><br>' + U.esc(C.Merc.describe(o)) + '<br>Son équipement : ' + U.esc(gearTxt) + ' (reste à lui).'));
+      c.appendChild(U.el('div', 'ns', '<b>Mercenaire</b>' + (o.returning ? ' · déjà venu (' + o.jobs + ' sortie' + (o.jobs > 1 ? 's' : '') + ')' : '') + '<br><i>' + U.esc(talents) + '</i><br>' + U.esc(C.Merc.describe(o))));
       var price = U.el('div', 'merc-price');
       price.innerHTML = '<span>Son prix, payé d\'avance :</span>' + Object.keys(o.price).map(function (k) {
         var have = hired || G().count(k) >= o.price[k];

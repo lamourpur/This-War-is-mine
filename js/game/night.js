@@ -172,7 +172,7 @@
       if (plan.merc && C.Merc) C.Merc.lost(st);
       reserved = {};
     } else if (!scav && plan.merc && plan.scav && plan.scav.explored) {
-      // Le mercenaire rentre : le butin va à la réserve, il garde son équipement
+      // Le mercenaire rentre : tout le sac va à la réserve
       var mx = plan.scav.explored, mfe = plan.merc.female ? 'e' : '';
       mx.notes.forEach(function (nt) { add(nt.sec || 'scav', nt.t.replace(/\(e\)/g, mfe), nt.k); });
       st.pendingExp = mx.exp;
