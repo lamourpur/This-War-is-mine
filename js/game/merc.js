@@ -53,7 +53,20 @@
   function first(n) { return n.split(' ')[0]; }
 
   K.unlocked = function (st) { st = st || G().st; return st.day >= K.DAY && st.flags && st.flags.merc; };
-  K.offer = function (st) { st = st || G().st; return K.unlocked(st) && st.merc && st.merc.offer && st.merc.offer.day === st.day ? st.merc.offer : null; };
+  // L'offre du jour (créée à la demande : partie déjà au-delà du jour 10,
+  // page rechargée en cours de journée…)
+  K.offer = function (st) {
+    st = st || G().st;
+    if (!st || st.day < K.DAY || st.phase === 'explore') return null;
+    if (!st.flags.merc) st.flags.merc = 'known';
+    st.merc = st.merc || { dead: [] };
+    if (!st.merc.offer || st.merc.offer.day !== st.day) {
+      var prev = st.merc.offer;
+      st.merc.offer = makeOffer(st, prev && prev.day === st.day - 1 ? prev : null);
+      st.merc.hired = null;
+    }
+    return st.merc.offer;
+  };
   K.hiredTonight = function (st) { st = st || G().st; return !!(st.merc && st.merc.hired === st.day); };
 
   // Ce qu'il demande : une ressource en pénurie (toujours), puis de quoi vivre
