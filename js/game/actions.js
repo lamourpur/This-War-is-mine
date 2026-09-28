@@ -13,6 +13,20 @@
   function st() { return C.Game.st; }
   function now() { return st().day * 1440 + st().minute; }
   function first(s) { return s.name.split(' ')[0]; }
+  // Ce que rend un contenant démonté au refuge (bois surtout)
+  var SCRAP = {
+    caisse: { work: 30, loot: { bois: 2 } },
+    armoire: { work: 60, loot: { bois: 4, composants: 1 } },
+    etagere: { work: 45, loot: { bois: 1, composants: 2 } },
+    coffre: { work: 45, loot: { bois: 2, composants: 1 } },
+    valise: { work: 20, loot: { composants: 1 } },
+    palettes: { work: 40, loot: { bois: 3 } },
+    caisse_mil: { work: 30, loot: { bois: 2 } }
+  };
+  function scrapOf(o) {
+    if (o.kind !== 'cache' || o.owner || (C.Explore && C.Explore.active)) return null;
+    return SCRAP[o.variant || 'caisse'] || null;
+  }
   function lootLeft(o) { var l = o.loot || {}; for (var k in l) if (l[k] > 0) return true; return false; }
   // Exploration : le butin d'un meuble démonté ou de gravats reste en tas à fouiller
   function leavePile(s, o) {
@@ -155,9 +169,15 @@
 
     dismantle: {
       work: true, label: 'Démonte', sound: 'saw', fatigue: 4,
-      dur: function (s, o) { return o.work * (G().count('hachette') > 0 ? 0.6 : 1); },
-      done: function (s, o) {
+      dur: function (s, o, p) { return (p && p.scrap ? p.scrap.work : o.work) * (G().count('hachette') > 0 ? 0.6 : 1); },
+      done: function (s, o, p) {
         G().removeObject(o);
+        // Contenant vide du refuge : recyclé en matériaux, la place est libre
+        if (p && p.scrap) {
+          G().addItems(p.scrap.loot);
+          G().markDirty();
+          return first(s) + ' a démonté : ' + G().objName(o).toLowerCase() + ' (' + itemsText(p.scrap.loot) + '). La place est libre.';
+        }
         if (C.Explore && C.Explore.active) {
           if (o.owner) C.Explore.markStolen(o, o.loot || {});
           leavePile(s, o);
@@ -895,6 +915,15 @@
         m.entries.push(E('Déblayer' + (pelle ? ' (pelle)' : ''), costSub(null, o.work * (pelle ? 0.5 : 1)), null, go('clear')));
         break;
       case 'cache':
+        var scrap = scrapOf(o);
+        if (scrap && (o.searched || !lootLeft(o)) && !o.locked) {
+          // Au refuge, un contenant vide ne sert qu'à prendre de la place
+          var empty = !lootLeft(o);
+          if (empty) m.desc = 'Il n\'y a plus rien. Démonté, il laissera de la place pour construire.';
+          else { m.desc = 'Il reste des choses à l\'intérieur.'; m.entries.push(E('Ouvrir', costSub(null, searchTime(o)), null, go('search'))); }
+          m.entries.push(E('Démonter' + (hach ? ' (hachette)' : ''), costSub(null, scrap.work * (hach ? 0.6 : 1)) + ' · +' + itemsText(scrap.loot), empty ? null : 'Il faut d\'abord le vider', go('dismantle', { scrap: scrap })));
+          break;
+        }
         if (o.searched) {
           if (!lootLeft(o)) { m.desc = 'Il n\'y a plus rien.'; break; }
           m.desc = 'Il reste des choses à l\'intérieur.';
