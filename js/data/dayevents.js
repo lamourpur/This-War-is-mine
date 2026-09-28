@@ -48,7 +48,17 @@
         var roll = R().next();
         var boarded = st.objects.filter(function (o) { return o.kind === 'hole' && o.boarded; });
         if (roll < 0.35 && boarded.length) {
-          R().pick(boarded).boarded = false;
+          var hb = R().pick(boarded);
+          hb.boarded = false;
+          G().markDirty();                                   // les planches disparaissent du décor
+          // Planches arrachées : éclats de bois et poussière qui volent du trou
+          if (C.Render && C.ObjDraw) {
+            var hy = C.FLOORS[hb.f].y - C.ObjDraw.HOLE_CY;
+            for (var k = 0; k < 26; k++) {
+              var dir = Math.random() < 0.5 ? -1 : 1;
+              C.Render.spawn({ x: hb.x + (Math.random() - 0.5) * 50, y: hy + (Math.random() - 0.5) * 40, vx: dir * (40 + Math.random() * 120), vy: -60 - Math.random() * 90, life: 1 + Math.random() * 0.6, t: 0, kind: k % 3 ? 'chip' : 'dust', size: 2 + Math.random() * 2.5, rot: Math.random() * 6 });
+            }
+          }
           txt += ' Le souffle a arraché les planches d\'un trou : le froid et les rôdeurs peuvent de nouveau entrer.';
         } else if (roll < 0.75) {
           var slots = C.UI.freeSlots('bed');
