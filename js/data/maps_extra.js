@@ -47,6 +47,20 @@
     },
     afterSteal: ['Vous aussi ? Je croyais que vous étiez différents.', 'Partez avant que je n\'appelle les soldats.']
   };
+  C.NPCS.viktor = {
+    name: 'Viktor', title: 'Ancien portier',
+    look: { hair: 'short', build: 1.0, h: 1.0, coat: '#3d3b44', pants: '#2a2927', coatLen: 0.35, skin: '#b09a86', hairColor: '#b8b2a8', beard: 'full', brow: 'heavy', top: 'overcoat', shirt: '#6a5f55', hat: 'cap', hatColor: '#2f2d33' },
+    pose: 'sit',
+    greet: ['Quarante ans que je tiens cette porte. Les soldats ne savent même pas où sont les clés.', 'Là-haut, ils sont trois, plus l\'officier. Il dort comme une souche après sa bouteille.'],
+    need: {
+      items: { conserve: 1 }, label: 'Lui donner une conserve',
+      ask: 'J\'ai les clés des cuisines, en bas. Une conserve, et je vous ouvre la réserve du bar.',
+      thanks: 'Voilà, c\'est ouvert. Et si les soldats vous gênent : la cage de l\'ascenseur monte jusqu\'aux suites. Personne n\'y pense.',
+      opens: ['porte_cuisines'], moral: 4
+    },
+    after: ['Prenez l\'ascenseur. Enfin… ce qu\'il en reste.', 'Faites attention au lieutenant. Il dort, mais d\'un œil.'],
+    afterSteal: ['Quarante ans… et voilà comment ça finit.']
+  };
   C.NPCS.joe = {
     name: 'Le vieux Joe', title: 'Sans-abri malade',
     look: { hair: 'messy', build: 0.82, h: 0.96, coat: '#51493f', pants: '#2e2b27', coatLen: 0.35, skin: '#a8927c', hairColor: '#8f877c', beard: 'full', top: 'overcoat', shirt: '#5c554a' },

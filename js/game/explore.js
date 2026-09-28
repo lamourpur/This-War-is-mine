@@ -471,6 +471,13 @@
     E.say(o, need.thanks, 7);
     // La récompense vient après le merci, pas avant
     if (need.reward) E.giveLater(s, o, need.reward, 'Cadeau de ' + d.name, 2.2);
+    // Il ouvre une porte, donne la clé d'un coffre…
+    (need.opens || []).forEach(function (key) {
+      var t = G().st.objects.filter(function (x) { return x.key === key; })[0];
+      if (!t) return;
+      if (t.kind === 'door') t.open = true; else t.locked = false;
+      C.Nav.computeRegions(); G().markDirty();
+    });
     E.ev('help', { name: d.name, items: U.copy(need.items), reward: need.reward ? U.copy(need.reward) : null });
     E.home.stats.helped++;
     var name = d.name;

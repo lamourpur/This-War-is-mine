@@ -324,7 +324,7 @@
   //   attic ('left'|'right'|'both' : chevrons sous le toit), breach (mur crevé :
   //   on voit la ville au travers), signs (inscriptions), posters.
   function roomExtras(ctx, r, rm) {
-    var x0 = rm.x0, x1 = rm.x1, top = rm.top, bot = rm.bottom, w = x1 - x0;
+    var x0 = rm.x0, x1 = rm.x1, top = rm.top, bot = rm.bottom, w = x1 - x0, h = bot - top;
     if (rm.paper) {
       ctx.save(); ctx.globalAlpha = C.Tex && C.Tex.ready ? 0.05 : 0.09; ctx.fillStyle = '#2a2723';
       var sw = rm.paper === true ? 12 : rm.paper;
@@ -430,6 +430,16 @@
       ctx.fillStyle = '#c9c2b0'; ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.stroke();
       ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 6, cy - 5); ctx.moveTo(cx, cy); ctx.lineTo(cx - 2, cy + 10); ctx.stroke();
+    }
+    // Cage d'ascenseur : rails, câbles, contrepoids
+    if (rm.shaft) {
+      SK.fillRect(ctx, r, x0, top, w, h, '#2b2926', 0);
+      tex(ctx, { x: x0, y: top, w: w, h: h }, 'concrete', { tile: 90, alpha: 0.6, blend: 'overlay' });
+      [x0 + 8, x1 - 8].forEach(function (rx) { SK.line(ctx, r, rx, top, rx, bot, { w: 2.2, color: '#4a4b4d' }); });
+      SK.line(ctx, r, x0 + w * 0.4, top, x0 + w * 0.4, bot - 40, { w: 0.8, passes: 1 });
+      SK.line(ctx, r, x0 + w * 0.55, top, x0 + w * 0.55, bot - 40, { w: 0.8, passes: 1 });
+      SK.fillRect(ctx, r, x1 - 22, top + h * 0.35, 12, 40, '#4a4640', 0.2); SK.rect(ctx, r, x1 - 22, top + h * 0.35, 12, 40, { w: 1 });
+      for (var sy = top + 40; sy < bot; sy += 90) SK.line(ctx, r, x0, sy, x1, sy, { w: 0.6, passes: 1, alpha: 0.5 });
     }
     if (rm.bell) {
       // Cloche au repos sous son joug
@@ -1205,6 +1215,15 @@
         SK.fillRect(ctx, r, -6, y, w + 12, 6, '#6b5d48', 0.3); SK.line(ctx, r, -6, y, w + 6, y, { w: 1.3 });
         SK.line(ctx, r, 0, y + h / lv, w, y, { w: 0.8, passes: 1, alpha: 0.7 });
       }
+    },
+    // Cabine d'ascenseur bloquée (grille en accordéon)
+    cabin: function (ctx, r, th) {
+      var w = th.w || 70, h = th.h || 120;
+      SK.fillRect(ctx, r, -w / 2, -h, w, h, '#4d4a44', 0.3); tex(ctx, { x: -w / 2, y: -h, w: w, h: h }, 'plate', { tile: 60, alpha: 0.7, blend: 'overlay' });
+      SK.rect(ctx, r, -w / 2, -h, w, h, { w: 1.5 });
+      for (var gx = -w / 2 + 6; gx < w / 2 - 2; gx += 8) SK.line(ctx, r, gx, -h + 10, gx + 4, -8, { w: 0.6, passes: 1 });
+      SK.line(ctx, r, 0, -h, 0, -h - (th.cable || 400), { w: 1, passes: 1 });
+      if (th.crashed) { SK.line(ctx, r, -w / 2, -h, w / 2, -h + 14, { w: 1.4 }); SK.stone(ctx, r, -w / 2 - 8, -4, 4, '#5a544b'); }
     },
     // Barricade de meubles et de planches
     barricade: function (ctx, r, th) {

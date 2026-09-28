@@ -602,28 +602,42 @@
   });
 
   // ============================================================ Hôtel Europa
-  // Hall haut de plafond, escalier d'honneur, réception où se sont réfugiés
-  // quelques civils. L'armée tient les étages : chambres des officiers, suites
-  // du dernier étage. Au sous-sol, les cuisines ; au-dessus, le toit-terrasse.
+  // En bas, le hall : des civils y campent au milieu des gravats, autour d'un
+  // bidon où brûle du bois. En haut, l'armée : étages propres, lampes du
+  // groupe électrogène, sacs de sable aux fenêtres. Des chambres fermées
+  // s'enchaînent ; la cage de l'ascenseur, éventrée, permet de monter sans
+  // passer par l'escalier de service gardé.
   var ARCH = function (f, x, y, o) { return ext({ f: f, x: x, kind: 'arch', y: y, w: 48, h: 104 }, o || {}); };
+  var SHAFT = 1540;
   C.MAPS.hotel = keepNpcs('hotel', {
     theme: { dirt: 0.25 },
     world: { W: 2120, H: 1010, left: 40, right: 2080, ground: G, walkMin: 60, walkMax: 2060, view: 1400 },
     start: { f: 0, x: 100 },
     floors: [
-      { name: 'Rue et hall', y: G, ceil: 620, x0: 60, x1: 2060, ground: true, thick: 28, carpet: [560, 1100, '#5c3a31'],
+      { name: 'Rue et hall', y: G, ceil: 620, x0: 60, x1: 2060, ground: true, thick: 28,
         segs: [{ x0: 60, x1: 420, out: true }, { x0: 420, x1: 1900, tex: 'tiles' }, { x0: 1900, x1: 2060, out: true }] },
       { name: 'Cuisines', y: 985, ceil: 848, x0: 432, x1: 1888, thick: 25, tex: 'tiles' },
-      { name: 'Étage des officiers', y: 604, ceil: 440, x0: 432, x1: 1888, tex: 'floor', carpet: [440, 1880, '#57362f'] },
-      { name: 'Suites', y: 424, ceil: 260, x0: 432, x1: 1888, tex: 'floor', carpet: [700, 1400, '#5b3a36'] },
+      { name: 'Étage des officiers', y: 604, ceil: 440, x0: 432, x1: 1888, tex: 'floor', carpet: [440, 1190, '#57362f'] },
+      { name: 'Suites', y: 424, ceil: 260, x0: 432, x1: 1888, tex: 'floor', carpet: [440, 1490, '#5b3a36'] },
       { name: 'Toit-terrasse', y: 246, ceil: 20, x0: 427, x1: 1893, out: true, noSlab: true }
     ],
     rooms: [
-      R(420, 1500, 620, G, 'wallpaper', { tone: '#8a7f6d', paper: 16, skirt: true, frames: 3, clock: { x: 1300, y: 660 } }),
-      R(1500, 1900, 620, G, 'wallpaper', { tone: '#7f7768', paper: 16, skirt: true, frames: 1 }),
-      R(420, 1900, 440, 604, 'wallpaper', { tone: '#857a68', paper: 12, skirt: true, frames: 3, bulbs: [620, 1000, 1400, 1760] }),
-      R(420, 1900, 260, 424, 'wallpaper', { tone: '#8b7f6b', paper: 8, skirt: true, frames: 3, bulbs: [760, 1260] }),
-      R(420, 1900, 848, 985, 'tiles', { tone: '#77746b', wainscot: { h: 137, tone: '#86847b', grid: 16 }, tubes: [800, 1400] })
+      // Hall : grand, abîmé, les civils
+      R(420, 1500, 620, G, 'peeling', { tone: '#7c7266', frames: 2, clock: { x: 1300, y: 660 }, breach: [{ x: 520, y: 690, r: 34 }],
+        signs: [{ t: 'ICI PAS DE SOLDATS', x: 900, y: 700, font: '"Special Elite", monospace', size: 16, color: 'rgba(220,214,196,0.4)' }] }),
+      R(1580, 1900, 620, G, 'plaster2', { tone: '#6f6a60', bulbs: [1740] }),
+      // Cage d'ascenseur sur toute la hauteur
+      R(1500, 1580, 260, 985, 'concrete', { shaft: true }),
+      // Étage militaire : salle de garde, chambre 12, palier de service
+      R(420, 1200, 440, 604, 'wallpaper', { tone: '#8a816f', paper: 16, skirt: true, posters: [{ x: 640, y: 500, t: 'CARTE DU\nSECTEUR' }, { x: 1050, y: 496, t: 'COUVRE-FEU\n21 H' }] }),
+      R(1200, 1500, 440, 604, 'wallpaper', { tone: '#8f8471', paper: 16, skirt: true, frames: 2 }),
+      R(1580, 1900, 440, 604, 'plaster2', { tone: '#77726a', skirt: true }),
+      // Suites
+      R(420, 1000, 260, 424, 'wallpaper', { tone: '#908571', paper: 8, skirt: true, frames: 3 }),
+      R(1000, 1500, 260, 424, 'wallpaper', { tone: '#8c8170', paper: 8, skirt: true, frames: 2, clock: { x: 1150, y: 296 } }),
+      R(1580, 1900, 260, 424, 'plaster2', { tone: '#77726a' }),
+      R(420, 1500, 848, 985, 'tiles', { tone: '#77746b', wainscot: { h: 137, tone: '#86847b', grid: 16 }, tubes: [800, 1250] }),
+      R(1580, 1900, 848, 985, 'concrete', { tone: '#66625a', tubes: [1740] })
     ],
     shells: [
       { x0: 420, x1: 1900, top: 260, bottom: 985, wall: 'brickPlaster', roof: 'flat', sign: { t: 'HÔTEL EUROPA', x: 1160, y: 180, missing: [3] },
@@ -631,28 +645,48 @@
     ],
     things: [
       { kind: 'car', f: 0, x: 260, burnt: true },
-      { kind: 'hedgehog', f: 0, x: 1980, n: 1 }
+      { kind: 'hedgehog', f: 0, x: 1980, n: 1 },
+      { kind: 'sandwall', f: 2, x: 640, w: 90, rows: 2 },
+      { kind: 'sandwall', f: 3, x: 1270, w: 80, rows: 2 },
+      { kind: 'cabin', f: 1, x: SHAFT, w: 64, h: 110, cable: 700, crashed: true }
     ],
-    lights: [{ kind: 'lamp', x: 1000, y: 650, r: 200, a: 0.5 }, { kind: 'candle', x: 820, y: 380, r: 90 }, { kind: 'lamp', x: 1400, y: 470, r: 150, a: 0.5 }],
+    lights: [
+      { kind: 'brasero', x: 1000, y: 790, r: 210 },
+      { kind: 'lamp', x: 800, y: 470, r: 190, a: 0.8 }, { kind: 'lamp', x: 1350, y: 470, r: 150, a: 0.7 },
+      { kind: 'lamp', x: 700, y: 290, r: 170, a: 0.7 }, { kind: 'lamp', x: 1250, y: 290, r: 160, a: 0.7 },
+      { kind: 'candle', x: 1760, y: 780, r: 80 }
+    ],
+    mood: { dark: 0.17, tint: 'rgba(190,140,80,0.34)', moon: 0.08 },
     backdrop: { far: 'city', mid: ['towers', 'steeples'], near: ['ruins'] },
     stairs: [
       { a: { f: 0, x: 1100 }, b: { f: 2, x: 900 } },
       { a: { f: 0, x: 1850 }, b: { f: 1, x: 1700 } },
       { a: { f: 2, x: 1850 }, b: { f: 3, x: 1680 } },
-      { a: { f: 3, x: 1860 }, b: { f: 4, x: 1860 }, type: 'ladder' }
+      { a: { f: 3, x: 1860 }, b: { f: 4, x: 1860 }, type: 'ladder' },
+      // Cage d'ascenseur : échelle de service, d'un palier à l'autre
+      { a: { f: 1, x: SHAFT }, b: { f: 0, x: SHAFT }, type: 'ladder' },
+      { a: { f: 0, x: SHAFT }, b: { f: 2, x: SHAFT }, type: 'ladder' },
+      { a: { f: 2, x: SHAFT }, b: { f: 3, x: SHAFT }, type: 'ladder' }
     ],
-    walls: [{ f: 0, x: 1500 }, { f: 2, x: 1200 }, { f: 3, x: 1000 }, { f: 3, x: 1500 }, { f: 1, x: 1000 }],
+    walls: [
+      { f: 0, x: 1500 }, { f: 0, x: 1580 },
+      { f: 2, x: 1200 }, { f: 2, x: 1500 }, { f: 2, x: 1580 },
+      { f: 3, x: 1000 }, { f: 3, x: 1500 }, { f: 3, x: 1580 },
+      { f: 1, x: 1000 }, { f: 1, x: 1500 }, { f: 1, x: 1580 }
+    ],
     windows: [
-      ARCH(0, 1300, 650, { h: 130, w: 54 }), ARCH(0, 1700, 650, { h: 130, w: 54, broken: true }),
-      ARCH(2, 640, 470, { shutters: true }), ARCH(2, 1000, 470), ARCH(2, 1400, 470, { broken: true }), ARCH(2, 1750, 470),
-      ARCH(3, 640, 290), ARCH(3, 1250, 290, { shutters: true }), ARCH(3, 1700, 290, { broken: true }),
-      { f: 1, x: 900, vent: true }, { f: 1, x: 1500, vent: true }
+      ARCH(0, 1300, 650, { h: 130, w: 54, broken: true }), ARCH(0, 700, 650, { h: 130, w: 54, boarded: true }),
+      ARCH(2, 640, 470, { shutters: true }), ARCH(2, 1000, 470), ARCH(2, 1350, 470, { broken: true }), ARCH(2, 1750, 470),
+      ARCH(3, 640, 290), ARCH(3, 1250, 290, { shutters: true }), ARCH(3, 1750, 290, { broken: true }),
+      { f: 1, x: 900, vent: true }, { f: 1, x: 1700, vent: true }
     ],
     decor: [
-      { f: 0, x: 180, p: 'street_lamp_01', h: 200 }, { f: 0, x: 750, p: 'vintage_oil_lamp', h: 30 }, { f: 0, x: 1560, p: 'vintage_suitcase', h: 26 },
-      { f: 1, x: 560, p: 'wine_bottles_01', h: 20 }, { f: 1, x: 1180, p: 'russian_food_cans_01', h: 16 },
-      { f: 2, x: 1000, p: 'old_military_crate', h: 30 }, { f: 3, x: 1400, p: 'Television_01', h: 28 },
-      { f: 4, x: 700, p: 'small_lpg_tank', h: 34 }, { f: 4, x: 1500, p: 'old_tyre', h: 22 }
+      { f: 0, x: 180, p: 'street_lamp_01', h: 200 }, { f: 0, x: 1000, p: 'barrel_stove', h: 44 }, { f: 0, x: 1430, p: 'trashbag', h: 30 },
+      { f: 0, x: 600, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 0, x: 1650, p: 'vintage_suitcase', h: 24 },
+      { f: 1, x: 560, p: 'wine_bottles_01', h: 20 }, { f: 1, x: 1180, p: 'russian_food_cans_01', h: 16 }, { f: 1, x: 1800, p: 'portable_generator', h: 44 },
+      { f: 2, x: 480, p: 'vintage_radio_transceiver', h: 22 }, { f: 2, x: 1100, p: 'old_military_crate', h: 30 }, { f: 2, x: 1650, p: 'ammo_box', h: 16 },
+      { f: 3, x: 1400, p: 'wine_bottles_01', h: 18 }, { f: 3, x: 1700, p: 'old_military_crate', h: 28 },
+      { f: 4, x: 700, p: 'small_lpg_tank', h: 34 }, { f: 4, x: 1100, p: 'portable_searchlight', h: 36 }
     ],
     zones: [
       { id: 'etage_officiers', f: 2, x0: 432, x1: 1888, group: 'hotel', label: 'Étage des officiers' },
@@ -660,28 +694,33 @@
     ],
     objects: [
       { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
-      // Hall et réception
-      { key: 'fauteuil', kind: 'armchair', f: 0, x: 520, deco: true },
+      // Hall : les civils autour du feu
+      { key: 'viktor', kind: 'npc', npc: 'viktor', f: 0, x: 520, w: 50, h: 70, facing: 1 },
       { key: 'irene', kind: 'npc', npc: 'irene', f: 0, x: 640, w: 40, h: 90, facing: 1 },
-      { key: 'reception', kind: 'cache', variant: 'commode', label: 'Comptoir de la réception', f: 0, x: 820, w: 64, h: 60, owner: 'hotel_refugies', loot: { cigarettes: 2, sucre: 1, livres: 2 } },
+      { key: 'reception', kind: 'cache', variant: 'commode', label: 'Comptoir de la réception', f: 0, x: 780, w: 64, h: 60, owner: 'hotel_refugies', loot: { cigarettes: 2, sucre: 1, livres: 2 } },
+      { key: 'matelas_hall', kind: 'bed', f: 0, x: 900, deco: true },
+      { key: 'fauteuil', kind: 'armchair', f: 0, x: 1220, deco: true },
       { key: 'recoin_hall', kind: 'hide', f: 0, x: 1450, w: 46, h: 108 },
-      { key: 'bagagerie', kind: 'cache', variant: 'valise', label: 'Bagages abandonnés', f: 0, x: 1650, w: 62, h: 36, loot: { livres: 1, bijoux: 1, cafe: 1 } },
+      { key: 'bagagerie', kind: 'cache', variant: 'valise', label: 'Bagages abandonnés', f: 0, x: 1700, w: 62, h: 36, loot: { livres: 1, bijoux: 1, cafe: 1 } },
       // Cuisines
       { key: 'cave_bar', kind: 'cache', variant: 'etagere', label: 'Réserve du bar', f: 1, x: 700, w: 70, h: 104, loot: { alcool: 2, sucre: 1, conserve: 1 } },
       { key: 'porte_cuisines', kind: 'door', f: 1, x: 1000, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
-      { key: 'chambre_froide', kind: 'cache', variant: 'armoire', label: 'Chambre froide', f: 1, x: 1300, w: 58, h: 112, owner: 'armee', loot: { conserve: 4, viande: 2, eau: 3 } },
-      { key: 'soldat_cuisine', kind: 'guard', type: 'soldat', f: 1, x: 1500, facing: -1, attitude: 'neutral', group: 'hotel', sleep: true },
+      { key: 'chambre_froide', kind: 'cache', variant: 'armoire', label: 'Chambre froide', f: 1, x: 1250, w: 58, h: 112, owner: 'armee', loot: { conserve: 4, viande: 2, eau: 3 } },
+      { key: 'soldat_cuisine', kind: 'guard', type: 'soldat', f: 1, x: 1750, facing: -1, attitude: 'neutral', group: 'hotel', sleep: true },
       // Étage des officiers
-      { key: 'sentinelle_hotel', kind: 'guard', type: 'soldat', f: 2, x: 700, facing: 1, attitude: 'neutral', group: 'hotel', patrol: [500, 1150] },
-      { key: 'recoin_couloir', kind: 'hide', f: 2, x: 1160, w: 46, h: 108 },
-      { key: 'chambre_12', kind: 'cache', variant: 'armoire', label: 'Chambre 12', f: 2, x: 1400, w: 58, h: 112, owner: 'armee', loot: { munitions: 8, medicaments: 1, cigarettes: 2 } },
-      { key: 'soldat_etage', kind: 'guard', type: 'soldat', f: 2, x: 1650, facing: -1, attitude: 'neutral', group: 'hotel', patrol: [1260, 1800] },
+      { key: 'sentinelle_hotel', kind: 'guard', type: 'soldat', f: 2, x: 700, facing: 1, attitude: 'neutral', group: 'hotel', patrol: [480, 1150] },
+      { key: 'recoin_couloir', kind: 'hide', f: 2, x: 1150, w: 46, h: 108 },
+      { key: 'porte_12', kind: 'door', label: 'Porte de la chambre 12', f: 2, x: 1200, w: 30, h: 112, tools: ['passe_partout', 'pied_de_biche'] },
+      { key: 'lit_12', kind: 'bed', f: 2, x: 1290, metal: true, deco: true },
+      { key: 'chambre_12', kind: 'cache', variant: 'armoire', label: 'Chambre 12', f: 2, x: 1440, w: 58, h: 112, owner: 'armee', loot: { munitions: 8, medicaments: 1, cigarettes: 2 } },
+      { key: 'soldat_etage', kind: 'guard', type: 'soldat', f: 2, x: 1700, facing: -1, attitude: 'neutral', group: 'hotel', patrol: [1620, 1840] },
       // Suites
-      { key: 'lit_officier', kind: 'bed', f: 3, x: 780, deco: true },
-      { key: 'officier', kind: 'guard', type: 'intendant', name: 'Lieutenant Kerr', f: 3, x: 840, facing: 1, attitude: 'neutral', group: 'hotel', sleep: true },
-      { key: 'suite_coffre', kind: 'cache', variant: 'coffre', label: 'Coffre de la suite', f: 3, x: 1150, w: 60, h: 48, owner: 'armee', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } },
-      { key: 'suite_bar', kind: 'cache', variant: 'etagere', label: 'Minibar', f: 3, x: 1330, w: 70, h: 104, owner: 'armee', loot: { alcool: 2, cafe: 2, cigarettes: 3 } },
-      { key: 'recoin_suite', kind: 'hide', f: 3, x: 1560, w: 46, h: 108 },
+      { key: 'suite_coffre', kind: 'cache', variant: 'coffre', label: 'Coffre de la suite', f: 3, x: 520, w: 60, h: 48, owner: 'armee', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } },
+      { key: 'lit_officier', kind: 'bed', f: 3, x: 740, deco: true },
+      { key: 'officier', kind: 'guard', type: 'intendant', name: 'Lieutenant Kerr', f: 3, x: 800, facing: 1, attitude: 'neutral', group: 'hotel', sleep: true },
+      { key: 'porte_suite', kind: 'door', label: 'Porte de la suite', f: 3, x: 1000, w: 30, h: 112, tools: ['passe_partout', 'pied_de_biche'] },
+      { key: 'suite_bar', kind: 'cache', variant: 'etagere', label: 'Minibar', f: 3, x: 1150, w: 70, h: 104, owner: 'armee', loot: { alcool: 2, cafe: 2, cigarettes: 3 } },
+      { key: 'recoin_suite', kind: 'hide', f: 3, x: 1450, w: 46, h: 108 },
       // Toit-terrasse : l'antenne de l'armée
       { key: 'caisse_antenne', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 4, x: 1560, w: 90, h: 50, loot: { pieces_elec: 2, composants: 1 } }
     ]
