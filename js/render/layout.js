@@ -1216,6 +1216,34 @@
         SK.line(ctx, r, 0, y + h / lv, w, y, { w: 0.8, passes: 1, alpha: 0.7 });
       }
     },
+    // Rame de métro abandonnée sur sa voie (portes ouvertes, vitres brisées)
+    train: function (ctx, r, th) {
+      var w = th.w || 460, h = th.h || 118;
+      SK.fillRect(ctx, r, -w / 2 - 40, -6, w + 80, 6, '#3a3834', 0.2);
+      SK.line(ctx, r, -w / 2 - 40, -3, w / 2 + 40, -3, { w: 1.4 });
+      var body = [[-w / 2, -14], [-w / 2, -h + 10], [-w / 2 + 12, -h], [w / 2 - 12, -h], [w / 2, -h + 10], [w / 2, -14]];
+      SK.fill(ctx, r, body, th.color || '#5f6664', 0.5); tex(ctx, body, 'plate', { tile: 80, alpha: 0.7, blend: 'overlay' }); SK.poly(ctx, r, body, true, { w: 1.6 });
+      SK.fillRect(ctx, r, -w / 2, -h * 0.42, w, 10, '#7a5a3e', 0.2);
+      for (var wx = -w / 2 + 16; wx < w / 2 - 50; wx += 70) {
+        var dark = r.next() < 0.5;
+        SK.fillRect(ctx, r, wx, -h + 18, 46, 34, dark ? '#1c1b19' : '#3d4142', 0.2); SK.rect(ctx, r, wx, -h + 18, 46, 34, { w: 1 });
+        if (!dark) SK.line(ctx, r, wx + 4, -h + 22, wx + 30, -h + 46, { w: 0.6, passes: 1 });
+      }
+      // Portes ouvertes (on peut y dormir)
+      [-w / 4, w / 4].forEach(function (dx) { SK.fillRect(ctx, r, dx - 22, -h + 16, 44, h - 30, '#161513', 0.2); SK.rect(ctx, r, dx - 22, -h + 16, 44, h - 30, { w: 1.2 }); });
+      [-w / 2 + 50, w / 2 - 50].forEach(function (bx) { wheel(ctx, bx - 18, -10, 9, true); wheel(ctx, bx + 18, -10, 9, true); });
+      if (th.text) { ctx.save(); ctx.font = '16px "Bebas Neue", sans-serif'; ctx.fillStyle = 'rgba(222,212,190,0.5)'; ctx.fillText(th.text, -w / 2 + 16, -h * 0.42 - 6); ctx.restore(); }
+    },
+    // Panneau publicitaire sur deux poteaux, affiche déchirée
+    billboard: function (ctx, r, th) {
+      var w = th.w || 170, h = th.h || 90, top = -(th.lift || 40) - h;
+      SK.line(ctx, r, -w / 3, 0, -w / 3, top + h, { w: 3 }); SK.line(ctx, r, w / 3, 0, w / 3, top + h, { w: 3 });
+      SK.fillRect(ctx, r, -w / 2, top, w, h, '#b3aa94', 0.3); SK.rect(ctx, r, -w / 2, top, w, h, { w: 1.6 });
+      var torn = [[-w / 2 + 20, top + 6], [w / 6, top + 10], [w / 5, top + h * 0.6], [-w / 6, top + h - 8], [-w / 2 + 10, top + h - 14]];
+      SK.fill(ctx, r, torn, '#7d5a4a', 0.5); SK.poly(ctx, r, torn, true, { w: 0.8, passes: 1 });
+      ctx.save(); ctx.font = '18px "Bebas Neue", sans-serif'; ctx.fillStyle = 'rgba(40,36,30,0.75)'; ctx.fillText(th.text || 'COCA-COLA', -w / 2 + 26, top + 30); ctx.restore();
+      for (var b = 0; b < 7; b++) { ctx.fillStyle = '#161513'; ctx.beginPath(); ctx.arc(r.range(-w / 2 + 8, w / 2 - 8), r.range(top + 8, top + h - 8), 2, 0, Math.PI * 2); ctx.fill(); }
+    },
     // Cabine d'ascenseur bloquée (grille en accordéon)
     cabin: function (ctx, r, th) {
       var w = th.w || 70, h = th.h || 120;

@@ -1183,72 +1183,109 @@
   });
 
   // ============================================================ Carrefour sous le feu (tireur embusqué)
-  // Une large rue entre deux immeubles, jonchée d'épaves : le tireur, posté
-  // dans l'immeuble d'en face, abat qui reste à découvert. On court d'abri
-  // en abri, ou on passe sous la rue par le métro (dégager les gravats).
+  // Une large rue entre deux immeubles. Le tireur est posté au 2e de
+  // l'immeuble d'en face : le reflet de sa lunette trahit sa fenêtre. Trois
+  // façons de traverser : la rue (d'épave en épave), la passerelle piétonne
+  // (exposée elle aussi, un panneau publicitaire pour s'abriter), ou le
+  // métro, où vivent des réfugiés autour d'une rame abandonnée (un tunnel à
+  // dégager). Son nid s'atteint par la passerelle (porte à forcer, on arrive
+  // face à lui) ou par l'escalier de derrière (éboulis à dégager, dans son dos).
   C.MAPS.carrefour = keepNpcs('carrefour', {
     theme: { dirt: 0.45 },
     world: { W: 3000, H: 1010, left: 40, right: 2960, ground: G, walkMin: 60, walkMax: 2940, view: 1500 },
     start: { f: 0, x: 100 },
     floors: [
       { name: 'Carrefour', y: G, ceil: 560, x0: 60, x1: 2928, ground: true, thick: 28,
-        segs: [{ x0: 60, x1: 2400, out: true }, { x0: 2400, x1: 2940, tex: 'floor' }] },
-      { name: 'Station de métro', y: 985, ceil: 848, x0: 512, x1: 2288, thick: 25, tex: 'tiles' },
-      { name: 'Appartement du coin', y: 640, ceil: 476, x0: 2412, x1: 2928, tex: 'floor' },
-      { name: 'Nid du tireur', y: 460, ceil: 296, x0: 2412, x1: 2928, tex: 'floor' }
+        segs: [{ x0: 60, x1: 200, out: true }, { x0: 200, x1: 900, tex: 'tiles' }, { x0: 900, x1: 2000, out: true }, { x0: 2000, x1: 2940, tex: 'floor' }] },
+      { name: 'Station de métro', y: 985, ceil: 848, x0: 512, x1: 2588, thick: 25, tex: 'tiles' },
+      { name: 'Immeuble d\'en face, 1er', y: 640, ceil: 476, x0: 2012, x1: 2928, tex: 'floor' },
+      { name: 'Immeuble d\'en face, 2e', y: 460, ceil: 296, x0: 2012, x1: 2928, tex: 'floor' },
+      { name: 'Immeuble ouest, 1er', y: 640, ceil: 476, x0: 212, x1: 888, tex: 'floor' },
+      { name: 'Immeuble ouest, 2e', y: 460, ceil: 296, x0: 212, x1: 888, tex: 'debris' },
+      { name: 'Passerelle', y: 460, ceil: 300, x0: 900, x1: 2000, catwalk: true, support: G, supportGap: 540 }
     ],
     rooms: [
-      R(200, 560, 300, G, 'brickPlaster', { tone: '#6c665c', breach: [{ x: 380, y: 420, r: 50 }] }),
-      R(2400, 2940, 656, G, 'peeling', { tone: '#77726a', bulbs: [2650] }),
-      R(2400, 2940, 476, 640, 'wallpaper', { tone: '#827a6b', paper: 12, frames: 2, skirt: true }),
-      R(2400, 2940, 296, 460, 'wallpaper', { tone: '#6f685c', paper: 12 }),
-      R(500, 2300, 848, 985, 'tiles', { tone: '#7a7870', wainscot: { h: 137, tone: '#86847c', grid: 14 }, tubes: [800, 1200, 1600, 2000],
-        signs: [{ t: 'MÉTRO — LIGNE 2 — PLACE DE LA LIBERTÉ', x: 700, y: 890, size: 22 }], posters: [{ x: 1750, y: 910, t: 'PLAN DU\nRÉSEAU' }] })
+      // Immeuble ouest
+      R(200, 900, 656, G, 'peeling', { tone: '#7a746a', bulbs: [500], posters: [{ x: 300, y: 720, t: 'AVIS À LA\nPOPULATION' }] }),
+      R(200, 900, 476, 640, 'wallpaper', { tone: '#827a6b', paper: 12, frames: 2, skirt: true, breach: [{ x: 420, y: 540, r: 40 }] }),
+      R(200, 900, 296, 460, 'peeling', { tone: '#6f695e', frames: 1 }),
+      // Immeuble d'en face
+      R(2000, 2940, 656, G, 'plaster2', { tone: '#77726a', bulbs: [2400] }),
+      R(2000, 2940, 476, 640, 'wallpaper', { tone: '#827a6b', paper: 12, frames: 2, skirt: true }),
+      R(2000, 2300, 296, 460, 'peeling', { tone: '#6f695e' }),
+      R(2300, 2940, 296, 460, 'wallpaper', { tone: '#5f5a50', paper: 12, posters: [{ x: 2860, y: 360, t: 'TOUS LES\nTRAÎTRES', rot: 0.06 }] }),
+      // Métro
+      R(500, 2600, 848, 985, 'tiles', { tone: '#7a7870', wainscot: { h: 137, tone: '#86847c', grid: 14 }, tubes: [800, 1250, 1700, 2150], border: true,
+        signs: [{ t: 'MÉTRO — LIGNE 2 — PLACE DE LA LIBERTÉ', x: 640, y: 880, size: 22 }], posters: [{ x: 2350, y: 900, t: 'PLAN DU\nRÉSEAU' }] })
     ],
     shells: [
-      { x0: 200, x1: 560, top: 300, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 690, y1: G }], right: [{ y0: 690, y1: G }] } },
-      { x0: 2400, x1: 2940, top: 296, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 702, y1: G }] } }
+      { x0: 200, x1: 900, top: 296, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 690, y1: G }], right: [{ y0: 690, y1: G }, { y0: 300, y1: 460 }] } },
+      { x0: 2000, x1: 2940, top: 296, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 702, y1: G }, { y0: 300, y1: 460 }] } }
     ],
     things: [
-      { kind: 'kiosk', f: 0, x: 640, back: true },
-      { kind: 'bus', f: 0, x: 960, back: true },
-      { kind: 'crater', f: 0, x: 1350, w: 170 },
-      { kind: 'tank', f: 0, x: 1900, back: true, flip: true },
-      { kind: 'hedgehog', f: 0, x: 2300, n: 1 }
+      { kind: 'kiosk', f: 0, x: 1000, back: true },
+      { kind: 'bus', f: 0, x: 1180, back: true },
+      { kind: 'crater', f: 0, x: 1320, w: 150 },
+      { kind: 'tank', f: 0, x: 1760, back: true, flip: true, s: 0.85 },
+      { kind: 'hedgehog', f: 0, x: 1960, n: 1 },
+      { kind: 'train', f: 1, x: 1500, w: 520, text: 'LIGNE 2 — TERMINUS' },
+      { kind: 'billboard', f: 6, x: 1450, text: 'BUVEZ FRAIS' }
     ],
-    lights: [{ kind: 'brasero', x: 2200, y: 790, r: 170 }],
+    lights: [{ kind: 'brasero', x: 1870, y: 790, r: 170 }, { kind: 'brasero', x: 1180, y: 950, r: 200 }, { kind: 'candle', x: 1700, y: 940, r: 110 }],
     backdrop: { far: 'city', mid: ['towers', 'steeples'], near: ['ruins'] },
-    exposed: [{ f: 0, x0: 740, x1: 2380, label: 'À découvert', ceil: 560 }],
+    exposed: [{ f: 0, x0: 920, x1: 1980, label: 'À découvert', ceil: 560 }, { f: 6, x0: 910, x1: 1990, label: 'À découvert', ceil: 320 }],
     stairs: [
-      { a: { f: 0, x: 690 }, b: { f: 1, x: 850 } },
-      { a: { f: 0, x: 2340 }, b: { f: 1, x: 2180 } },
-      { a: { f: 0, x: 2880 }, b: { f: 2, x: 2720 } }
+      // Métro : descente dans chaque immeuble
+      { a: { f: 0, x: 800 }, b: { f: 1, x: 640 } },
+      { a: { f: 0, x: 2700 }, b: { f: 1, x: 2540 } },
+      // Immeuble ouest, jusqu'à la passerelle
+      { a: { f: 0, x: 320 }, b: { f: 4, x: 480 } },
+      { a: { f: 4, x: 820 }, b: { f: 5, x: 660 }, type: 'debris' },
+      { a: { f: 5, x: 885 }, b: { f: 6, x: 905 }, type: 'link' },
+      { a: { f: 6, x: 1995 }, b: { f: 3, x: 2015 }, type: 'link' },
+      // Immeuble d'en face : l'escalier de devant, puis celui de derrière (vers le nid)
+      { a: { f: 0, x: 2100 }, b: { f: 2, x: 2260 } },
+      { a: { f: 2, x: 2700 }, b: { f: 3, x: 2880 } }
     ],
-    walls: [],
+    walls: [{ f: 3, x: 2300 }],
     windows: [
-      { f: 0, x: 300, y: 350 }, { f: 0, x: 470, y: 350, broken: true }, { f: 0, x: 300, y: 520, boarded: true }, { f: 0, x: 470, y: 520 },
-      { f: 2, x: 2550, broken: true }, { f: 3, x: 2600, broken: true }, { f: 3, x: 2800, boarded: true }
+      { f: 4, x: 600 }, { f: 5, x: 400, broken: true }, { f: 0, x: 600, boarded: true },
+      { f: 2, x: 2400, broken: true }, { f: 2, x: 2800 }, { f: 3, x: 2600, broken: true }, { f: 3, x: 2150, boarded: true }, { f: 0, x: 2400, boarded: true }
     ],
     decor: [
       { f: 0, x: 170, p: 'street_lamp_01', h: 210 }, { f: 0, x: 1150, p: 'old_tyre', h: 26 }, { f: 0, x: 1640, p: 'street_lamp_01', h: 200 },
-      { f: 0, x: 2050, p: 'rusted_wheel_rim_01', h: 26 }, { f: 0, x: 2600, p: 'trashbag', h: 30 }, { f: 1, x: 1250, p: 'trashbag', h: 32 },
-      { f: 1, x: 2000, p: 'cardboard_box_01', h: 30, shade: 0.3 }, { f: 2, x: 2850, p: 'cardboard_box_01', h: 30, shade: 0.3 }
+      { f: 0, x: 1870, p: 'barrel_stove', h: 40 }, { f: 0, x: 2500, p: 'trashbag', h: 30 }, { f: 1, x: 1180, p: 'barrel_stove', h: 40 },
+      { f: 1, x: 1000, p: 'cardboard_box_01', h: 30, shade: 0.3 }, { f: 1, x: 2200, p: 'trashbag', h: 32 },
+      { f: 3, x: 2780, p: 'old_military_crate', h: 28 }, { f: 3, x: 2200, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 4, x: 700, p: 'wooden_stool_01', h: 26 }
     ],
     objects: [
       { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      // Immeuble ouest
       { key: 'kiosque', kind: 'cache', variant: 'caisse', label: 'Kiosque à journaux', f: 0, x: 560, w: 78, h: 48, loot: { cafe: 1, livres: 2 } },
-      { key: 'epave_bus', kind: 'cache', variant: 'valise', label: 'Bagages dans l\'autobus', f: 0, x: 900, w: 62, h: 36, loot: { conserve: 3, medicaments: 1 } },
-      { key: 'abri1', kind: 'hide', variant: 'sacs', label: 'Derrière les sacs de sable', f: 0, x: 1180, w: 90, h: 60 },
-      { key: 'epave_ambulance', kind: 'cache', variant: 'epave', label: 'Ambulance abandonnée', f: 0, x: 1530, w: 150, h: 60, loot: { medicaments: 2, bandage: 2, pieces_elec: 1 } },
-      { key: 'abri2', kind: 'hide', variant: 'voiture', label: 'Derrière le char', f: 0, x: 1800, w: 90, h: 70 },
-      { key: 'epave_militaire', kind: 'cache', variant: 'epave', label: 'Jeep militaire', f: 0, x: 2120, w: 150, h: 60, loot: { munitions: 8, carburant: 2, pieces_meca: 2 } },
-      // Métro
-      { key: 'metro', kind: 'cache', variant: 'etagere', label: 'Guichet du métro', f: 1, x: 1000, w: 70, h: 104, loot: { eau: 2, conserve: 1 } },
-      { key: 'gravats_metro', kind: 'rubble', label: 'Tunnel effondré', f: 1, x: 1500, w: 104, h: 128, block: true, work: 90, loot: { pieces_meca: 3, pieces_elec: 2, composants: 2 } },
-      { key: 'epave_cave', kind: 'cache', variant: 'caisse', label: 'Caisses d\'un marchand', f: 1, x: 1950, w: 78, h: 48, loot: { conserve: 2, cafe: 1, carburant: 1 } },
+      { key: 'appart_ouest', kind: 'cache', variant: 'armoire', label: 'Appartement déserté', f: 4, x: 300, w: 58, h: 112, loot: { conserve: 1, bandage: 1, livres: 1 } },
+      { key: 'caisse_ouest', kind: 'cache', variant: 'caisse', label: 'Caisse sur le palier', f: 5, x: 400, w: 78, h: 48, loot: { bois: 3, composants: 2 } },
+      // La rue
+      { key: 'epave_bus', kind: 'cache', variant: 'valise', label: 'Bagages dans l\'autobus', f: 0, x: 1080, w: 62, h: 36, loot: { conserve: 3, medicaments: 1 } },
+      { key: 'abri1', kind: 'hide', variant: 'sacs', label: 'Derrière les sacs de sable', f: 0, x: 1420, w: 90, h: 60 },
+      { key: 'epave_ambulance', kind: 'cache', variant: 'epave', label: 'Ambulance abandonnée', f: 0, x: 1570, w: 150, h: 60, loot: { medicaments: 2, bandage: 2, pieces_elec: 1 } },
+      { key: 'abri2', kind: 'hide', variant: 'voiture', label: 'Derrière le char', f: 0, x: 1740, w: 90, h: 70 },
+      { key: 'epave_militaire', kind: 'cache', variant: 'epave', label: 'Jeep militaire', f: 0, x: 1880, w: 150, h: 60, loot: { munitions: 8, carburant: 2, pieces_meca: 2 } },
+      // Passerelle
+      { key: 'abri_panneau', kind: 'hide', variant: 'palettes', label: 'Derrière le panneau publicitaire', f: 6, x: 1450, w: 90, h: 92 },
+      // Métro : les réfugiés, la rame, le tunnel
+      { key: 'metro', kind: 'cache', variant: 'etagere', label: 'Guichet du métro', f: 1, x: 860, w: 70, h: 104, loot: { eau: 2, conserve: 1 } },
+      { key: 'zora', kind: 'npc', npc: 'zora', f: 1, x: 1120, w: 50, h: 70, facing: 1 },
+      { key: 'reserve_metro', kind: 'cache', variant: 'caisse', label: 'Réserve des réfugiés', f: 1, x: 1300, w: 78, h: 48, owner: 'metro', loot: { eau: 3, conserve: 1, herbes: 1 } },
+      { key: 'couchage_rame', kind: 'bed', f: 1, x: 1620, deco: true },
+      { key: 'gravats_metro', kind: 'rubble', label: 'Tunnel effondré', f: 1, x: 1950, w: 104, h: 128, block: true, work: 90, loot: { pieces_meca: 3, pieces_elec: 2, composants: 2 } },
+      { key: 'epave_cave', kind: 'cache', variant: 'caisse', label: 'Caisses d\'un marchand', f: 1, x: 2250, w: 78, h: 48, loot: { conserve: 2, cafe: 1, carburant: 1 } },
       // Immeuble d'en face
-      { key: 'balcon', kind: 'cache', variant: 'armoire', label: 'Appartement du coin', f: 2, x: 2480, w: 58, h: 112, loot: { conserve: 1, pieces_meca: 2 } },
-      { key: 'eboulis_haut', kind: 'rubble', f: 2, x: 2580, w: 104, h: 150, block: true, work: 150, loot: { bois: 2, composants: 2 } },
+      { key: 'loge_est', kind: 'cache', variant: 'etagere', label: 'Loge du gardien', f: 0, x: 2500, w: 70, h: 104, loot: { eau: 1, conserve: 1 } },
+      { key: 'eboulis_haut', kind: 'rubble', f: 2, x: 2450, w: 104, h: 150, block: true, work: 150, loot: { bois: 2, composants: 2 } },
+      { key: 'balcon', kind: 'cache', variant: 'armoire', label: 'Appartement du coin', f: 2, x: 2580, w: 58, h: 112, loot: { conserve: 1, pieces_meca: 2 } },
+      // Le nid du tireur
+      { key: 'porte_nid', kind: 'door', label: 'Porte barricadée', f: 3, x: 2300, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'nid', kind: 'cache', variant: 'caisse_mil', label: 'Affaires du tireur', f: 3, x: 2430, w: 90, h: 50, loot: { conserve: 2, cigarettes: 3, munitions: 6 } },
       { key: 'tireur', kind: 'guard', type: 'tireur', f: 3, x: 2700, facing: -1, attitude: 'hostile', group: 'tireur' }
     ]
   });

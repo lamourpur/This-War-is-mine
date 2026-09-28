@@ -11,7 +11,7 @@
   function dangerNote(st, loc) {
     var hostile = Object.keys(st.locations[loc.id].hostile || {}).length;
     var tail = ' Restez hors de leur regard, cachez-vous dans les recoins sombres, évitez le bruit (double-clic = courir). En mode combat (touche C), un clic sur un ennemi l\'attaque.';
-    if (loc.id === 'carrefour') return 'Un tireur embusqué surveille la rue. Ne restez jamais à découvert : courez d\'abri en abri (double-clic), cachez-vous derrière les épaves, ou passez par le métro.';
+    if (loc.id === 'carrefour') return 'Un tireur embusqué surveille la rue depuis l\'immeuble d\'en face : guettez le reflet de sa lunette. Ne restez jamais à découvert : courez d\'abri en abri (double-clic), traversez par la passerelle en vous cachant derrière le panneau, ou passez sous la rue par le métro. Son nid s\'atteint par l\'arrière.';
     if (loc.residents === 'militaires') return (loc.danger >= 3 || hostile ? 'Les soldats tirent à vue.' : 'Des soldats gardent les lieux : n\'entrez pas dans leur zone et ne volez pas sous leurs yeux.') + tail + ' Une arme et un gilet pare-balles peuvent vous sauver la vie.';
     if (loc.residents === 'bandits') return 'Une bande armée occupe les lieux. Ils vous tomberont dessus s\'ils vous voient.' + tail + ' Emportez une arme.';
     var map = C.MAPS[loc.id];

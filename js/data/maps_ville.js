@@ -71,7 +71,7 @@
     name: 'Tireur embusqué', hp: 100, weapon: 'fusil', tool: 'rifle', ammo: 99,
     dmg: [38, 58], acc: 0.6, range: 5000, sight: 5000, walk: 0, run: 0,
     sniper: true, fixed: true, unseen: true,
-    look: C.GUARD_TYPES.soldat.look, loot: {}, talk: [],
+    look: C.GUARD_TYPES.soldat.look, loot: { fusil: 1, munitions: 6 }, talk: [],
     say: { idle: [], suspect: [], greet: [], warn: [], warn2: [], attack: [], lost: [], hurt: [], surrender: [], spared: [] }
   };
 
@@ -110,6 +110,27 @@
     abandonNote: ' a laissé le garçon ligoté dans la réserve. Personne n\'en parle.',
     rescueJournal: 'Lukas est libre. Il a sorti de derrière les cartons ce qu\'il avait caché :',
     abandonJournal: 'J\'ai laissé le garçon attaché dans la réserve. Je l\'entends encore.'
+  };
+
+  // Carrefour : la vieille Zora tient l'abri du métro
+  C.NPCS.zora = {
+    name: 'Zora', title: 'Réfugiée du métro',
+    look: { hair: 'scarf', build: 0.86, h: 0.9, coat: '#4f463e', pants: '#2f2b27', coatLen: 0.45, skin: '#b09880', hairColor: '#8a8278', female: true, lips: true, top: 'overcoat', shirt: '#6a5c50', scarf: '#6b3e34' },
+    pose: 'sit',
+    greet: ['Doucement… les petits dorment dans la rame.', 'Il tire sur tout ce qui traverse la rue, depuis l\'immeuble d\'en face. On ne remonte plus.', 'On est onze ici. Il y a de l\'eau, il suinte des murs.'],
+    trade: {
+      stock: { eau: 5, filtre: 1, herbes: 2, livres: 2, tabac: 2, pieces_elec: 1 },
+      likes: { conserve: 1.6, medicaments: 1.7, bandage: 1.5, bois: 1.4, sucre: 1.3 },
+      restock: 3,
+      say: 'L\'eau, on en a. C\'est la nourriture qui manque, pour les petits.'
+    },
+    donate: { items: { conserve: 1 }, alt: { legumes: 1 }, label: 'Donner à manger pour les enfants', thanks: 'Que Dieu vous le rende. Les petits mangeront ce soir.', moral: 5 },
+    afterSteal: ['Vous volez des enfants ? Partez. Partez !']
+  };
+  C.OWNERS.metro = {
+    text: ' a volé les réfugiés du métro.', moral: -10, key: 'stole_kids',
+    desc: 'Les réserves des familles qui vivent dans le métro.',
+    warn: 'Onze personnes vivent de ça sous la rue, dont des enfants.'
   };
 
   C.OWNERS.bande = {

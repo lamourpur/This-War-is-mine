@@ -104,6 +104,8 @@
 
   // Soldat dans une pièce encore inexplorée (brouillard) et pas regardée par
   // la serrure : invisible, comme dans le jeu d'origine
+  // Tireur embusqué : invisible tant qu'on n'est pas monté jusqu'à son nid
+  K.unseen = function (g) { var T = K.type(g); return !!(T && T.unseen) && !(E() && E().s && E().s.f === g.f); };
   K.hidden = function (g) {
     if (!E() || !E().active || !C.Nav.regions) return false;
     for (var i = 0; i < C.Nav.regions.length; i++) {
@@ -155,7 +157,7 @@
 
   function sayG(g, kind, secs) {
     var T = K.type(g), pool = T.say[kind] || C.GUARD_TYPES.soldat.say[kind];
-    if (!pool || !pool.length || T.unseen) return;
+    if (!pool || !pool.length || K.unseen(g)) return;
     g.lastSay = g.lastSay || {};
     var now = performance.now();
     if (g.lastSay[kind] && now - g.lastSay[kind] < 3500) return;
@@ -183,7 +185,10 @@
   };
   K.sees = function (g, s) {
     if (!s || !s.alive || g.dead) return false;
-    if (K.type(g).sniper) return !!K.exposed(s) && !K.isHidden(s);
+    if (K.type(g).sniper) {
+      if (s.f === g.f && onFloor(s) && Math.abs(s.x - g.x) < 170 && (s.x - g.x) * g.facing > -20) return true;
+      return !!K.exposed(s) && !K.isHidden(s);
+    }
     if (g.state === 'sleep' || g.state === 'surrender' || g.state === 'flee') return false;
     if (s.f !== g.f || !onFloor(s) || Math.abs(g.y - C.FLOORS[g.f].y) > 2) return false;
     var dx = s.x - g.x, dist = Math.abs(dx);
@@ -362,6 +367,10 @@
   }
   function shotFx(x0, y0, x1, y1, hit) {
     K.shots.push({ x0: x0, y0: y0, x1: x1, y1: y1, t: 0, life: 0.12, hit: hit });
+    if (!hit && C.Render && C.Render.spawn) {
+      for (var i = 0; i < 6; i++) C.Render.spawn({ x: x1, y: y1, vx: rand(-70, 70), vy: rand(-90, 10), life: rand(0.2, 0.5), t: 0, kind: 'spark', size: 1 });
+      for (var j = 0; j < 3; j++) C.Render.spawn({ x: x1 + rand(-6, 6), y: y1, vx: rand(-10, 10), vy: rand(-20, -5), life: rand(0.8, 1.4), t: 0, kind: 'smoke', size: 2.5 });
+    }
     if (C.Audio.ready && C.Audio.sfx.shot) C.Audio.sfx.shot();
   }
   K.shotFx = shotFx;
@@ -909,7 +918,7 @@
   K.guardAt = function (wx, wy) {
     var best = null, bd = 48;
     K.guards().forEach(function (g) {
-      if (g.dead || (K.type(g) && K.type(g).unseen) || K.hidden(g)) return;
+      if (g.dead || K.unseen(g) || K.hidden(g)) return;
       var fl = C.FLOORS[g.f];
       if (wy < fl.ceil - 10 || wy > fl.y + 12) return;
       var dx = Math.abs(wx - g.x);
@@ -1073,11 +1082,25 @@
     // Visée du tireur : ligne et point rouges (au premier plan)
     var s = E().s, t = performance.now() / 1000;
     K.guards().forEach(function (g) {
-      if (!K.type(g).unseen || g.state !== 'alert' || !g.sawNow) return;
+      if (!K.type(g).sniper || g.dead) return;
+      var gx = g.x + g.facing * 26, gy = g.y - 64;
+      // Reflet de la lunette : un éclat dans la fenêtre d'en face, plus vif quand il vise
+      var aiming = g.state === 'alert' && g.sawNow;
+      var gl = Math.pow(Math.max(0, Math.sin(t * (aiming ? 3.2 : 0.9) + g.uid)), aiming ? 2 : 14);
+      if (gl > 0.05 && g.state !== 'surrender') {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        var gr = ctx.createRadialGradient(gx, gy, 0, gx, gy, 18 + gl * 14);
+        gr.addColorStop(0, 'rgba(255,250,225,' + (0.85 * gl) + ')'); gr.addColorStop(1, 'rgba(255,240,200,0)');
+        ctx.fillStyle = gr; ctx.fillRect(gx - 34, gy - 34, 68, 68);
+        ctx.strokeStyle = 'rgba(255,250,230,' + (0.8 * gl) + ')'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(gx - 16 * gl, gy); ctx.lineTo(gx + 16 * gl, gy); ctx.moveTo(gx, gy - 10 * gl); ctx.lineTo(gx, gy + 10 * gl); ctx.stroke();
+        ctx.restore();
+      }
+      if (!aiming || !K.unseen(g)) return;
       var k = U.clamp(1 - g.aimT / 1.6, 0, 1);
       ctx.save();
       ctx.strokeStyle = 'rgba(240,50,35,' + (0.3 + 0.45 * k) + ')'; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(C.WORLD.right, C.FLOORS[3].ceil); ctx.lineTo(s.x, s.y - 60); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(s.x, s.y - 60); ctx.stroke();
       ctx.fillStyle = 'rgba(255,40,30,' + (0.5 + 0.5 * k) + ')';
       ctx.beginPath(); ctx.arc(s.x + Math.sin(t * 7) * (6 - 5 * k), s.y - 60 + Math.cos(t * 5) * (6 - 5 * k), 3, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
@@ -1114,7 +1137,7 @@
 
   function drawGuard(ctx, g, t) {
     var T = K.type(g), mode = modeOf(g);
-    if (T.unseen) return;
+    if (K.unseen(g)) return;
     var fake = { id: g.id, look: T.look, traits: [], path: g.path, x: g.x, y: g.y, f: g.f, anim: g.anim, moral: 70, fatigue: 20, wound: g.hp < 40 ? 40 : 0, sick: 0, act: null };
     var P = C.Figure.guardPose(g, t, mode, g.state === 'surrender' ? null : T.tool);
     var hov = C.Render.hoverObj === g;
@@ -1158,7 +1181,7 @@
   K.drawLights = function (ctx, t) {
     if (!E() || !E().active) return;
     K.guards().forEach(function (g) {
-      if (g.state === 'sleep' || g.state === 'surrender' || K.type(g).unseen) return;
+      if (g.state === 'sleep' || g.state === 'surrender' || K.type(g).sniper) return;
       var T = K.type(g), len = T.sight * 0.8, ox = g.x + g.facing * 16, oy = g.y - 58;
       var hostile = g.state === 'alert' || g.state === 'warn';
       var gr = ctx.createLinearGradient(ox, oy, ox + g.facing * len, oy);
