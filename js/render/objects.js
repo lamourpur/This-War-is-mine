@@ -41,7 +41,8 @@
   D.bounds = function (o) {
     var y = C.FLOORS[o.f].y;
     if (o.kind === 'hole') { var hs = D.holeSize(o); return { x: o.x - hs.w / 2 - 10, y: y - D.HOLE_CY - hs.h / 2 - 8, w: hs.w + 20, h: hs.h + 16 }; }
-    if (o.kind === 'guard' && C.GUARD_TYPES && C.GUARD_TYPES[o.type] && (C.GUARD_TYPES[o.type].unseen || (C.Combat && C.Combat.hidden(o)))) return { x: -9999, y: -9999, w: 0, h: 0 };
+    if (o.kind === 'guard' && C.GUARD_TYPES && C.GUARD_TYPES[o.type] && ((C.Combat && C.Combat.unseen ? C.Combat.unseen(o) : C.GUARD_TYPES[o.type].unseen) || (C.Combat && C.Combat.hidden(o)))) return { x: -9999, y: -9999, w: 0, h: 0 };
+    if (o.kind === 'note') return o.wall ? { x: o.x - 16, y: y - (o.dy || 90) - 4, w: 32, h: 38 } : { x: o.x - 18, y: y - 16, w: 36, h: 20 };
     if (o.kind === 'npc' && C.NPCS && C.NPCS[o.npc]) {
       var nd = C.NPCS[o.npc], nh = C.Figure.BASE * nd.look.h;
       if (nd.pose === 'lie') { var ly = o.onBed ? y - 42 : y - 9; return { x: o.x - nh * 0.58, y: ly - 22, w: nh * 1.1, h: 30 }; }
@@ -513,6 +514,24 @@
     for (var k = 0; k < 4; k++) SK.stone(ctx, r, x + r.next() * o.w, y - 1, 1.5, '#6a645a');
   };
 
+  // Lettre, journal, carnet : papier posé ou épinglé au mur
+  D.note = function (ctx, r, o, y) {
+    var top = o.wall ? y - (o.dy || 90) : y - 6;
+    if (o.wall) {
+      var pg = [[o.x - 12, top], [o.x + 12, top + 1], [o.x + 11, top + 30], [o.x - 11, top + 29]];
+      P(ctx, r, pg, o.read ? '#a9a18e' : '#d2c9b2', 0.3); SK.poly(ctx, r, pg, true, { w: 0.9, passes: 1 });
+      for (var l = 0; l < 4; l++) SK.line(ctx, r, o.x - 8, top + 7 + l * 5, o.x + 7, top + 7 + l * 5, { w: 0.5, passes: 1, alpha: 0.6 });
+      ctx.fillStyle = '#7a2a22'; ctx.beginPath(); ctx.arc(o.x, top + 2, 1.8, 0, Math.PI * 2); ctx.fill();
+      return;
+    }
+    if (o.book) {
+      F(ctx, r, o.x - 12, y - 7, 24, 7, '#5a3e30', 0.3); SK.rect(ctx, r, o.x - 12, y - 7, 24, 7, { w: 0.9, passes: 1 });
+      F(ctx, r, o.x - 10, y - 8, 20, 2, '#d2c9b2', 0.2);
+    }
+    var sh = [[o.x - 14, y - 1], [o.x + 6, y - 4], [o.x + 16, y - 1], [o.x - 4, y + 1]];
+    P(ctx, r, sh, o.read ? '#a9a18e' : '#d8cfb8', 0.2); SK.poly(ctx, r, sh, true, { w: 0.8, passes: 1 });
+  };
+
   // Banc d'église (vu de côté)
   D.pew = function (ctx, r, o, y) {
     var x = o.x - o.w / 2;
@@ -657,6 +676,15 @@
         }
       }
       if (o.label2) { ctx.save(); ctx.font = '12px "Bebas Neue", sans-serif'; ctx.fillStyle = 'rgba(222,212,190,0.6)'; ctx.fillText(o.label2, x + 3, top - 4); ctx.restore(); }
+      return;
+    }
+    if (o.variant === 'linceul') {
+      // Un corps sous un drap ; les poches restent à fouiller
+      ctx.fillStyle = 'rgba(60,22,18,0.35)'; ctx.beginPath(); ctx.ellipse(o.x + 10, y - 1, 40, 4, 0, 0, Math.PI * 2); ctx.fill();
+      var sheet = [[o.x - 42, y], [o.x - 40, y - 14], [o.x - 30, y - 20], [o.x - 12, y - 16], [o.x + 10, y - 18], [o.x + 30, y - 14], [o.x + 42, y - 10], [o.x + 44, y]];
+      P(ctx, r, sheet, o.color || '#b9b19d', 0.6); SK.hatchPoly(ctx, r, sheet, { gap: 5, alpha: 0.15, angle: 0.3 }); SK.poly(ctx, r, sheet, true, { w: 1.1 });
+      F(ctx, r, o.x + 40, y - 6, 10, 6, '#3a3430', 0.2);
+      if (o.searched) SK.line(ctx, r, o.x + 12, y - 16, o.x + 30, y - 24, { w: 0.8, passes: 1 });
       return;
     }
     if (o.variant === 'caisse_mag') {

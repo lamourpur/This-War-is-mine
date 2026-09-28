@@ -196,7 +196,7 @@
     C.Actions.cancel(s, true);
     s.path = []; s.act = null;
     // Mémorise l'état de chaque objet du lieu
-    var keep = ['searched', 'loot', 'locked', 'open', 'broken', 'hp'];
+    var keep = ['searched', 'loot', 'locked', 'open', 'broken', 'hp', 'read'];
     var present = {}, mapKeys = {};
     C.MAPS[E.loc].objects.forEach(function (d) { mapKeys[d.key] = true; });
     ls.extra = [];
@@ -359,6 +359,7 @@
           hideLines++;
           if (hideLines <= 2) add(e.m, 'Je me suis terré' + fe + ' dans un coin sombre, le souffle coupé, pendant qu' + (/^[aeiouy]/i.test(e.who || 'un') ? '\'' : 'e ') + (e.who || 'un soldat') + ' passait à quelques pas.');
           break;
+        case 'note': add(e.m, e.line || 'J\'ai lu : « ' + e.title + ' ».'); break;
         case 'hit':
           hitLines++;
           if (hitLines === 1) add(e.m, e.dmg >= 30 ? 'Une balle m\'a touché' + fe + '. La douleur m\'a coupé le souffle.' : 'J\'ai été touché' + fe + '. Je saigne.', 'bad');

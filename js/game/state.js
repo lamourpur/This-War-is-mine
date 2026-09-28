@@ -115,7 +115,8 @@
         case 'frontdoor': return o.level ? (o.level === 1 ? 'Porte barricadée' : 'Porte blindée') : 'Porte d\'entrée';
         case 'stock': return 'Réserve';
         case 'rubble': return o.block ? 'Éboulis' : 'Gravats';
-        case 'door': return o.open ? 'Porte forcée' : 'Porte verrouillée';
+        case 'door': return o.label ? o.label + (o.open ? ' (ouverte)' : '') : o.open ? 'Porte forcée' : 'Porte verrouillée';
+        case 'note': return o.label || 'Papier';
         case 'grate': return 'Grille métallique';
         case 'cache':
           if (o.variant === 'baluchon') return o.label || 'Baluchon';

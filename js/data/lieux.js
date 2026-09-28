@@ -1372,4 +1372,140 @@
       { key: 'caisse_radio', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 3, x: 2050, w: 90, h: 50, loot: { pieces_elec: 3, composants: 3 } }
     ]
   });
+
+  // ============================================================ Gens et histoires
+  // D'autres habitants à croiser, et ce que les absents ont laissé : lettres,
+  // journaux, carnets (kind 'note' : on les lit ; opens = ce qu'on y apprend),
+  // corps sous un drap (cache 'linceul' : on fouille les poches).
+  C.NPCS.vesna = {
+    name: 'Mme Vesna', title: 'Voisine du 1er, seule avec son chat',
+    look: { hair: 'bun', build: 0.8, h: 0.88, coat: '#5b5047', pants: '#34302b', coatLen: 0.45, skin: '#b9a693', hairColor: '#d0cac0', female: true, lips: true, top: 'cardigan', shirt: '#7d6f63', glasses: true },
+    pose: 'sit',
+    greet: ['Vous êtes du 3e ? Non… Entrez, entrez, il fait froid dans l\'escalier.', 'Mon chat, Miso, c\'est tout ce qui me reste. Il chasse les rats, lui, au moins.', 'Je ne peux plus descendre. Mes jambes.'],
+    need: {
+      items: { eau: 2 }, label: 'Lui monter de l\'eau',
+      ask: 'De l\'eau… Si vous pouviez me laisser un peu d\'eau. Je n\'ai plus rien depuis mardi.',
+      thanks: 'Que Dieu vous garde. Tenez, la broche de mon mari. Elle ne me sert plus, et vous, vous pourrez l\'échanger.',
+      reward: { bijoux: 1 }, moral: 7
+    },
+    after: ['Revenez me voir. On ne parle plus à personne, ici.', 'Miso vous aime bien. Il n\'aime personne, d\'habitude.'],
+    afterSteal: ['Même vous… Allez-vous-en.']
+  };
+  C.OWNERS.vesna = {
+    text: ' a volé une vieille dame seule dans son appartement.', moral: -10, key: 'stole_old',
+    desc: 'Les affaires de Mme Vesna.', warn: 'Mme Vesna vit seule et ne peut plus descendre. C\'est tout ce qu\'elle a.',
+    furn: 'Un meuble de Mme Vesna. Le démonter, c\'est la voler.'
+  };
+  C.NPCS.petra = {
+    name: 'Petra', title: 'Fille du boulanger',
+    look: { hair: 'shoulder', build: 0.92, h: 0.96, coat: '#6b5f52', pants: '#33302b', coatLen: 0.2, skin: '#b59d86', hairColor: '#5a4332', female: true, lips: true, top: 'cardigan', shirt: '#8b7d6c', scarf: '#8a7a5e' },
+    pose: 'stand',
+    greet: ['Mon père est mort quand le plafond s\'est effondré. Je n\'ai pas pu le sortir de là.', 'Le four marche encore. Il me manque du bois.'],
+    need: {
+      items: { bois: 3 }, label: 'Lui donner du bois pour le four',
+      ask: 'Donnez-moi du bois, et je rallume le four. Il reste un fond de farine : je vous ferai du pain.',
+      thanks: 'Il chauffe… Tenez, pour vous, et gardez la recette de papa. Revenez quand vous voulez.',
+      reward: { conserve: 2, sucre: 1 }, moral: 6
+    },
+    after: ['Ça sent le pain, vous sentez ? Comme avant.', 'Les gens du quartier reviennent un peu. Pour l\'odeur.'],
+    afterSteal: ['Vous aussi ? Prenez tout, alors. Tout.']
+  };
+  C.OWNERS.petra = {
+    text: ' a volé la fille du boulanger.', moral: -8, key: 'stole',
+    desc: 'Les affaires de Petra.', warn: 'Petra a perdu son père dans l\'effondrement. C\'est tout ce qui lui reste.'
+  };
+  C.NPCS.nico = {
+    name: 'Nico', title: 'Gamin caché dans la fosse',
+    look: { hair: 'messy', build: 0.72, h: 0.74, coat: '#5a534a', pants: '#2f2c28', coatLen: 0.05, skin: '#b9a08a', hairColor: '#3b2e24', top: 'hoodie', shirt: '#645b50' },
+    pose: 'sit',
+    greet: ['Me faites pas de mal ! Je me cache ici depuis que papa est parti chercher de l\'eau.', 'Ray, là-haut, il me donne parfois un peu de pain. Il est pas méchant.'],
+    need: {
+      items: { conserve: 1 }, label: 'Lui donner à manger',
+      ask: 'J\'ai faim… J\'ai trouvé des trucs dans la fosse, des pièces. Je vous les donne, contre à manger.',
+      thanks: 'Merci ! Tenez, c\'est tout ce que j\'ai trouvé. Si vous voyez mon papa… il a une veste rouge.',
+      reward: { pieces_meca: 2, composants: 1 }, moral: 6
+    },
+    after: ['Papa va revenir. Il l\'a promis.', 'Faites attention en haut. Des fois, y a des hommes avec des fusils qui passent.']
+  };
+
+  var NOTE = function (o) { return ext({ kind: 'note', w: 30, h: 20 }, o); };
+  var BODY = function (o) { return ext({ kind: 'cache', variant: 'linceul', label: 'Corps sous un drap', w: 90, h: 24 }, o); };
+  var EXTRA = {
+    maison_abandonnee: [
+      NOTE({ key: 'lettre_famille', label: 'Lettre sur la table de nuit', f: 2, x: 1010, title: 'Lettre inachevée',
+        text: 'Chère maman,\nNous partons demain à l\'aube, par la route du sud, avec les Kovač. Papa ne voulait pas laisser la maison, mais les obus tombent maintenant jusqu\'au marché.\nJ\'ai rangé la valise de grand-mère au grenier, derrière les planches. Si tu reviens avant nous, prends-la.\nNous t\'embrassons fort. Ana.',
+        journal: 'Une lettre d\'une famille partie vers le sud. Ils comptaient revenir.' })
+    ],
+    villa: [
+      NOTE({ key: 'journal_industriel', label: 'Journal relié de cuir', book: true, f: 2, x: 1180, title: 'Journal de M. Lindqvist',
+        text: '12 octobre. J\'ai mis l\'argenterie et le fusil de chasse dans le coffre de la cave. Combinaison : la date de naissance d\'Elsa. 0 – 7 – 1 – 4.\n3 novembre. Les voisins sont partis. Les coups de feu se rapprochent chaque nuit.\n9 novembre. Si quelqu\'un lit ceci, c\'est que je ne suis pas revenu. Prenez soin de la maison.',
+        opens: ['coffre_fort'], say: '0-7-1-4… La combinaison du coffre de la cave !', journal: 'Dans le journal de l\'industriel, la combinaison de son coffre-fort.' })
+    ],
+    hopital: [
+      NOTE({ key: 'registre', label: 'Registre des admissions', book: true, f: 3, x: 1000, title: 'Registre des admissions',
+        text: 'Marko P., 34 ans. Éclats, jambe gauche. Amputé. Sorti.\nJana S., 7 ans. Brûlures. Décédée.\nInconnu, env. 50 ans. Balle, thorax. Décédé.\nLuka M., 16 ans. Éclats. Sorti.\nInconnue, env. 30 ans. Enceinte. Tireur, carrefour. Décédée.\n… La page continue. L\'écriture devient de plus en plus lâche.',
+        journal: 'Le registre de l\'hôpital. Trop de lignes qui finissent par « décédé ».' }),
+      BODY({ key: 'corps_morgue1', f: 1, x: 1350, loot: { cigarettes: 1 } }),
+      BODY({ key: 'corps_morgue2', f: 1, x: 1560, color: '#a8a08c', loot: { montre: 1 } })
+    ],
+    ecole: [
+      NOTE({ key: 'dessin', label: 'Dessin d\'enfant', wall: true, dy: 100, f: 2, x: 1880, title: 'Dessin d\'enfant',
+        text: 'Aux crayons de couleur : une maison, un soleil, quatre personnages qui se tiennent la main. Au-dessus, une écriture appliquée : « Quand la guerre sera finie ».\nLe quatrième personnage a été barré.',
+        journal: 'Un dessin d\'enfant. Quatre personnes, dont une barrée.' })
+    ],
+    supermarche: [
+      NOTE({ key: 'liste_bande', label: 'Liste épinglée au mur', wall: true, dy: 100, f: 2, x: 2230, title: 'Liste de la bande',
+        text: 'HÔPITAL — pharmacie. Jeudi.\nÉGLISE — trop de monde. Attendre.\nLES WHITAKER — deux vieux, facile.\nLE GAMIN — son père paiera. Sinon…',
+        journal: 'La bande prépare d\'autres coups : l\'hôpital, les Whitaker…' })
+    ],
+    carrefour: [
+      BODY({ key: 'corps_rue', label: 'Corps d\'un passant', f: 0, x: 1250, loot: { cigarettes: 1, conserve: 1 } }),
+      NOTE({ key: 'carnet_tireur', label: 'Carnet', book: true, f: 3, x: 2560, title: 'Carnet du tireur',
+        text: 'Jour 41. Trois aujourd\'hui. Une femme avec un seau d\'eau. Je ne les compte plus comme des gens.\nJour 44. Le lieutenant dit qu\'on tient le carrefour. Le lieutenant ne sort jamais.\nJour 46. Il y avait un enfant. Je n\'ai pas tiré. Personne ne le saura.',
+        journal: 'Le carnet du tireur. Je n\'arrive pas à le haïr autant que je voudrais.' })
+    ],
+    squat: [
+      NOTE({ key: 'poeme', label: 'Écrit au charbon sur le mur', wall: true, dy: 110, f: 0, x: 900, title: 'Sur le mur',
+        text: 'Au charbon, en grandes lettres : « Ils nous ont pris la ville. Pas les nuits autour du feu. »\nDessous, une dizaine de prénoms. Certains sont entourés.' })
+    ],
+    eglise: [
+      NOTE({ key: 'registre_refugies', label: 'Cahier du père Daniel', book: true, f: 4, x: 1915, title: 'Cahier du père Daniel',
+        text: 'Onze noms, avec pour chacun ce qu\'il lui faut : lait pour le bébé de Rosa, sirop pour Lili, une couverture pour le vieux Tomasz.\nTrois noms sont barrés d\'une petite croix.' })
+    ],
+    chantier: [
+      NOTE({ key: 'plan_chantier', label: 'Panneau du chantier', wall: true, dy: 110, f: 0, x: 300, title: 'Panneau du chantier',
+        text: 'RÉSIDENCE LES TILLEULS — 48 logements. Livraison prévue : printemps 1992.\nPar-dessus, au feutre : « JAMAIS ».' })
+    ],
+    immeuble: [
+      NOTE({ key: 'mot_voisin', label: 'Mot glissé sous la porte', f: 4, x: 1150, title: 'Un mot',
+        text: 'À qui trouvera ce mot : Mme Vesna, au 1er, ne peut plus descendre. Montez-lui de l\'eau si vous pouvez. Elle a un chat. — Le voisin du 3e.',
+        journal: 'Un voisin demande qu\'on monte de l\'eau à Mme Vesna, au 1er.' }),
+      { key: 'vesna', kind: 'npc', npc: 'vesna', f: 2, x: 555, w: 50, h: 70, facing: 1 }
+    ],
+    hotel: [
+      NOTE({ key: 'livre_or', label: 'Livre d\'or', book: true, f: 0, x: 860, title: 'Livre d\'or de l\'Hôtel Europa',
+        text: 'Dernière page : « Merci pour ce séjour merveilleux. La chambre donnait sur le fleuve. Nous reviendrons au printemps. — Famille Novak, 2 mars. »' })
+    ],
+    maison_mitoyenne: [
+      NOTE({ key: 'photo_kowalski', label: 'Photo dans un cadre brisé', wall: true, dy: 96, f: 0, x: 1320, title: 'Une photo',
+        text: 'Les Kowalski, devant cette maison, en été. Le père tient une pastèque, les enfants rient. Au dos : « Août. Le plus beau. »' })
+    ],
+    boulangerie: [
+      NOTE({ key: 'recette', label: 'Recette épinglée près du four', wall: true, dy: 110, f: 0, x: 1230, title: 'Recette',
+        text: 'Pain de seigle de papa Petrović : un kilo de farine, vingt grammes de sel, le levain de la veille. Et de la patience, beaucoup de patience.' }),
+      { key: 'petra', kind: 'npc', npc: 'petra', f: 2, x: 900, w: 40, h: 90, facing: 1 }
+    ],
+    garage: [
+      { key: 'nico', kind: 'npc', npc: 'nico', f: 1, x: 1220, w: 40, h: 56, facing: 1 }
+    ],
+    avant_poste: [
+      NOTE({ key: 'ordres', label: 'Ordres affichés', wall: true, dy: 100, f: 2, x: 1480, title: 'Ordre n° 17',
+        text: 'Tenir le secteur. Aucun civil ne franchit le point de contrôle. Tirer à vue après le couvre-feu.\nEn marge, au crayon : « Ma fille a sept ans aujourd\'hui. »' })
+    ]
+  };
+  Object.keys(EXTRA).forEach(function (id) { if (C.MAPS[id]) C.MAPS[id].objects = C.MAPS[id].objects.concat(EXTRA[id]); });
+  // Les affaires de ceux qu'on croise désormais leur appartiennent
+  function own(id, key, owner) { (C.MAPS[id].objects.filter(function (o) { return o.key === key; })[0] || {}).owner = owner; }
+  own('immeuble', 'chambre2', 'vesna');
+  own('boulangerie', 'logement', 'petra');
 })(window.CQR);

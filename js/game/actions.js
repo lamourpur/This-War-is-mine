@@ -153,6 +153,30 @@
       }
     },
 
+    // Lettre, journal, carnet trouvés dans un lieu : on les lit
+    readnote: {
+      label: 'Lit', inPlace: false, fatigue: 0,
+      dur: function () { return 4; },
+      done: function (s, o) {
+        var first0 = !o.read;
+        o.read = true;
+        if (C.UI && C.UI.dialog) C.UI.dialog(o.title || G().objName(o), '<p class="dialog-text note-text">' + C.util.esc(o.text || '').replace(/\n/g, '<br>') + '</p>', [{ label: 'Refermer' }]);
+        if (first0) {
+          if (C.Explore && C.Explore.active) C.Explore.ev('note', { title: o.title || G().objName(o), line: o.journal });
+          // Ce qu'on y apprend : une combinaison, une clé cachée…
+          (o.opens || []).forEach(function (key) {
+            var t = G().st.objects.filter(function (x) { return x.key === key; })[0];
+            if (!t) return;
+            if (t.kind === 'door') t.open = true; else t.locked = false;
+            C.Nav.computeRegions(); G().markDirty();
+          });
+          if (o.say && C.Explore && C.Explore.active) C.Explore.say(s, o.say, 5);
+          if (o.bio && C.Surv.bio) C.Surv.bio(s, o.bio);
+        }
+        return null;
+      }
+    },
+
     // Trappe de la cave : mène à l'abri souterrain (js/game/cellar.js)
     pry: {
       work: true, label: 'Force la trappe', sound: 'search', fatigue: 4,
@@ -968,6 +992,10 @@
         (o.tools || []).forEach(function (t) {
           m.entries.push(E('Ouvrir : ' + C.ITEMS[t].name.toLowerCase(), costSub(null, t === 'passe_partout' ? 45 : 30), G().count(t) ? null : 'Il faut : ' + C.ITEMS[t].name, go('unlock', { tool: t })));
         });
+        break;
+      case 'note':
+        m.desc = o.read ? 'Déjà lu.' : (o.hint || 'Quelques lignes, écrites à la main.');
+        m.entries.push(E(o.read ? 'Relire' : 'Lire', costSub(null, 4), null, go('readnote')));
         break;
       case 'trapdoor':
         if (o.open) { m.desc = 'La trappe ouverte. Un escalier de pierre descend vers l\'abri.'; break; }
