@@ -124,7 +124,8 @@
       restock: 3,
       say: 'L\'eau, on en a. C\'est la nourriture qui manque, pour les petits.'
     },
-    donate: { items: { conserve: 1 }, alt: { legumes: 1 }, label: 'Donner à manger pour les enfants', thanks: 'Que Dieu vous le rende. Les petits mangeront ce soir.', moral: 5 },
+    donate: { items: { conserve: 1 }, alt: { legumes: 1 }, label: 'Donner à manger pour les enfants', thanks: 'Que Dieu vous le rende. Les petits mangeront ce soir.', moral: 5,
+      reward: { filtre: 1, eau: 2 }, giveLine: 'Prenez de l\'eau, et ce filtre. On en a deux, il en faut bien un pour vous.' },
     afterSteal: ['Vous volez des enfants ? Partez. Partez !']
   };
   C.OWNERS.metro = {

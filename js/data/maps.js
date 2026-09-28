@@ -71,7 +71,8 @@
       greet: ['Soyez en paix. Ici, personne ne vous demandera d\'où vous venez.', 'Nous hébergeons onze personnes. Les vivres s\'épuisent.'],
       donate: {
         items: { conserve: 1 }, alt: { legumes: 2 }, label: 'Faire un don de nourriture',
-        thanks: 'Ce repas nourrira deux enfants ce soir. Merci.', moral: 5
+        thanks: 'Ce repas nourrira deux enfants ce soir. Merci.', moral: 5,
+        reward: { alcool: 1, herbes: 1 }, giveLine: 'Prenez ceci. Le vin de messe… Dieu comprendra. Et les herbes du cloître, pour la fièvre.'
       }
     },
     rosa: {
@@ -108,7 +109,8 @@
       },
       donate: {
         items: { bandage: 1 }, alt: { eau: 2 }, label: 'Faire un don à l\'hôpital',
-        thanks: 'Merci. Chaque bandage compte, ici.', moral: 4
+        thanks: 'Merci. Chaque bandage compte, ici.', moral: 4,
+        reward: { remede: 1 }, giveLine: 'Tenez, un remède que Benny prépare avec les plantes. Pour les vôtres.'
       },
       after: ['Le soldat du rez-de-chaussée va s\'en sortir. Grâce à vous, en partie.', 'Reposez-vous quand vous pouvez. Personne ne le fait jamais.'],
       afterSteal: ['Vous avez pris les médicaments ? Des gens vont mourir cette nuit. Vous comprenez ça ?', 'Sortez. Je ne veux plus vous voir ici.']

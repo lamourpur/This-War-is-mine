@@ -111,13 +111,14 @@
     }
     G().st = est;
 
+    var returned = [];
     map.objects.forEach(function (d) {
       var o = U.copy(d);
       var saved = ls.map[d.key];
       // Gravats déblayés, meuble démonté, habitant tué ou parti. Un habitant
       // effacé sans raison connue (vieille sauvegarde) revient.
       if (saved === 'gone' && !(d.kind === 'guard' && !(ls.gone || {})[d.key])) return;
-      if (saved === 'gone') saved = null;
+      if (saved === 'gone') { saved = null; returned.push(d); delete ls.map[d.key]; }
       if (saved) for (var k in saved) o[k] = saved[k];
       G().spawnObject(o);
     });
@@ -132,6 +133,11 @@
     // Soldats : ronde, vigilance, hostilité mémorisée
     est.objects.forEach(function (o) { if (o.kind === 'guard') C.Combat.init(o, ls); });
 
+    // Habitants revenus : le rapport du matin le dira
+    if (returned.length) {
+      var names = returned.map(function (d) { return C.Combat.whoOf(d); });
+      E.notes.push({ sec: 'back', k: 'info', t: 'Des habitants étaient de retour à : ' + def.name + ' (' + names.filter(function (n, i) { return names.indexOf(n) === i; }).join(', ') + ').' });
+    }
     ls.visits++;
     home.stats.scavenged++;
     var gs = est.objects.filter(function (o) { return o.kind === 'guard'; });
@@ -349,7 +355,7 @@
         case 'peek': add(e.m, 'J\'ai regardé par le trou d\'une serrure' + (e.guards ? ' : des hommes armés, de l\'autre côté.' : e.npcs ? ' : il y avait quelqu\'un.' : '. Personne.')); break;
         case 'caught': add(e.m, cap1(e.who || 'un soldat') + ' m\'a vu' + fe + ' faire. « Voleur ! »', 'bad'); break;
         case 'help': add(e.m, e.name + ' avait besoin de ' + C.itemsText(e.items) + '. Je le lui ai donné.' + (e.reward ? ' En échange : ' + C.itemsText(e.reward) + '.' : ''), 'good'); break;
-        case 'donate': add(e.m, 'J\'ai laissé ' + C.itemsText(e.items) + ' pour ' + e.name + '.', 'good'); break;
+        case 'donate': add(e.m, 'J\'ai laissé ' + C.itemsText(e.items) + ' pour ' + e.name + '.' + (e.reward ? ' On a tenu à me donner quelque chose en retour : ' + C.itemsText(e.reward) + '.' : ''), 'good'); break;
         case 'trade': add(e.m, 'Troc avec ' + e.name + ' : ' + C.itemsText(e.gave) + ' contre ' + C.itemsText(e.got) + '.'); break;
         case 'talk':
           if (talked[e.name]) break;
@@ -500,7 +506,7 @@
     E.ev('help', { name: d.name, items: U.copy(need.items), reward: need.reward ? U.copy(need.reward) : null });
     E.home.stats.helped++;
     var name = d.name;
-    E.notes.push({ t: first(s) + ' a aidé ' + name + ' (' + C.itemsText(need.items) + ').', k: 'good' });
+    E.notes.push({ t: first(s) + ' a aidé ' + name + ' (' + C.itemsText(need.items) + ')' + (need.reward ? '. En remerciement : ' + C.itemsText(need.reward) : need.opens ? ', qui lui a ouvert le passage' : '') + '.', k: 'good' });
     E.effects.push(function () { G().moralAll(need.moral || 5, { good: true, key: 'helped' }); });
     G().log(first(s) + ' a aidé ' + name + '.', 'good');
     if (C.Audio.ready) C.Audio.sfx.pickup();
@@ -513,9 +519,13 @@
     G().removeItems(items);
     ns.donated = (ns.donated || 0) + 1;
     E.say(o, don.thanks, 6);
-    E.ev('donate', { name: d.name, items: U.copy(items) });
+    // On ne donne pas pour rien : la première fois (puis une fois sur trois),
+    // ils partagent ce qu'ils ont en retour
+    var back = don.reward && ns.donated % 3 === 1 ? don.reward : null;
+    if (back) E.giveLater(s, o, back, 'Cadeau de ' + d.name, 3, don.giveLine);
+    E.ev('donate', { name: d.name, items: U.copy(items), reward: back ? U.copy(back) : null });
     E.home.stats.helped++;
-    E.notes.push({ t: first(s) + ' a fait un don à ' + d.name + ' (' + C.itemsText(items) + ').', k: 'good' });
+    E.notes.push({ t: first(s) + ' a fait un don à ' + d.name + ' (' + C.itemsText(items) + ')' + (back ? '. En retour : ' + C.itemsText(back) : '') + '.', k: 'good' });
     E.effects.push(function () { G().moralAll(don.moral || 4, { good: true, key: 'helped' }); });
     if (C.Audio.ready) C.Audio.sfx.pickup();
   };

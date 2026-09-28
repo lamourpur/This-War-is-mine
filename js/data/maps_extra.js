@@ -55,8 +55,8 @@
     need: {
       items: { conserve: 1 }, label: 'Lui donner une conserve',
       ask: 'J\'ai les clés des cuisines, en bas. Une conserve, et je vous ouvre la réserve du bar.',
-      thanks: 'Voilà, c\'est ouvert. Et si les soldats vous gênent : la cage de l\'ascenseur monte jusqu\'aux suites. Personne n\'y pense.',
-      opens: ['porte_cuisines'], moral: 4
+      thanks: 'Voilà, c\'est ouvert. Prenez aussi ces cigarettes, les soldats m\'en donnent pour que je me taise. Et s\'ils vous gênent : la cage de l\'ascenseur monte jusqu\'aux suites. Personne n\'y pense.',
+      opens: ['porte_cuisines'], reward: { cigarettes: 3 }, moral: 4
     },
     after: ['Prenez l\'ascenseur. Enfin… ce qu\'il en reste.', 'Faites attention au lieutenant. Il dort, mais d\'un œil.'],
     afterSteal: ['Quarante ans… et voilà comment ça finit.']

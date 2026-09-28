@@ -27,6 +27,11 @@
   Story.news = function (st, days, text, moral, key) {
     (st.flags.later = st.flags.later || []).push({ day: st.day + days, text: text, moral: moral || 0, key: key || 'refused' });
   };
+  // Quelqu'un qu'on a aidé revient remercier dans « days » jours, avec un
+  // cadeau (ajouté à la réserve ; le rapport du matin le dit, section « back »)
+  Story.thanks = function (st, days, text, items, moral) {
+    (st.flags.later = st.flags.later || []).push({ day: st.day + days, text: text, moral: moral == null ? 3 : moral, key: 'helped', items: items, back: true });
+  };
   // Une étape d'histoire est-elle due aujourd'hui ?
   Story.due = function (st) {
     init(st);
@@ -115,7 +120,8 @@
           G().moralAll(2, { good: true });
           Story.state(ctx.st, 'deserteur').hidden = false;
           Story.news(ctx.st, 2, 'Des gens racontent qu\'un jeune soldat a réussi à passer le fleuve à la nage, de nuit. Peut-être Danny.', 3, 'helped');
-          return 'Danny avale la conserve à même la boîte, vous remercie d\'un signe de tête et disparaît dans les ruines.';
+          G().addItems({ couteau: 1, munitions: 3 });
+          return 'Danny avale la conserve à même la boîte. Avant de disparaître dans les ruines, il pose sur la table son couteau et trois cartouches : « Là où je vais, je n\'en veux plus. » (+1 couteau, +3 munitions)';
         } },
       { label: 'Refuser', run: function (ctx) {
           G().moralAll(-4, { bad: true, key: 'refused' }); ctx.st.stats.refused++;

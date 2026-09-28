@@ -378,11 +378,12 @@
     var p = UI.panel('Jour ' + rep.day, over ? 'Le dernier matin' : 'Ce que la nuit a laissé', { foot: true, noClose: true, wide: true });
     var html = '';
     if (!over) html += '<div class="report-date">' + I(WEATHER_ICON[st.weather.type] || 'cloud') + C.World.weatherLabel(st.weather.type) + ' · ' + st.weather.out + ' °C dehors' + (C.World.isWinter(st) ? ' · hiver' : '') + '</div>';
-    var secs = [['scav', 'Pillage', 'pack'], ['home', 'Au refuge', 'home'], ['people', 'Les survivants', 'moral'], ['market', 'Le marché', 'trade']];
+    var secs = [['back', 'Ils sont revenus', 'door'], ['scav', 'Pillage', 'pack'], ['home', 'Au refuge', 'home'], ['people', 'Les survivants', 'moral'], ['market', 'Le marché', 'trade']];
     var any = false;
     secs.forEach(function (sc) {
       var lines = rep.items.filter(function (i) { return i.sec === sc[0] && i.t; });
-      if (!lines.length) return;
+      // Une nuit sans ligne de pillage garde sa fiche d'expédition
+      if (!lines.length && !(sc[0] === 'scav' && rep.expedition)) return;
       any = true;
       html += '<div class="rep-sec"><h3>' + I(sc[2]) + sc[1] + '</h3>';
       // Photo du lieu pillé (la fiche d'expédition l'intègre déjà)
@@ -391,11 +392,6 @@
       lines.forEach(function (l) { html += '<div class="rep-line ' + l.k + '">' + U.esc(l.t) + '</div>'; });
       html += '</div>';
     });
-    // Nuit sans pillage raconté par des lignes, mais avec une fiche (ex. rien rapporté)
-    if (rep.expedition && !rep.items.some(function (i) { return i.sec === 'scav' && i.t; })) {
-      html = html.replace('<div class="rep-sec">', '<div class="rep-sec"><h3>' + I('pack') + 'Pillage</h3><div class="exp-slot"></div></div><div class="rep-sec">');
-      any = true;
-    }
     if (!any) html += '<div class="rep-line">Une nuit sans histoire. C\'est déjà beaucoup.</div>';
     html += '<div class="rep-sec"><h3>' + I('user') + 'État du groupe</h3><div class="rep-surv"></div></div>';
     p.body.innerHTML = html;

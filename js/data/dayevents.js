@@ -220,7 +220,8 @@
       },
       choices: [
         { label: function (ctx) { return 'Envoyer ' + first(ctx.s) + ' aider'; }, run: function (ctx) {
-            G().sendAway(ctx.s, 'decombres', R().chance(0.5) ? { bandage: 1, conserve: 1 } : {}, 0.15);
+            G().sendAway(ctx.s, 'decombres', R().chance(0.5) ? { bandage: 1, conserve: 1 } : { composants: 2, cigarettes: 2 }, 0.15);
+            C.Story.thanks(ctx.st, 3, 'La femme tirée des décombres par ' + first(ctx.s) + ' est venue remercier, le bras en écharpe. Sa famille a laissé ce qu\'elle a pu sauver', { conserve: 1, eau: 2 }, 3);
             G().moralAll(6, { good: true, key: 'helped' });
             ctx.st.stats.helped++;
             return first(ctx.s) + ' attrape une barre de fer et sort en courant.';
@@ -270,13 +271,15 @@
         { label: function (ctx) { return first(ctx.s) + ' la raccompagne au centre de réfugiés'; }, reqFn: function (ctx) { return !!ctx.s && G().present().length >= 2; }, reqText: 'au moins deux survivants au refuge',
           run: function (ctx) {
             G().sendAway(ctx.s, 'enfant', {}, 0.1);
+            C.Story.thanks(ctx.st, 3, 'Les parents de la fillette perdue ont retrouvé le refuge. Ils sont venus remercier ' + first(ctx.s) + ' et ont laissé ce qu\'ils pouvaient', { conserve: 1, sucre: 2 }, 4);
             G().moralAll(10, { good: true, key: 'helped' });
             ctx.st.stats.helped++;
             return first(ctx.s) + ' prend la petite main dans la sienne. Ils partent vers le centre-ville.';
           } },
         { label: 'Lui donner à manger et lui indiquer le chemin', req: { conserve: 1 }, run: function (ctx) {
             G().removeItems({ conserve: 1 });
-            G().moralAll(4, { good: true, key: 'helped' });
+            G().moralAll(4, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            C.Story.thanks(ctx.st, 4, 'La fillette perdue a retrouvé ses parents. Sa mère a déposé un petit sac devant la porte, avec un dessin', { sucre: 1, herbes: 1 }, 3);
             return 'Elle serre la boîte contre elle et s\'éloigne, toute petite dans la rue en ruine.';
           } },
         { label: 'Fermer la porte', run: function (ctx) {
@@ -384,7 +387,9 @@
       cond: function () { return G().countBuilt('collector') > 0 && G().count('eau') >= 2; },
       text: function () { return 'Une famille de l\'immeuble voisin a vu votre collecteur. Le père tend deux bouteilles vides.<br>« Il n\'y a plus d\'eau aux bornes. Juste de quoi tenir aujourd\'hui… »'; },
       choices: [
-        { label: 'Leur donner 2 eau', req: { eau: 2 }, run: function (ctx) { G().removeItems({ eau: 2 }); G().moralAll(5, { good: true, key: 'helped' }); ctx.st.stats.helped++; return 'Ils repartent en serrant les bouteilles pleines. « On n\'oubliera pas. »'; } },
+        { label: 'Leur donner 2 eau', req: { eau: 2 }, run: function (ctx) { G().removeItems({ eau: 2 }); G().moralAll(5, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+          C.Story.thanks(ctx.st, 3, 'La famille d\'à côté n\'a pas oublié l\'eau : le père est venu avec ce qu\'il avait récupéré sur les chantiers', { composants: 3, bois: 2 });
+          return 'Ils repartent en serrant les bouteilles pleines. « On n\'oubliera pas. »'; } },
         { label: 'Refuser', run: function (ctx) { G().moralAll(-3, { bad: true, key: 'refused' }); ctx.st.stats.refused++; return 'Le père hoche la tête et s\'en va. Il y a des jours où il faut penser aux siens.'; } }
       ]
     }

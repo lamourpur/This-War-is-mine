@@ -24,19 +24,21 @@
       if (s.alive && s.away) {
         s.x = 240; s.f = 1; s.y = C.FLOORS[1].y;
         var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution' }[s.away] || '';
+        var fe = s.look && s.look.female ? 'e' : '', hurt = false;
         if (s.awayRisk && C.R.chance(s.awayRisk)) {
           s.wound = Math.min(95, s.wound + C.R.int(15, 30));
-          back.push(first(s) + ' est rentré(e) blessé(e) : dehors, les rues ne pardonnent pas.');
+          hurt = true;
         }
-        if (s.awayReward && Object.keys(s.awayReward).length) { G().addItems(s.awayReward); back.push(first(s) + ' est rentré(e) ' + where + ' avec : ' + itemsText(s.awayReward) + '.'); }
-        else back.push(first(s) + ' est rentré(e) ' + where + ', les mains vides mais le cœur un peu moins lourd.');
+        var line = first(s) + ' est rentré' + fe + ' ' + where + (hurt ? ', blessé' + fe + ' : dehors, les rues ne pardonnent pas' : '');
+        if (s.awayReward && Object.keys(s.awayReward).length) { G().addItems(s.awayReward); back.push({ t: line + '. Rapporté : ' + itemsText(s.awayReward) + '.', k: hurt ? 'bad' : 'good' }); }
+        else back.push({ t: line + (hurt ? '.' : ', les mains vides mais le cœur un peu moins lourd.'), k: hurt ? 'bad' : 'good' });
         s.awayRisk = 0;
         s.away = null;
         s.awayReward = null;
         s.fatigue = Math.min(100, s.fatigue + 20);
       }
     });
-    back.forEach(function (t) { G().log(t, 'good'); });
+    back.forEach(function (b) { G().log(b.t, b.k); });
     st.nightNotes = back;
     if (C.UI) {
       C.UI.buildCards();
@@ -100,7 +102,8 @@
     var st = G().st, R = C.R;
     var rep = [];            // { t, k, sec }
     function add(sec, t, k) { rep.push({ sec: sec, t: t, k: k || 'info' }); }
-    (st.nightNotes || []).forEach(function (t) { add('people', t, 'good'); });
+    // Partis en mission dans la journée, rentrés à la tombée de la nuit
+    (st.nightNotes || []).forEach(function (b) { if (typeof b === 'string') add('back', b, 'good'); else add('back', b.t, b.k); });
     st.nightNotes = null;
 
     var present = G().present();
@@ -163,7 +166,7 @@
       // Le pilleur n'est pas revenu de l'exploration
       var dz = plan.scav.explored.exp && G().surv(plan.scav.explored.exp.sid), dfe = dz && dz.look && dz.look.female ? 'e' : '';
       if (plan.merc) dfe = plan.merc.female ? 'e' : '';
-      plan.scav.explored.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, dfe), nt.k); });
+      plan.scav.explored.notes.forEach(function (nt) { add(nt.sec || 'scav', nt.t.replace(/\(e\)/g, dfe), nt.k); });
       st.pendingExp = plan.scav.explored.exp;
       st.lastScavLoc = plan.scav.loc;
       if (plan.merc && C.Merc) C.Merc.lost(st);
@@ -171,23 +174,26 @@
     } else if (!scav && plan.merc && plan.scav && plan.scav.explored) {
       // Le mercenaire rentre : le butin va à la réserve, il garde son équipement
       var mx = plan.scav.explored, mfe = plan.merc.female ? 'e' : '';
-      mx.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, mfe), nt.k); });
+      mx.notes.forEach(function (nt) { add(nt.sec || 'scav', nt.t.replace(/\(e\)/g, mfe), nt.k); });
       st.pendingExp = mx.exp;
       st.lastScavLoc = plan.scav.loc;
       var brought = C.Merc.back(st, mx.items);
       G().addItems(brought, true);
-      add('scav', plan.merc.name.split(' ')[0] + ' a déposé le butin au refuge et s\'en est allé' + mfe + ' avant le jour.', 'info');
+      var mN = 0; for (var mk in brought) mN += brought[mk];
+      add('back', plan.merc.name.split(' ')[0] + ', ' + (mfe ? 'la' : 'le') + ' mercenaire, est revenu' + mfe + ' de : ' + C.locationDef(plan.scav.loc).name + '. Il' + (mfe ? 'le' : '') + ' a déposé ' + (mN ? mN + ' objet' + (mN > 1 ? 's' : '') + ' au refuge' : 'son sac vide') + ' et s\'en est allé' + mfe + ' avant le jour.', 'info');
       reserved = {};
     } else if (scav && plan.scav && plan.scav.loc && plan.scav.explored) {
       // Exploration jouée : le sac revient tel quel (l'équipement est déjà parti avec)
       // La fiche d'expédition (carnet, butin) est montrée dans le rapport ; ici, les conséquences
       var ex = plan.scav.explored;
       var xfe = scav.look && scav.look.female ? 'e' : '';
-      ex.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, xfe), nt.k); });
+      ex.notes.forEach(function (nt) { add(nt.sec || 'scav', nt.t.replace(/\(e\)/g, xfe), nt.k); });
       st.pendingExp = ex.exp;
       var gotN = ex.exp ? ex.exp.gainedN : 0;
       if (gotN >= 6) { C.Mood.think(scav, 'scav_good'); scav.moral = Math.min(100, scav.moral + 2); }
       var lname = C.locationDef(plan.scav.loc).name;
+      add('back', first(scav) + ' est rentré' + xfe + ' de : ' + lname + (ex.exp && ex.exp.reason === 'time' ? ', au lever du jour' : '') +
+        (gotN ? ', avec ' + gotN + ' objet' + (gotN > 1 ? 's' : '') + ' dans le sac' : ', les mains vides') + (ex.exp && ex.exp.wound >= 20 ? ' — blessé' + xfe + '.' : '.'), gotN ? 'good' : 'info');
       C.Surv.bio(scav, 'Nuit dehors : ' + lname + '. ' + (gotN >= 6 ? 'Je suis rentré(e) le sac plein.' : gotN ? 'Je n\'ai rapporté que ' + gotN + ' objet' + (gotN > 1 ? 's' : '') + '.' : 'Je suis rentré(e) les mains vides.') + (ex.exp && ex.exp.wound >= 20 ? ' Blessé(e), mais vivant(e).' : ''));
       st.lastScavLoc = plan.scav.loc;
       scav.fatigue = Math.min(100, scav.fatigue + 35);
@@ -435,7 +441,10 @@
     if (st.flags.later && st.flags.later.length) {
       st.flags.later = st.flags.later.filter(function (lt) {
         if (st.day < lt.day) return true;
-        add('people', lt.text, lt.moral >= 0 ? 'good' : 'bad');
+        if (lt.items && Object.keys(lt.items).length) {
+          G().addItems(lt.items, true);
+          add('back', lt.text + ' (' + itemsText(lt.items) + ')', 'good');
+        } else add(lt.back ? 'back' : 'people', lt.text, lt.moral >= 0 ? 'good' : 'bad');
         G().moralAll(lt.moral, lt.moral >= 0 ? { good: true, key: lt.key } : { bad: true, key: lt.key });
         return false;
       });
@@ -445,6 +454,7 @@
       st.flags.gifts = st.flags.gifts.filter(function (gf) {
         if (st.day < gf.day) return true;
         G().addItems(gf.items, true);
+        add('back', (gf.text || 'On a trouvé un cadeau déposé devant la porte') + ' (' + itemsText(gf.items) + ').', 'good');
         return false;
       });
     }

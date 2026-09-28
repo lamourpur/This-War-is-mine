@@ -8,6 +8,7 @@
   'use strict';
 
   function G() { return C.Game; }
+  function U() { return C.util; }
 
   C.VISITORS = {
     // Franko : il repasse tous les 3 à 5 jours (C.Market), jamais tiré au hasard
@@ -68,10 +69,12 @@
       choices: [
         { label: 'Donner 2 eau', req: { eau: 2 }, run: function (ctx) {
             G().removeItems({ eau: 2 }); G().moralAll(9, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            C.Story.thanks(ctx.st, 3, 'Les deux enfants de l\'autre jour sont revenus, avec leur mère, debout cette fois. Ils ont laissé devant la porte ce qu\'ils avaient trouvé dans les ruines', { composants: 2, bois: 2 });
             return 'Les enfants repartent en serrant les bouteilles contre eux. Un sourire, enfin.';
           } },
         { label: 'Donner 1 conserve', req: { conserve: 1 }, run: function (ctx) {
             G().removeItems({ conserve: 1 }); G().moralAll(9, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            C.Story.thanks(ctx.st, 3, 'Les deux enfants de l\'autre jour sont revenus, avec leur mère, debout cette fois. Ils ont laissé devant la porte ce qu\'ils avaient trouvé dans les ruines', { composants: 2, bois: 2 });
             return '« Merci… merci ! » Ils disparaissent en courant.';
           } },
         { label: 'Refuser', run: function (ctx) {
@@ -91,12 +94,14 @@
         { label: 'Donner un bandage', req: { bandage: 1 }, run: function (ctx) {
             G().removeItems({ bandage: 1 }); G().moralAll(10, { good: true, key: 'helped' }); ctx.st.stats.helped++;
             var gift = C.R.chance(0.5);
-            if (gift) { G().addItems({ cigarettes: 2 }); return 'Il vous remercie et vous laisse, gêné, deux cigarettes. « C\'est tout ce que j\'ai. »'; }
-            return 'Il vous remercie mille fois et repart en boitant.';
+            if (gift) { G().addItems({ cigarettes: 2 }); return 'Il vous remercie et vous laisse, gêné, deux cigarettes. « C\'est tout ce que j\'ai. » (+2 cigarettes)'; }
+            C.Story.thanks(ctx.st, 2, 'L\'homme blessé à qui vous aviez donné un bandage est repassé, debout. Il a laissé quelque chose sur le pas de la porte, avec un mot : « Merci »', { munitions: 3, cigarettes: 1 });
+            return 'Il vous remercie mille fois et repart en boitant. « Je reviendrai. »';
           } },
         { label: 'Donner des médicaments', req: { medicaments: 1 }, run: function (ctx) {
             G().removeItems({ medicaments: 1 }); G().moralAll(12, { good: true, key: 'helped' }); ctx.st.stats.helped++;
-            return '« Que Dieu vous garde. » Il repart un peu plus droit.';
+            C.Story.thanks(ctx.st, 3, 'L\'homme blessé est revenu, guéri. Il fait partie de la milice du quartier, et il n\'a pas oublié', { munitions: 5, cigarettes: 2 });
+            return '« Que Dieu vous garde. Je ne l\'oublierai pas. » Il repart un peu plus droit.';
           } },
         { label: 'Refuser', run: function (ctx) {
             G().moralAll(-6, { bad: true, key: 'refused' }); ctx.st.stats.refused++;
@@ -163,6 +168,7 @@
           } },
         { label: 'Lui donner 1 médicaments', req: { medicaments: 1 }, run: function (ctx) {
             G().removeItems({ medicaments: 1 }); G().moralAll(12, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            C.Story.thanks(ctx.st, 3, 'La vieille dame est revenue : son mari est guéri. Elle a glissé sa broche sous la porte, avec un mot : « Vous l\'avez méritée »', { bijoux: 1, cafe: 1 });
             return '« Gardez vos bijoux », dites-vous. Elle pleure. Vous aussi, un peu.';
           } },
         { label: 'Donner 1 remède aux plantes', req: { remede: 1 }, run: function (ctx) {
@@ -267,9 +273,9 @@
         return 'Une jeune femme serre un nourrisson emmailloté contre sa poitrine. Il ne pleure même plus.<br>« Je n\'ai plus de lait. Plus rien. Juste un peu de sucre, ou de l\'eau… n\'importe quoi. »';
       },
       choices: [
-        { label: 'Donner 2 sucre', req: { sucre: 2 }, run: function (ctx) { G().removeItems({ sucre: 2 }); G().moralAll(9, { good: true, key: 'helped' }); ctx.st.stats.helped++; return 'Elle fond en larmes. « Il va pouvoir tenir. Merci. Merci. »'; } },
-        { label: 'Donner 1 conserve', req: { conserve: 1 }, run: function (ctx) { G().removeItems({ conserve: 1 }); G().moralAll(8, { good: true, key: 'helped' }); ctx.st.stats.helped++; return 'Elle cache la conserve sous son manteau, comme un trésor, et disparaît dans la rue.'; } },
-        { label: 'Donner 2 eau', req: { eau: 2 }, run: function (ctx) { G().removeItems({ eau: 2 }); G().moralAll(6, { good: true, key: 'helped' }); ctx.st.stats.helped++; return '« C\'est déjà ça. Que Dieu vous garde. »'; } },
+        { label: 'Donner 2 sucre', req: { sucre: 2 }, run: function (ctx) { G().removeItems({ sucre: 2 }); G().moralAll(9, { good: true, key: 'helped' }); ctx.st.stats.helped++; C.Story.thanks(ctx.st, 4, 'La jeune mère est repassée avec son bébé, qui a repris des joues. Elle a laissé ce qu\'elle a pu', { herbes: 2, bandage: 1 }); return 'Elle fond en larmes. « Il va pouvoir tenir. Merci. Merci. »'; } },
+        { label: 'Donner 1 conserve', req: { conserve: 1 }, run: function (ctx) { G().removeItems({ conserve: 1 }); G().moralAll(8, { good: true, key: 'helped' }); ctx.st.stats.helped++; C.Story.thanks(ctx.st, 4, 'La jeune mère est repassée avec son bébé, qui a repris des joues. Elle a laissé ce qu\'elle a pu', { herbes: 2, bandage: 1 }); return 'Elle cache la conserve sous son manteau, comme un trésor, et disparaît dans la rue.'; } },
+        { label: 'Donner 2 eau', req: { eau: 2 }, run: function (ctx) { G().removeItems({ eau: 2 }); G().moralAll(6, { good: true, key: 'helped' }); ctx.st.stats.helped++; C.Story.thanks(ctx.st, 4, 'La jeune mère est repassée avec son bébé, qui a repris des joues. Elle a laissé ce qu\'elle a pu', { herbes: 2, bandage: 1 }); return '« C\'est déjà ça. Que Dieu vous garde. »'; } },
         { label: 'Refuser', run: function (ctx) {
             G().moralAll(-7, { bad: true, key: 'refused' }); ctx.st.stats.refused++;
             return 'Elle ne dit rien. Elle berce l\'enfant et s\'en va. Personne n\'ose parler pendant un long moment.';
@@ -287,13 +293,13 @@
       choices: [
         { label: 'Donner des médicaments', req: { medicaments: 1 }, run: function (ctx) {
             G().removeItems({ medicaments: 1 }); G().moralAll(9, { good: true, key: 'helped' }); ctx.st.stats.helped++;
-            C.Story.news(ctx.st, 3, 'Le père au garçon fiévreux est repassé dans la rue : son fils est sauvé. Il a laissé des légumes devant la porte. (+2 légumes)', 4, 'helped');
-            (ctx.st.flags.gifts = ctx.st.flags.gifts || []).push({ day: ctx.st.day + 3, items: { legumes: 2 } });
+            C.Story.thanks(ctx.st, 3, 'Le père au garçon fiévreux est repassé : son fils est sauvé. Il a laissé devant la porte des légumes de son jardin', { legumes: 3 }, 4);
             return 'Il vous embrasse les mains. « Je n\'oublierai jamais. Jamais. »';
           } },
         { label: 'Donner un remède aux plantes', req: { remede: 1 }, run: function (ctx) {
             G().removeItems({ remede: 1 }); G().moralAll(5, { good: true, key: 'helped' }); ctx.st.stats.helped++;
             if (C.R.chance(0.4)) C.Story.news(ctx.st, 3, 'On a vu passer un petit cercueil dans la rue. Le remède n\'a pas suffi.', -6, 'death_neighbor');
+            else C.Story.thanks(ctx.st, 3, 'Le père au garçon fiévreux est repassé : le remède a suffi, de justesse. Il a laissé des légumes devant la porte', { legumes: 2 }, 3);
             return '« C\'est tout ce que vous avez ? … Merci quand même. »';
           } },
         { label: 'Refuser', run: function (ctx) {
@@ -341,7 +347,11 @@
         { label: 'Échanger', reqFn: function (ctx) { return G().has(ctx.v.data.offer.want); }, reqText: function (ctx) { return C.util.costText(ctx.v.data.offer.want); },
           run: function (ctx) { G().removeItems(ctx.v.data.offer.want); G().addItems(ctx.v.data.offer.give); G().moralAll(2, { good: true }); return 'Le gamin repart en sautillant.'; } },
         { label: 'Lui donner sans rien prendre', reqFn: function (ctx) { return G().has(ctx.v.data.offer.want); }, reqText: function (ctx) { return C.util.costText(ctx.v.data.offer.want); },
-          run: function (ctx) { G().removeItems(ctx.v.data.offer.want); G().moralAll(7, { good: true, key: 'helped' }); ctx.st.stats.helped++; return '« Pour de vrai ? » Il garde sa trouvaille et s\'enfuit en riant.'; } },
+          run: function (ctx) {
+            G().removeItems(ctx.v.data.offer.want); G().moralAll(7, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            C.Story.thanks(ctx.st, 2, 'Le gamin aux trouvailles est repassé en courant. Il a posé un paquet sur le pas de la porte, « pour vous, de la part de ma sœur »', U().copy(ctx.v.data.offer.give), 2);
+            return '« Pour de vrai ? » Il garde sa trouvaille et s\'enfuit en riant.';
+          } },
         { label: 'Le renvoyer', run: function () { return 'Il hausse les épaules. « Tant pis pour vous ! »'; } }
       ]
     },
@@ -355,7 +365,9 @@
         return 'Un vieil homme, les lèvres bleues, grelotte sous trois manteaux.<br>« Je brûle mes livres depuis une semaine. Il ne m\'en reste plus. Un peu de bois… juste de quoi passer la nuit. »';
       },
       choices: [
-        { label: 'Donner 3 bois', req: { bois: 3 }, run: function (ctx) { G().removeItems({ bois: 3 }); G().moralAll(8, { good: true, key: 'helped' }); ctx.st.stats.helped++; return 'Il serre les bûches contre lui comme on serre un enfant. « Vous êtes bons. »'; } },
+        { label: 'Donner 3 bois', req: { bois: 3 }, run: function (ctx) { G().removeItems({ bois: 3 }); G().moralAll(8, { good: true, key: 'helped' }); ctx.st.stats.helped++;
+            C.Story.thanks(ctx.st, 3, 'Le vieil homme transi a passé l\'hiver, grâce à votre bois. Il est venu frapper à la porte avec la dernière bouteille de sa cave et un livre qu\'il n\'a pas voulu brûler', { alcool: 1, livres: 1 });
+            return 'Il serre les bûches contre lui comme on serre un enfant. « Vous êtes bons. »'; } },
         { label: 'Refuser', run: function (ctx) {
             G().moralAll(-6, { bad: true, key: 'refused' }); ctx.st.stats.refused++;
             if (C.R.chance(0.5)) C.Story.news(ctx.st, 1, 'Le vieil homme qui demandait du bois a été retrouvé mort de froid dans son appartement.', -7, 'neighbor_dead');
