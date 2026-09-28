@@ -1216,7 +1216,43 @@
   };
 
   // ============================================================ lumières
+  // Rectangle d'une fenêtre (mêmes règles que windows())
+  function winRect(wn) {
+    var F = fl(wn.f);
+    var ww = wn.w || (wn.vent ? 50 : 62), wh = wn.h || (wn.vent ? 18 : 74);
+    var wy = wn.y != null ? wn.y : wn.vent ? F.ceil + 8 : F.ceil + 28;
+    if (wn.kind === 'shop') { ww = wn.w || 220; wh = wn.h || 120; wy = wn.y != null ? wn.y : F.y - wh - 24; }
+    if (wn.kind === 'stained' || wn.kind === 'arch') { ww = wn.w || 56; wh = wn.h || 150; wy = wn.y != null ? wn.y : F.ceil + 40; }
+    if (wn.kind === 'round') { ww = wh = wn.w || 90; wy = wn.y != null ? wn.y : F.ceil + 30; }
+    return { x: wn.x - ww / 2, y: wy, w: ww, h: wh, floorY: F.y };
+  }
+  // Clair de lune qui tombe des fenêtres jusqu'au sol (sous un vitrail : coloré)
+  function moonlight(ctx, m) {
+    var k = m.mood && m.mood.moon != null ? m.mood.moon : 0.09;
+    if (k <= 0) return;
+    (C.WINDOWS || []).forEach(function (wn) {
+      if (wn.boarded) return;
+      var R = winRect(wn), a = k * 1.7 * (wn.vent ? 0.5 : 1);
+      var drop = Math.min(R.floorY - R.y - R.h, 260), slant = 0.45 * (drop + R.h);
+      var poly = [[R.x, R.y], [R.x + R.w, R.y], [R.x + R.w + slant, R.floorY], [R.x + slant * 0.55, R.floorY]];
+      if (R.floorY - (R.y + R.h) > 300) poly = [[R.x, R.y], [R.x + R.w, R.y], [R.x + R.w + 120, R.y + R.h + 260], [R.x + 60, R.y + R.h + 260]];
+      var g = ctx.createLinearGradient(0, R.y, 0, poly[2][1]);
+      var col = wn.kind === 'stained' || wn.kind === 'round' ? '190,150,120' : '150,170,210';
+      g.addColorStop(0, 'rgba(' + col + ',' + a + ')'); g.addColorStop(1, 'rgba(' + col + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); poly.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fill();
+      // Flaque de lumière au sol
+      if (R.floorY - (R.y + R.h) <= 300) {
+        var cx = (poly[2][0] + poly[3][0]) / 2, rw = (poly[2][0] - poly[3][0]) / 2 + 20;
+        var g2 = ctx.createRadialGradient(cx, R.floorY - 2, 2, cx, R.floorY - 2, rw);
+        g2.addColorStop(0, 'rgba(' + col + ',' + a * 0.9 + ')'); g2.addColorStop(1, 'rgba(' + col + ',0)');
+        ctx.fillStyle = g2; ctx.fillRect(cx - rw, R.floorY - 14, rw * 2, 16);
+      }
+    });
+  }
+
   L.drawLights = function (ctx, m, t) {
+    moonlight(ctx, m);
     (m.lights || []).forEach(function (li, i) {
       var fl2 = 0.85 + Math.sin(t * 7 + i) * 0.08 + Math.sin(t * 13.3 + i) * 0.05;
       if (li.kind === 'brasero') {

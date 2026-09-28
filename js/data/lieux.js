@@ -14,7 +14,27 @@
   function ext(a, b) { var o = {}, k; for (k in a) o[k] = a[k]; for (k in b) o[k] = b[k]; return o; }
   // Pièce (mur du fond) : raccourci
   function R(x0, x1, top, bottom, wall, more) { return ext({ x0: x0, x1: x1, top: top, bottom: bottom, wall: wall }, more || {}); }
-  function keepNpcs(id, map) { map.id = id; map.layout = true; map.zones = map.zones || []; return map; }
+  // Ambiance de chaque lieu : voile de nuit (dark), teinte en lumière douce
+  // (tint), clair de lune par les fenêtres (moon)
+  var MOODS = {
+    maison_abandonnee: { dark: 0.2, tint: 'rgba(80,105,150,0.35)', moon: 0.11 },
+    vieux_couple: { dark: 0.15, tint: 'rgba(190,130,60,0.38)', moon: 0.06 },
+    maison_mitoyenne: { dark: 0.18, tint: 'rgba(150,120,90,0.3)', moon: 0.1 },
+    villa: { dark: 0.18, tint: 'rgba(190,110,60,0.36)', moon: 0.09 },
+    eglise: { dark: 0.17, tint: 'rgba(170,135,80,0.32)', moon: 0.16 },
+    hopital: { dark: 0.17, tint: 'rgba(90,150,135,0.34)', moon: 0.08 },
+    ecole: { dark: 0.18, tint: 'rgba(110,125,150,0.3)', moon: 0.1 },
+    hotel: { dark: 0.16, tint: 'rgba(190,140,80,0.34)', moon: 0.08 },
+    supermarche: { dark: 0.17, tint: 'rgba(110,150,90,0.36)', moon: 0.08 },
+    boulangerie: { dark: 0.17, tint: 'rgba(185,130,70,0.34)', moon: 0.1 },
+    garage: { dark: 0.19, tint: 'rgba(160,110,60,0.3)', moon: 0.07 },
+    immeuble: { dark: 0.19, tint: 'rgba(90,110,160,0.34)', moon: 0.12 },
+    squat: { dark: 0.2, tint: 'rgba(200,110,50,0.34)', moon: 0.07 },
+    chantier: { dark: 0.2, tint: 'rgba(95,115,150,0.32)', moon: 0.1 },
+    carrefour: { dark: 0.2, tint: 'rgba(85,105,145,0.34)', moon: 0.1 },
+    avant_poste: { dark: 0.19, tint: 'rgba(110,130,90,0.32)', moon: 0.08 }
+  };
+  function keepNpcs(id, map) { map.id = id; map.layout = true; map.zones = map.zones || []; map.mood = map.mood || MOODS[id]; return map; }
 
   // Hauteurs usuelles d'une maison (sol à 820)
   var G = 820, RDC = { y: 820, ceil: 656 }, ET1 = { y: 640, ceil: 476 }, ET2 = { y: 460, ceil: 296 }, CAVE = { y: 985, ceil: 848 };

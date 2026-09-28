@@ -1069,7 +1069,7 @@
   // ============================================================ lumière
   // Voile d'obscurité selon l'heure (allégé : l'ambiance reste, on voit ce qu'on fait)
   function darkness(st) {
-    if (st.phase === 'explore') return 0.26;
+    if (st.phase === 'explore') { var md = LAY() && LAY().mood; return md && md.dark != null ? md.dark : 0.2; }
     if (st.phase !== 'day') return 0.38;
     var m = st.minute;
     if (m < 7 * 60) return U.lerp(0.26, 0.02, (m - 360) / 60);
@@ -1082,9 +1082,9 @@
     if (st.phase === 'explore' && C.Explore.s) {
       var s0 = C.Explore.s, lf = 0.92 + Math.sin(t * 5.3) * 0.04;
       var lx = s0.x + (s0.facing || 1) * 18, ly = s0.y - 60;
-      var lg = ctx.createRadialGradient(lx, ly, 6, lx, ly, 170 * lf);
-      lg.addColorStop(0, 'rgba(255,225,170,0.26)'); lg.addColorStop(0.5, 'rgba(230,190,130,0.1)'); lg.addColorStop(1, 'rgba(200,160,100,0)');
-      ctx.fillStyle = lg; ctx.fillRect(lx - 180, ly - 180, 360, 360);
+      var lg = ctx.createRadialGradient(lx, ly, 6, lx, ly, 210 * lf);
+      lg.addColorStop(0, 'rgba(255,225,170,0.28)'); lg.addColorStop(0.5, 'rgba(230,190,130,0.11)'); lg.addColorStop(1, 'rgba(200,160,100,0)');
+      ctx.fillStyle = lg; ctx.fillRect(lx - 220, ly - 220, 440, 440);
     }
     if (st.phase === 'explore' && C.Combat) C.Combat.drawLights(ctx, t);
     // Lueurs propres au plan (braseros, projecteurs, lampes)
@@ -1438,6 +1438,9 @@
     // (plan large : le voile couvre aussi ce qui dépasse du plan)
     var vx = LAY() ? -6000 : -20, vw = LAY() ? W + 12000 : W + 40, vh = LAY() ? H + 6000 : H + 40;
     if (dk > 0) { ctx.fillStyle = 'rgba(8,9,16,' + dk + ')'; ctx.fillRect(vx, vx, vw, vh - vx); }
+    // Teinte propre au lieu (chaude, froide, verdâtre…)
+    var mood = st.phase === 'explore' && LAY() && LAY().mood;
+    if (mood && mood.tint) { ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = mood.tint; ctx.fillRect(vx, vx, vw, vh - vx); ctx.globalCompositeOperation = 'source-over'; }
     ctx.globalCompositeOperation = 'lighter';
     drawLights(ctx, st, t);
     drawShellGlows(ctx, st);
