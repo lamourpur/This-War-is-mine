@@ -25,7 +25,8 @@
     rust: 'grayscale(0.55) sepia(0.25) contrast(1.15)',
     planks2: 'grayscale(0.6) sepia(0.25) contrast(1.1)',
     corrugated: 'grayscale(0.6) sepia(0.25) contrast(1.15)', shutter: 'grayscale(0.6) sepia(0.25) contrast(1.15)',
-    factoryBrick: 'grayscale(0.6) sepia(0.2) contrast(1.1)', grate: 'grayscale(0.6) sepia(0.25) contrast(1.2)',
+    factoryBrick: 'grayscale(0.6) sepia(0.2) contrast(1.1)',
+    paintedConcrete: 'grayscale(1) sepia(0.15) contrast(1.05) brightness(1.05)', grate: 'grayscale(0.6) sepia(0.25) contrast(1.2)',
     _: 'grayscale(0.8) sepia(0.12) contrast(1.15)'
   };
   var SIZE = 512;

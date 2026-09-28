@@ -1,0 +1,659 @@
+/* =========================================================
+   Lieux d'exploration à géométrie libre (js/render/layout.js)
+   Chaque lieu a sa propre silhouette, comme dans This War of Mine :
+   maison avec jardin et combles, église à nef haute et clocher, hôpital
+   en ailes, supermarché tout en largeur, immeuble éventré… Les clés des
+   objets (key) sont celles des anciens plans : l'état mémorisé des lieux
+   déjà visités (st.locations[id].map) reste valable.
+   Chargé après maps.js, maps_ville.js, maps_extra.js et military.js :
+   remplace leurs plans, garde leurs personnages (C.NPCS, C.OWNERS).
+   ========================================================= */
+(function (C) {
+  'use strict';
+
+  function ext(a, b) { var o = {}, k; for (k in a) o[k] = a[k]; for (k in b) o[k] = b[k]; return o; }
+  // Pièce (mur du fond) : raccourci
+  function R(x0, x1, top, bottom, wall, more) { return ext({ x0: x0, x1: x1, top: top, bottom: bottom, wall: wall }, more || {}); }
+  function keepNpcs(id, map) { map.id = id; map.layout = true; map.zones = map.zones || []; return map; }
+
+  // Hauteurs usuelles d'une maison (sol à 820)
+  var G = 820, RDC = { y: 820, ceil: 656 }, ET1 = { y: 640, ceil: 476 }, ET2 = { y: 460, ceil: 296 }, CAVE = { y: 985, ceil: 848 };
+
+  // ============================================================ Maison abandonnée
+  // Un pavillon au bout d'un jardin en friche : un salon, une cuisine, une
+  // chambre, les combles sous un toit crevé, une cave. Au fond du jardin,
+  // la cabane à outils. Un homme blessé (Hank) s'est réfugié à l'étage.
+  C.MAPS.maison_abandonnee = keepNpcs('maison_abandonnee', {
+    theme: { dirt: 0.3 },
+    world: { W: 2360, H: 1010, left: 40, right: 2320, ground: G, walkMin: 60, walkMax: 2300, view: 1400 },
+    start: { f: 0, x: 110 },
+    floors: [
+      { name: 'Jardin et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 2300, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 600, out: true, tex: 'rubble' }, { x0: 600, x1: 1700, tex: 'floor' }, { x0: 1700, x1: 2300, out: true, tex: 'rubble' }] },
+      { name: 'Cave', y: 985, ceil: 848, x0: 612, x1: 1688, thick: 25, tex: 'concrete' },
+      { name: 'Étage', y: 640, ceil: 476, x0: 612, x1: 1688, tex: 'floor' },
+      { name: 'Combles', y: 460, ceil: 340, x0: 640, x1: 1660, tex: 'planks' }
+    ],
+    rooms: [
+      R(600, 880, 656, G, 'wallpaper', { tone: '#857f72', paper: 12, skirt: true, frames: 1, bulbs: [740] }),
+      R(880, 1260, 656, G, 'wallpaper', { tone: '#8a8274', paper: 10, skirt: true, frames: 2, bulbs: [1070] }),
+      R(1260, 1700, 656, G, 'peeling', { tone: '#807a6c', wainscot: { h: 50, tone: '#8a877e' }, bulbs: [1480] }),
+      R(600, 1040, 476, 640, 'wallpaper', { tone: '#88806f', paper: 14, skirt: true, frames: 2 }),
+      R(1040, 1700, 476, 640, 'peeling', { tone: '#7f7a6d', frames: 1, bulbs: [1300], breach: [{ x: 1560, y: 540, r: 38 }] }),
+      R(600, 1700, 340, 460, 'planks', { tone: '#5f574b', attic: 'both' }),
+      R(600, 1700, 848, 985, 'brickPlaster', { tone: '#6a665d', border: true }),
+      R(2000, 2260, 704, G, 'planks2', { tone: '#6b6153' })
+    ],
+    shells: [
+      { x0: 600, x1: 1700, top: 340, bottom: 985, wall: 'brickPlaster', roof: 'tiles', roofH: 130, hole: [1240, 1480], chimneys: [880],
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } },
+      { x0: 2000, x1: 2260, top: 704, bottom: G, wall: 'planks2', roof: 'gable', roofH: 46, thick: 10, gaps: { left: [{ y0: 712, y1: G }] } }
+    ],
+    things: [
+      { kind: 'tree', f: 0, x: 300, h: 300, back: true },
+      { kind: 'wall', f: 0, x: 150, w: 400, h: 42, rails: true, back: true },
+      { kind: 'car', f: 0, x: 440, burnt: true },
+      { kind: 'tree', f: 0, x: 1790, h: 240, back: true, trunk: 11 },
+      { kind: 'crater', f: 0, x: 1900, w: 120 }
+    ],
+    lights: [{ kind: 'candle', x: 1130, y: 604, r: 110 }],
+    backdrop: { far: 'city', mid: ['houses', 'trees'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 860 }, b: { f: 2, x: 690 } },
+      { a: { f: 0, x: 1640 }, b: { f: 1, x: 1500 } },
+      { a: { f: 2, x: 1180 }, b: { f: 0, x: 1180 }, type: 'hole', w: 70 },
+      { a: { f: 2, x: 1610 }, b: { f: 3, x: 1610 }, type: 'ladder' }
+    ],
+    walls: [{ f: 0, x: 880 }, { f: 0, x: 1260 }, { f: 2, x: 1040 }, { f: 1, x: 1150 }],
+    windows: [
+      { f: 0, x: 1000 }, { f: 0, x: 1540, broken: true }, { f: 2, x: 880 }, { f: 2, x: 1250, boarded: true }, { f: 2, x: 1420, broken: true },
+      { f: 1, x: 900, vent: true }, { f: 1, x: 1350, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 520, p: 'trashbag', h: 30 }, { f: 0, x: 1590, p: 'wooden_bucket_01', h: 24 }, { f: 0, x: 1060, p: 'cardboard_box_01', h: 28, shade: 0.3 },
+      { f: 1, x: 1250, p: 'wooden_barrels_01', h: 30 }, { f: 1, x: 700, p: 'propane_tank', h: 40 },
+      { f: 2, x: 1500, p: 'old_tyre', h: 24 }, { f: 3, x: 900, p: 'Television_01', h: 28 }, { f: 3, x: 700, p: 'cardboard_box_01', h: 26, shade: 0.3 },
+      { f: 0, x: 2210, p: 'wooden_ladder', h: 90 }, { f: 0, x: 1720, p: 'old_tyre', h: 24 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 110, w: 44, h: 104 },
+      // Rez-de-chaussée : entrée, salon, cuisine
+      { key: 'gravats1', kind: 'rubble', f: 0, x: 730, w: 96, h: 42, work: 90, loot: { bois: 3, composants: 3 } },
+      { key: 'commode', kind: 'furniture', variant: 'commode', f: 0, x: 950, w: 64, h: 60, work: 60, loot: { bois: 3, composants: 1 } },
+      { key: 'fauteuil', kind: 'armchair', f: 0, x: 1070, deco: true },
+      { key: 'poele', kind: 'stove', f: 0, x: 1320, deco: true },
+      { key: 'cuisine', kind: 'cache', variant: 'armoire', f: 0, x: 1405, w: 58, h: 112, loot: { conserve: 2, eau: 2, sucre: 1 } },
+      { key: 'placard', kind: 'cache', variant: 'etagere', f: 0, x: 1490, w: 70, h: 104, loot: { legumes: 3, eau: 1, herbes: 2 } },
+      // Cave
+      { key: 'caisse_cave', kind: 'cache', variant: 'caisse', f: 1, x: 1340, w: 78, h: 48, loot: { bois: 4, composants: 4, pieces_meca: 1 } },
+      { key: 'porte_cave', kind: 'door', f: 1, x: 1150, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'gravats_cave', kind: 'rubble', f: 1, x: 1000, w: 84, h: 38, work: 60, loot: { composants: 2, pieces_meca: 1 } },
+      { key: 'coffre', kind: 'cache', variant: 'coffre', f: 1, x: 800, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_meca: 2, conserve: 2, cafe: 1 } },
+      // Étage : chambre, bureau (Hank)
+      { key: 'chambre', kind: 'cache', variant: 'armoire', f: 2, x: 800, w: 66, h: 112, loot: { livres: 3, bandage: 1, cigarettes: 2 } },
+      { key: 'lit', kind: 'bed', f: 2, x: 940, deco: true },
+      { key: 'hank', kind: 'npc', npc: 'hank', f: 2, x: 1090, w: 90, h: 30, facing: 1 },
+      { key: 'biblio', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 1350, w: 70, h: 124, work: 90, loot: { bois: 4, livres: 4 } },
+      // Combles (par l'échelle), coupés en deux par l'éboulement du toit
+      { key: 'valise', kind: 'cache', variant: 'valise', f: 3, x: 1300, w: 62, h: 36, loot: { montre: 1, bijoux: 1, cigarettes: 1 } },
+      { key: 'caisse_grenier', kind: 'cache', variant: 'caisse', f: 3, x: 1460, w: 78, h: 48, loot: { composants: 3, pieces_elec: 1 } },
+      { key: 'eboulis', kind: 'rubble', f: 3, x: 1150, w: 104, h: 118, block: true, work: 150, loot: { bois: 3, composants: 2 } },
+      { key: 'grenier_g', kind: 'cache', variant: 'etagere', f: 3, x: 800, w: 70, h: 104, loot: { livres: 2, filtre: 1 } },
+      // Fond du jardin : bois mort, cabane à outils
+      { key: 'bois_jardin', kind: 'rubble', label: 'Tas de bois mort', f: 0, x: 1790, w: 96, h: 40, work: 45, loot: { bois: 4 } },
+      { key: 'cabanon', kind: 'cache', variant: 'caisse', label: 'Caisse de la cabane', f: 0, x: 2130, w: 78, h: 48, loot: { composants: 2, engrais: 1, pieces_meca: 1 } }
+    ]
+  });
+
+  // ============================================================ Maison des Whitaker (vieux couple)
+  // Une maison de ville étroite, encore tenue : rideaux, cadres, bougies.
+  // Côté rue un banc et un réverbère, derrière une courette close de murs.
+  C.MAPS.vieux_couple = keepNpcs('vieux_couple', {
+    theme: { dirt: 0.12 },
+    world: { W: 1900, H: 1010, left: 40, right: 1860, ground: G, walkMin: 60, walkMax: 1840, view: 1300 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Rue et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 1840, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 420, out: true }, { x0: 420, x1: 1360, tex: 'floor' }, { x0: 1360, x1: 1840, out: true, tex: 'concrete' }] },
+      { name: 'Cave', y: 985, ceil: 848, x0: 432, x1: 1348, thick: 25, tex: 'concrete' },
+      { name: 'Étage', y: 640, ceil: 476, x0: 432, x1: 1348, tex: 'floor', carpet: [560, 880] },
+      { name: 'Grenier', y: 460, ceil: 340, x0: 470, x1: 1310, tex: 'planks' }
+    ],
+    rooms: [
+      R(420, 900, 656, G, 'wallpaper', { tone: '#8d8577', paper: 10, skirt: true, frames: 3, clock: { x: 680, y: 700 } }),
+      R(900, 1360, 656, G, 'plaster', { tone: '#8a8577', wainscot: { h: 56, tone: '#8f8c83' }, bulbs: [1120] }),
+      R(420, 940, 476, 640, 'wallpaper', { tone: '#8b8273', paper: 14, skirt: true, frames: 2, crucifix: { x: 880, y: 500, s: 0.5 } }),
+      R(940, 1360, 476, 640, 'wallpaper', { tone: '#858075', paper: 8, skirt: true, frames: 1 }),
+      R(420, 1360, 340, 460, 'planks', { tone: '#5f574b', attic: 'both' }),
+      R(420, 1360, 848, 985, 'brickPlaster', { tone: '#6c675d', border: true })
+    ],
+    shells: [
+      { x0: 420, x1: 1360, top: 340, bottom: 985, wall: 'brickPlaster', roof: 'tiles', roofH: 120, chimneys: [1200],
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } }
+    ],
+    things: [
+      { kind: 'bench', f: 0, x: 250 },
+      { kind: 'wall', f: 0, x: 1360, w: 470, h: 150, tex: 'brick', back: true },
+      { kind: 'tree', f: 0, x: 1700, h: 200, back: true, trunk: 9 }
+    ],
+    lights: [{ kind: 'candle', x: 760, y: 772, r: 120 }, { kind: 'candle', x: 820, y: 596, r: 90 }],
+    backdrop: { far: 'city', mid: ['houses'], near: ['trees'] },
+    stairs: [
+      { a: { f: 0, x: 1300 }, b: { f: 2, x: 1140 } },
+      { a: { f: 0, x: 1040 }, b: { f: 1, x: 1210 } },
+      { a: { f: 2, x: 520 }, b: { f: 3, x: 660 } }
+    ],
+    walls: [{ f: 0, x: 900 }, { f: 2, x: 940 }],
+    windows: [
+      { f: 0, x: 560 }, { f: 0, x: 1150 }, { f: 2, x: 620 }, { f: 2, x: 1060 },
+      { f: 3, x: 900, y: 372, w: 44, h: 40 }, { f: 1, x: 700, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 160, p: 'street_lamp_01', h: 200 }, { f: 0, x: 360, p: 'metal_trash_can', h: 34 },
+      { f: 0, x: 1450, p: 'compost_bags', h: 24 }, { f: 0, x: 1560, p: 'wooden_bucket_01', h: 24 }, { f: 0, x: 1790, p: 'wooden_barrels_01', h: 30 },
+      { f: 0, x: 850, p: 'wooden_stool_01', h: 28 }, { f: 1, x: 800, p: 'wooden_barrels_01', h: 30 },
+      { f: 2, x: 1010, p: 'vintage_oil_lamp', h: 28 }, { f: 3, x: 1250, p: 'vintage_suitcase', h: 24 }, { f: 3, x: 1050, p: 'cardboard_box_01', h: 28, shade: 0.3 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'fauteuil', kind: 'armchair', f: 0, x: 510, deco: true },
+      { key: 'arthur', kind: 'npc', npc: 'arthur', f: 0, x: 620, w: 40, h: 90, facing: -1 },
+      { key: 'radio', kind: 'radio', f: 0, x: 770, deco: true },
+      { key: 'poele', kind: 'stove', f: 0, x: 970, deco: true },
+      { key: 'cuisine', kind: 'cache', variant: 'armoire', f: 0, x: 1180, w: 58, h: 112, owner: 'whitaker', loot: { conserve: 3, legumes: 3, cafe: 2 } },
+      { key: 'debarras', kind: 'cache', variant: 'caisse', f: 1, x: 600, w: 78, h: 48, loot: { bois: 4, composants: 3 } },
+      { key: 'conserves', kind: 'cache', variant: 'etagere', f: 1, x: 1000, w: 70, h: 104, owner: 'whitaker', loot: { eau: 4, sucre: 2, conserve: 1 } },
+      { key: 'lit', kind: 'bed', f: 2, x: 700, deco: true },
+      { key: 'edith', kind: 'npc', npc: 'edith', f: 2, x: 700, w: 90, h: 44, facing: 1, onBed: true },
+      { key: 'coffret', kind: 'cache', variant: 'coffre', f: 2, x: 850, w: 60, h: 48, owner: 'whitaker', loot: { bijoux: 3, medicaments: 1 } },
+      { key: 'biblio', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 1280, w: 70, h: 124, work: 90, owner: 'whitaker', loot: { bois: 4, livres: 5 } },
+      { key: 'gravats', kind: 'rubble', f: 3, x: 900, w: 96, h: 42, work: 90, loot: { bois: 2, composants: 2 } },
+      { key: 'malle', kind: 'cache', variant: 'valise', f: 3, x: 1150, w: 62, h: 36, loot: { livres: 2, tabac: 1 } }
+    ]
+  });
+
+  // ============================================================ Maison mitoyenne
+  // Deux maisons collées. À l'ouest, les Morrow, toit intact. À l'est, la
+  // moitié des Kowalski, soufflée par un obus : plus de toit, un plancher
+  // effondré qu'on escalade par les gravats, un mur de cave à percer.
+  C.MAPS.maison_mitoyenne = keepNpcs('maison_mitoyenne', {
+    theme: { dirt: 0.3 },
+    world: { W: 2120, H: 1010, left: 40, right: 2080, ground: G, walkMin: 60, walkMax: 2060, view: 1400 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Rue et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 2060, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 380, out: true }, { x0: 380, x1: 1800, tex: 'floor' }, { x0: 1800, x1: 2060, out: true, tex: 'rubble' }] },
+      { name: 'Caves', y: 985, ceil: 848, x0: 392, x1: 1788, thick: 25, tex: 'concrete' },
+      { name: 'Étage', y: 640, ceil: 476, x0: 392, x1: 1500, tex: 'floor', broken: ['right'] },
+      { name: 'Grenier des Morrow', y: 460, ceil: 340, x0: 420, x1: 1050, tex: 'planks' }
+    ],
+    rooms: [
+      R(380, 1080, 656, G, 'wallpaper', { tone: '#8a8274', paper: 11, skirt: true, frames: 2, bulbs: [700] }),
+      R(1080, 1800, 656, G, 'wallpaper', { tone: '#7b7568', paper: 14, frames: 1, breach: [{ x: 1640, y: 710, r: 50 }] }),
+      R(380, 1080, 476, 640, 'wallpaper', { tone: '#8b8271', paper: 9, skirt: true, frames: 2, posters: [{ x: 600, y: 540, t: 'Nina\n7 ans', rot: -0.06 }] }),
+      R(1080, 1500, 476, 640, 'peeling', { tone: '#77726a', breach: [{ x: 1300, y: 520, r: 44 }] }),
+      R(380, 1080, 340, 460, 'planks', { tone: '#5f574b', attic: 'both' }),
+      R(380, 1800, 848, 985, 'brickPlaster', { tone: '#6a665d', border: true })
+    ],
+    shells: [
+      { x0: 380, x1: 1080, top: 340, bottom: 985, wall: 'brickPlaster', roof: 'tiles', roofH: 110, chimneys: [1000], right: false,
+        gaps: { left: [{ y0: 702, y1: G }] } },
+      { x0: 1080, x1: 1800, top: 476, bottom: 985, wall: 'brickPlaster', roof: 'ruin', left: false,
+        gaps: { right: [{ y0: 470, y1: G }] } }
+    ],
+    things: [
+      { kind: 'car', f: 0, x: 240, color: '#59574f' },
+      { kind: 'barricade', f: 0, x: 1900, w: 110 },
+      { kind: 'crater', f: 0, x: 2010, w: 90 }
+    ],
+    lights: [{ kind: 'candle', x: 560, y: 598, r: 100 }],
+    backdrop: { far: 'city', mid: ['houses', 'trees'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 1000 }, b: { f: 2, x: 840 } },
+      { a: { f: 0, x: 860 }, b: { f: 1, x: 720 } },
+      { a: { f: 0, x: 1720 }, b: { f: 2, x: 1470 }, type: 'debris' },
+      { a: { f: 2, x: 470 }, b: { f: 3, x: 470 }, type: 'ladder' }
+    ],
+    walls: [{ f: 0, x: 1080 }, { f: 2, x: 1080 }],
+    windows: [
+      { f: 0, x: 560 }, { f: 0, x: 1240, broken: true }, { f: 2, x: 700 }, { f: 2, x: 1180, broken: true },
+      { f: 3, x: 760, y: 372, w: 44, h: 40 }, { f: 1, x: 560, vent: true }, { f: 1, x: 1400, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 700, p: 'wooden_stool_01', h: 28 }, { f: 0, x: 1760, p: 'cardboard_box_01', h: 30 }, { f: 0, x: 330, p: 'metal_trash_can', h: 34 },
+      { f: 1, x: 500, p: 'wooden_barrels_01', h: 30 }, { f: 2, x: 790, p: 'vintage_oil_lamp', h: 28 }, { f: 3, x: 900, p: 'vintage_suitcase', h: 24 },
+      { f: 0, x: 1400, p: 'Television_01', h: 26 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'cuisine_morrow', kind: 'cache', variant: 'armoire', label: 'Cuisine des Morrow', f: 0, x: 450, w: 58, h: 112, owner: 'morrow', loot: { conserve: 2, legumes: 2, eau: 2 } },
+      { key: 'ed', kind: 'npc', npc: 'ed', f: 0, x: 580, w: 40, h: 90, facing: 1 },
+      { key: 'poele', kind: 'stove', f: 0, x: 760, deco: true },
+      { key: 'gravats_salon', kind: 'rubble', f: 0, x: 1190, w: 96, h: 42, work: 90, loot: { bois: 3, composants: 2 } },
+      { key: 'salon_kowalski', kind: 'cache', variant: 'commode', label: 'Commode des Kowalski', f: 0, x: 1500, w: 64, h: 60, loot: { livres: 2, bijoux: 1, cigarettes: 1 } },
+      { key: 'cave_morrow', kind: 'cache', variant: 'etagere', label: 'Conserves des Morrow', f: 1, x: 560, w: 70, h: 104, owner: 'morrow', loot: { conserve: 2, sucre: 1, engrais: 1 } },
+      { key: 'mur_cave', kind: 'rubble', label: 'Mur mitoyen fissuré', f: 1, x: 1080, w: 104, h: 128, block: true, work: 120, loot: { bois: 2, composants: 3 } },
+      { key: 'cave_kowalski', kind: 'cache', variant: 'coffre', label: 'Malle des Kowalski', f: 1, x: 1400, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_elec: 2, medicaments: 1, munitions: 4, alcool: 1 } },
+      { key: 'lit_nina', kind: 'bed', f: 2, x: 560, deco: true },
+      { key: 'nina', kind: 'npc', npc: 'nina', f: 2, x: 560, w: 90, h: 44, facing: 1, onBed: true },
+      { key: 'armoire_nina', kind: 'furniture', variant: 'armoire', f: 2, x: 700, w: 58, h: 112, work: 60, owner: 'morrow', loot: { bois: 3 } },
+      { key: 'chambre_kowalski', kind: 'cache', variant: 'armoire', label: 'Chambre éventrée', f: 2, x: 1200, w: 58, h: 112, loot: { bandage: 1, livres: 2, tabac: 1 } },
+      { key: 'grenier', kind: 'cache', variant: 'valise', label: 'Grenier', f: 3, x: 760, w: 62, h: 36, loot: { composants: 2, pieces_meca: 1, bois: 2 } }
+    ]
+  });
+
+  // ============================================================ Villa en ruine (bandits)
+  // La villa d'un industriel : parc clos d'une grille, hall sur deux niveaux
+  // et escalier d'honneur, salon où les pillards ont allumé un feu, cave à
+  // vin voûtée et coffre-fort, piscine vide sur la terrasse.
+  C.MAPS.villa = keepNpcs('villa', {
+    theme: { dirt: 0.2 },
+    world: { W: 2600, H: 1010, left: 40, right: 2560, ground: G, walkMin: 60, walkMax: 2540, view: 1450 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Parc et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 2540, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 560, out: true, tex: 'rubble' }, { x0: 560, x1: 2000, tex: 'floor' }, { x0: 2000, x1: 2540, out: true, tex: 'concrete' }] },
+      { name: 'Cave à vin', y: 985, ceil: 848, x0: 572, x1: 1988, thick: 25, tex: 'concrete' },
+      { name: 'Étage', y: 640, ceil: 476, x0: 900, x1: 1988, tex: 'floor', carpet: [1450, 1900, '#5a3a33'] },
+      { name: 'Combles', y: 460, ceil: 340, x0: 610, x1: 1950, tex: 'planks' }
+    ],
+    rooms: [
+      R(560, 900, 476, G, 'plaster', { tone: '#8e887b', frames: 2, clock: { x: 730, y: 510 }, skirt: true }),
+      R(900, 1400, 656, G, 'wallpaper', { tone: '#8a8172', paper: 9, skirt: true, frames: 3 }),
+      R(1400, 2000, 656, G, 'plaster', { tone: '#858176', wainscot: { h: 60, tone: '#8e8b82' }, bulbs: [1700] }),
+      R(900, 1400, 476, 640, 'wallpaper', { tone: '#857c6c', paper: 12, skirt: true, frames: 2 }),
+      R(1400, 2000, 476, 640, 'wallpaper', { tone: '#8a8171', paper: 16, skirt: true, frames: 2 }),
+      R(560, 2000, 340, 460, 'planks', { tone: '#5f574b', attic: 'both' }),
+      R(560, 2000, 848, 985, 'brick', { tone: '#665f55', vault: 210, spring: 26, border: true })
+    ],
+    shells: [
+      { x0: 560, x1: 2000, top: 340, bottom: 985, wall: 'plaster', roof: 'tiles', roofH: 150, hole: [1480, 1720], chimneys: [700, 1860], tone: '#43342d',
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } }
+    ],
+    things: [
+      { kind: 'wall', f: 0, x: 170, w: 380, h: 56, tex: 'brickPlaster', rails: true, back: true },
+      { kind: 'tree', f: 0, x: 330, h: 320, back: true },
+      { kind: 'tree', f: 0, x: 2420, h: 260, back: true, trunk: 12 },
+      { kind: 'crater', f: 0, x: 2230, w: 260 },
+      { kind: 'bench', f: 0, x: 2440 }
+    ],
+    lights: [{ kind: 'brasero', x: 1250, y: 790, r: 200 }, { kind: 'candle', x: 1620, y: 596, r: 90 }],
+    backdrop: { far: 'city', mid: ['houses', 'trees'], near: ['trees'] },
+    stairs: [
+      { a: { f: 0, x: 640 }, b: { f: 2, x: 912 } },
+      { a: { f: 0, x: 1940 }, b: { f: 1, x: 1800 } },
+      { a: { f: 2, x: 1950 }, b: { f: 3, x: 1800 } }
+    ],
+    walls: [{ f: 0, x: 900 }, { f: 0, x: 1400 }, { f: 2, x: 1400 }, { f: 1, x: 1100 }],
+    windows: [
+      { f: 0, x: 780, kind: 'arch', y: 520, w: 56, h: 170 }, { f: 0, x: 1150, kind: 'arch', y: 676, w: 50, h: 110, shutters: true },
+      { f: 0, x: 1700, broken: true }, { f: 2, x: 1150, kind: 'arch', y: 496, w: 50, h: 110, shutters: true }, { f: 2, x: 1700, kind: 'arch', y: 496, w: 50, h: 110, broken: true },
+      { f: 3, x: 1100, kind: 'round', y: 356, w: 56 }, { f: 1, x: 1500, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 440, p: 'covered_car', h: 62 }, { f: 0, x: 1080, p: 'wine_bottles_01', h: 18 }, { f: 0, x: 1350, p: 'vintage_oil_lamp', h: 30 },
+      { f: 0, x: 2120, p: 'metal_trash_can', h: 34 }, { f: 1, x: 1250, p: 'wine_bottles_01', h: 20 }, { f: 1, x: 950, p: 'wooden_barrels_01', h: 32 },
+      { f: 2, x: 1860, p: 'vintage_suitcase', h: 26 }, { f: 3, x: 700, p: 'Television_01', h: 28 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      // Hall et salon
+      { key: 'recoin_hall', kind: 'hide', f: 0, x: 830, w: 46, h: 108 },
+      { key: 'fauteuil', kind: 'armchair', f: 0, x: 990, deco: true },
+      { key: 'garde_salon', kind: 'guard', type: 'bandit_arme', f: 0, x: 1150, facing: -1, attitude: 'hostile', group: 'pillards', lookBack: 8 },
+      { key: 'buffet', kind: 'cache', variant: 'armoire', label: 'Buffet du salon', f: 0, x: 1330, w: 58, h: 112, loot: { alcool: 1, conserve: 2 } },
+      { key: 'cuisine', kind: 'cache', variant: 'etagere', label: 'Cuisine', f: 0, x: 1600, w: 70, h: 104, loot: { conserve: 2, viande: 2, cafe: 1 } },
+      // Cave à vin
+      { key: 'recoin_cave', kind: 'hide', f: 1, x: 1650, w: 46, h: 108 },
+      { key: 'cave_vins', kind: 'cache', variant: 'etagere', label: 'Cave à vins', f: 1, x: 1400, w: 70, h: 104, loot: { alcool: 1, cafe: 1 } },
+      { key: 'porte_coffre', kind: 'door', f: 1, x: 1100, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'coffre_fort', kind: 'cache', variant: 'coffre', label: 'Coffre-fort de l\'industriel', f: 1, x: 800, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 4, fusil_pompe: 1, munitions: 6 } },
+      // Étage : bibliothèque, chambre du maître
+      { key: 'bibliotheque', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 1050, w: 70, h: 124, work: 90, loot: { bois: 3, livres: 5 } },
+      { key: 'recoin_etage', kind: 'hide', f: 2, x: 1350, w: 46, h: 108 },
+      { key: 'rodeur', kind: 'guard', type: 'bandit', f: 2, x: 1500, facing: -1, attitude: 'hostile', group: 'pillards', patrol: [1000, 1900] },
+      { key: 'lit_maitre', kind: 'bed', f: 2, x: 1620, deco: true },
+      { key: 'chambre', kind: 'cache', variant: 'coffre', label: 'Coffret à bijoux', f: 2, x: 1790, w: 60, h: 48, loot: { bijoux: 2, cafe: 1 } },
+      // Combles : le butin et un pillard qui dort
+      { key: 'grenier', kind: 'cache', variant: 'valise', label: 'Malles du grenier', f: 3, x: 800, w: 62, h: 36, loot: { livres: 2, pieces_elec: 2 } },
+      { key: 'dormeur', kind: 'guard', type: 'bandit', f: 3, x: 1200, facing: 1, attitude: 'hostile', group: 'pillards', sleep: true },
+      { key: 'butin_pillards', kind: 'cache', variant: 'caisse', label: 'Butin des pillards', f: 3, x: 1460, w: 78, h: 48, loot: { bois: 4, conserve: 2, alcool: 1 } }
+    ]
+  });
+
+  // ============================================================ Église Sainte-Marie
+  // Parvis, clocher-porche (tribune puis échelle jusqu'aux cloches), nef
+  // haute et voûtée aux vitraux soufflés, crypte sous le chœur, sacristie
+  // et salle paroissiale où dorment les réfugiés du père Daniel.
+  C.MAPS.eglise = keepNpcs('eglise', {
+    theme: { dirt: 0.2, church: true },
+    world: { W: 2200, H: 1010, left: 40, right: 2160, ground: G, walkMin: 60, walkMax: 2140, view: 1450 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Parvis et nef', y: G, ceil: 656, x0: 60, x1: 2088, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 360, out: true }, { x0: 360, x1: 2100, tex: 'tiles' }] },
+      { name: 'Crypte', y: 985, ceil: 848, x0: 712, x1: 1688, thick: 25, tex: 'concrete' },
+      { name: 'Tribune', y: 560, ceil: 400, x0: 372, x1: 900, tex: 'planks' },
+      { name: 'Chambre des cloches', y: 330, ceil: 190, x0: 374, x1: 686, tex: 'planks' },
+      { name: 'Salle paroissiale', y: 640, ceil: 476, x0: 1712, x1: 2088, tex: 'floor' }
+    ],
+    rooms: [
+      R(360, 700, 400, G, 'brickPlaster', { tone: '#7d776b', skirt: true }),
+      R(360, 700, 190, 400, 'brickPlaster', { tone: '#6f695e', bell: { x: 450, y: 204, s: 0.8 } }),
+      R(700, 1700, 260, G, 'plaster', { tone: '#8f897b', vault: 250, spring: 130, crucifix: { x: 1450, y: 480, s: 1.3 },
+        signs: [{ t: 'PAIX AUX HOMMES', x: 1060, y: 300, size: 22, color: 'rgba(222,212,190,0.3)' }] }),
+      R(1700, 2100, 656, G, 'plaster2', { tone: '#827c70', frames: 1, skirt: true }),
+      R(1700, 2100, 476, 640, 'wallpaper', { tone: '#857e70', paper: 12, skirt: true, posters: [{ x: 1960, y: 540, t: 'CHORALE\nJEUDI', rot: 0.05 }] }),
+      R(700, 1700, 848, 985, 'brick', { tone: '#625c52', vault: 200, spring: 24, border: true })
+    ],
+    shells: [
+      { x0: 360, x1: 700, top: 190, bottom: G, wall: 'brickPlaster', roof: 'gable', roofH: 140, cross: true,
+        gaps: { left: [{ y0: 690, y1: G }], right: [{ y0: 690, y1: G }, { y0: 400, y1: 560 }] } },
+      { x0: 700, x1: 1700, top: 260, bottom: 985, wall: 'brickPlaster', roof: 'gable', roofH: 150, left: false,
+        gaps: { right: [{ y0: 690, y1: G }] } },
+      { x0: 1700, x1: 2100, top: 476, bottom: G, wall: 'plaster2', roof: 'tiles', roofH: 80, left: false, hole: [1960, 2080] }
+    ],
+    things: [
+      { kind: 'tree', f: 0, x: 200, h: 260, back: true },
+      { kind: 'bench', f: 0, x: 260 }
+    ],
+    lights: [{ kind: 'brasero', x: 540, y: 790, r: 190 }, { kind: 'candle', x: 1420, y: 736, r: 120 }, { kind: 'candle', x: 1900, y: 598, r: 100 }],
+    backdrop: { far: 'city', mid: ['steeples', 'houses'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 860 }, b: { f: 2, x: 690 } },
+      { a: { f: 2, x: 420 }, b: { f: 3, x: 420 }, type: 'ladder' },
+      { a: { f: 0, x: 1640 }, b: { f: 1, x: 1500 } },
+      { a: { f: 0, x: 2040 }, b: { f: 4, x: 1860 } }
+    ],
+    walls: [{ f: 1, x: 1000 }],
+    windows: [
+      { f: 0, x: 820, kind: 'stained', y: 330, w: 56, h: 190 }, { f: 0, x: 1080, kind: 'stained', y: 330, w: 56, h: 190, broken: true },
+      { f: 0, x: 1320, kind: 'stained', y: 330, w: 56, h: 190 }, { f: 0, x: 1580, kind: 'stained', y: 330, w: 56, h: 190, broken: true },
+      { f: 3, x: 470, kind: 'arch', y: 210, w: 40, h: 80 }, { f: 2, x: 530, kind: 'round', y: 410, w: 64 },
+      { f: 0, x: 1900 }, { f: 4, x: 1780, broken: true }, { f: 1, x: 1300, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 420, p: 'wooden_crate_02', h: 24 }, { f: 0, x: 2070, p: 'wooden_bucket_01', h: 24 }, { f: 0, x: 1780, p: 'plastic_bottle_gallon', h: 20 },
+      { f: 4, x: 2050, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 1, x: 1180, p: 'wooden_barrels_01', h: 30 }, { f: 2, x: 820, p: 'wooden_ladder', h: 90 },
+      { f: 3, x: 640, p: 'old_tyre', h: 20 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'sal', kind: 'npc', npc: 'sal', f: 0, x: 600, w: 50, h: 70, facing: 1 },
+      // Nef
+      { key: 'banc1', kind: 'pew', f: 0, x: 960, w: 110, h: 40, deco: true },
+      { key: 'banc2', kind: 'pew', f: 0, x: 1110, w: 110, h: 40, deco: true },
+      { key: 'banc3', kind: 'pew', f: 0, x: 1260, w: 110, h: 40, deco: true },
+      { key: 'autel', kind: 'altar', f: 0, x: 1440, w: 100, h: 60, deco: true },
+      { key: 'daniel', kind: 'npc', npc: 'daniel', f: 0, x: 1550, w: 40, h: 90, facing: -1 },
+      // Sacristie et salle paroissiale
+      { key: 'sacristie', kind: 'cache', variant: 'armoire', f: 0, x: 1820, w: 58, h: 112, owner: 'eglise', loot: { conserve: 3, eau: 4, alcool: 1 } },
+      { key: 'rosa', kind: 'npc', npc: 'rosa', f: 4, x: 1780, w: 50, h: 70, facing: 1 },
+      { key: 'lili', kind: 'npc', npc: 'lili', f: 4, x: 1860, w: 60, h: 24, facing: -1 },
+      { key: 'bibliotheque', kind: 'cache', variant: 'etagere', f: 4, x: 2000, w: 70, h: 104, loot: { livres: 4, herbes: 2 } },
+      // Crypte
+      { key: 'crypte', kind: 'cache', variant: 'caisse', f: 1, x: 1250, w: 78, h: 48, loot: { bois: 3, engrais: 2, composants: 2 } },
+      { key: 'porte_crypte', kind: 'door', f: 1, x: 1000, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'tronc', kind: 'cache', variant: 'coffre', f: 1, x: 820, w: 60, h: 48, owner: 'eglise', loot: { bijoux: 2, conserve: 2 } },
+      // Clocher
+      { key: 'caisse_clocher', kind: 'cache', variant: 'caisse', f: 2, x: 780, w: 78, h: 48, loot: { bois: 3, composants: 2 } },
+      { key: 'gravats_clocher', kind: 'rubble', label: 'Poutres effondrées', f: 3, x: 520, w: 90, h: 118, block: true, work: 150, loot: { bois: 3, composants: 3 } },
+      { key: 'cachette', kind: 'cache', variant: 'valise', f: 3, x: 640, w: 62, h: 36, loot: { diamants: 1, cigarettes: 2 } }
+    ]
+  });
+
+  // ============================================================ Hôpital de campagne
+  // Un bâtiment de béton sur trois niveaux, cage d'escalier à droite : la
+  // salle commune (blessés), la pharmacie, le bloc à l'étage, un service
+  // abandonné au 2e, le toit où flotte le drap à croix rouge. Dans la cour,
+  // l'ambulance et la tente de tri.
+  var HOP = { wall: 'plaster', wain: { h: 70, tone: '#8d8c86', grid: 16 } };
+  C.MAPS.hopital = keepNpcs('hopital', {
+    theme: { dirt: 0.14, hospital: true },
+    world: { W: 2460, H: 1010, left: 40, right: 2420, ground: G, walkMin: 60, walkMax: 2400, view: 1450 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Cour et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 2388, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 520, out: true }, { x0: 520, x1: 2400, tex: 'tiles' }] },
+      { name: 'Sous-sol', y: 985, ceil: 848, x0: 532, x1: 2388, thick: 25, tex: 'concrete' },
+      { name: '1er étage : bloc', y: 640, ceil: 476, x0: 532, x1: 2388, tex: 'tiles' },
+      { name: '2e étage : service fermé', y: 460, ceil: 296, x0: 532, x1: 2388, tex: 'debris' },
+      { name: 'Toit', y: 282, ceil: 40, x0: 527, x1: 2393, out: true, noSlab: true }
+    ],
+    rooms: [
+      R(520, 900, 656, G, HOP.wall, { tone: '#8a887f', wainscot: HOP.wain, tubes: [710], posters: [{ x: 600, y: 700, t: 'SE LAVER\nLES MAINS' }] }),
+      R(900, 1500, 656, G, HOP.wall, { tone: '#88867d', wainscot: HOP.wain, tubes: [1050, 1350] }),
+      R(1500, 1800, 656, G, HOP.wall, { tone: '#827f76', wainscot: HOP.wain, tubes: [1650] }),
+      R(1800, 2400, 296, G, 'precast', { tone: '#77746c' }),
+      R(520, 1300, 476, 640, HOP.wall, { tone: '#8c8a82', wainscot: { h: 164, tone: '#94938c', grid: 18 }, tubes: [800, 1100], clock: { x: 700, y: 510 } }),
+      R(1300, 1800, 476, 640, HOP.wall, { tone: '#827f76', frames: 1, tubes: [1550] }),
+      R(520, 1800, 296, 460, HOP.wall, { tone: '#76736b', wainscot: HOP.wain, breach: [{ x: 1000, y: 360, r: 46 }], tubes: [1400] }),
+      R(520, 2400, 848, 985, 'concrete', { tone: '#64615a', border: true, tubes: [900, 1700] })
+    ],
+    shells: [
+      { x0: 520, x1: 2400, top: 296, bottom: 985, wall: 'precast', roof: 'flat', flag: { x: 700, kind: 'cross', h: 120 },
+        sign: { t: 'HÔPITAL', x: 1500, y: 196, missing: [1] }, gaps: { left: [{ y0: 690, y1: G, shutter: 30 }] } }
+    ],
+    things: [
+      { kind: 'car', f: 0, x: 330, color: '#8a877c', door: true },
+      { kind: 'tent', f: 0, x: 170, w: 150, h: 96, color: '#6f6c5c', back: true }
+    ],
+    lights: [{ kind: 'lamp', x: 1200, y: 690, r: 170, a: 0.6 }, { kind: 'candle', x: 1140, y: 600, r: 110 }],
+    backdrop: { far: 'city', mid: ['towers'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 2340 }, b: { f: 2, x: 2020 } },
+      { a: { f: 2, x: 2340 }, b: { f: 3, x: 2020 } },
+      { a: { f: 3, x: 1880 }, b: { f: 4, x: 1880 }, type: 'ladder' },
+      { a: { f: 0, x: 580 }, b: { f: 1, x: 760 } }
+    ],
+    walls: [{ f: 0, x: 900 }, { f: 0, x: 1500 }, { f: 0, x: 1800 }, { f: 2, x: 1300 }, { f: 2, x: 1800 }, { f: 3, x: 1800 }, { f: 1, x: 1200 }],
+    windows: [
+      { f: 0, x: 1180 }, { f: 0, x: 1650, boarded: true }, { f: 2, x: 950 }, { f: 2, x: 1550, broken: true },
+      { f: 3, x: 1450, broken: true }, { f: 3, x: 700, broken: true }, { f: 1, x: 1500, vent: true }, { f: 1, x: 2000, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 440, p: 'plastic_crate_01', h: 26 }, { f: 0, x: 860, p: 'metal_trash_can', h: 34 }, { f: 0, x: 1760, p: 'medical_box', h: 18 },
+      { f: 0, x: 2100, p: 'wooden_broom', h: 70 }, { f: 1, x: 1900, p: 'portable_generator', h: 44 }, { f: 1, x: 2250, p: 'metal_jerrycan', h: 30 },
+      { f: 2, x: 1220, p: 'medical_box', h: 18 }, { f: 2, x: 1750, p: 'plastic_bottle_gallon', h: 20 }, { f: 2, x: 2200, p: 'old_gas_mask', h: 16 },
+      { f: 3, x: 620, p: 'old_military_crate', h: 30 }, { f: 3, x: 1650, p: 'old_tyre', h: 24 }, { f: 4, x: 1400, p: 'portable_searchlight', h: 36 },
+      { f: 4, x: 2300, p: 'metal_jerrycan', h: 28 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      // Accueil et salle commune
+      { key: 'benny', kind: 'npc', npc: 'benny', f: 0, x: 740, w: 40, h: 90, facing: 1 },
+      { key: 'lit1', kind: 'bed', f: 0, x: 1000, metal: true, deco: true },
+      { key: 'dale', kind: 'npc', npc: 'dale', f: 0, x: 1000, w: 90, h: 44, facing: 1, onBed: true },
+      { key: 'lit2', kind: 'bed', f: 0, x: 1200, metal: true, deco: true },
+      { key: 'poele', kind: 'stove', f: 0, x: 1400, deco: true },
+      { key: 'pharmacie', kind: 'cache', variant: 'pharmacie', f: 0, x: 1650, w: 60, h: 112, owner: 'hopital', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { medicaments: 2, bandage: 3, remede: 1 } },
+      // Sous-sol : lingerie, puis le groupe électrogène derrière la porte
+      { key: 'linge', kind: 'cache', variant: 'etagere', f: 1, x: 950, w: 70, h: 104, loot: { bandage: 1, herbes: 2, eau: 1 } },
+      { key: 'porte_cave', kind: 'door', f: 1, x: 1200, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'gravats_cave', kind: 'rubble', f: 1, x: 1450, w: 84, h: 38, work: 60, loot: { composants: 2, bois: 1 } },
+      { key: 'groupe', kind: 'cache', variant: 'caisse', label: 'Réserve du groupe électrogène', f: 1, x: 1750, w: 78, h: 48, loot: { carburant: 2, pieces_elec: 1, pieces_meca: 1 } },
+      // Bloc opératoire (Ruth)
+      { key: 'armoire_bloc', kind: 'cache', variant: 'armoire', f: 2, x: 620, w: 58, h: 112, owner: 'hopital', loot: { bandage: 2, eau: 2, alcool: 1 } },
+      { key: 'table_op', kind: 'bed', f: 2, x: 950, metal: true, deco: true },
+      { key: 'ruth', kind: 'npc', npc: 'ruth', f: 2, x: 1100, w: 40, h: 90, facing: -1 },
+      { key: 'bureau', kind: 'furniture', variant: 'commode', f: 2, x: 1500, w: 64, h: 60, work: 60, owner: 'hopital', loot: { bois: 3, livres: 2 } },
+      // 2e étage : le plafond s'est effondré au milieu du couloir
+      { key: 'paquetage', kind: 'cache', variant: 'valise', f: 3, x: 1600, w: 62, h: 36, loot: { munitions: 4, cigarettes: 2, couteau: 1 } },
+      { key: 'eboulis', kind: 'rubble', f: 3, x: 1250, w: 104, h: 150, block: true, work: 150, loot: { bois: 3, composants: 3 } },
+      { key: 'archives', kind: 'cache', variant: 'etagere', f: 3, x: 800, w: 70, h: 104, loot: { livres: 3, filtre: 1 } },
+      // Toit
+      { key: 'caisse_toit', kind: 'cache', variant: 'caisse', f: 4, x: 1100, w: 78, h: 48, loot: { composants: 3, pieces_meca: 1 } }
+    ]
+  });
+
+  // ============================================================ École bombardée
+  // La cour (cage de foot, balançoire), le gymnase haut de plafond où des
+  // familles ont posé leurs matelas, puis le bâtiment des classes : la
+  // chaufferie en bas, une classe à l'étage, le 2e éventré sous le clocheton.
+  C.MAPS.ecole = keepNpcs('ecole', {
+    theme: { dirt: 0.32, school: true },
+    world: { W: 2600, H: 1010, left: 40, right: 2560, ground: G, walkMin: 60, walkMax: 2540, view: 1500 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Cour, gymnase et couloir', y: G, ceil: 656, x0: 60, x1: 2388, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 800, out: true }, { x0: 800, x1: 1500, tex: 'floor' }, { x0: 1500, x1: 2400, tex: 'tiles' }] },
+      { name: 'Chaufferie', y: 985, ceil: 848, x0: 1512, x1: 2388, thick: 25, tex: 'concrete' },
+      { name: 'Salle de classe', y: 640, ceil: 476, x0: 1512, x1: 2388, tex: 'floor' },
+      { name: '2e étage', y: 460, ceil: 296, x0: 1512, x1: 2300, tex: 'debris', broken: ['right'] }
+    ],
+    rooms: [
+      R(800, 1500, 400, G, 'paintedConcrete', { tone: '#7f7b70', tubes: [950, 1150, 1350], wainscot: { h: 110, tex: 'planks2', tone: '#6f6557', grid: false },
+        signs: [{ t: 'GYMNASE', x: 1080, y: 470, size: 30 }] }),
+      R(1500, 2400, 656, G, 'plaster2', { tone: '#857f72', wainscot: { h: 70, tone: '#7e7a70' }, bulbs: [1700, 2100],
+        posters: [{ x: 1640, y: 720, t: 'DESSINS\nDES CM1' }, { x: 1700, y: 716, t: 'MA MAISON', rot: 0.08 }] }),
+      R(1500, 2100, 476, 640, 'plaster2', { tone: '#88826f', boards: [{ x: 1760, w: 170, text: ['Lundi 12', 'Dictée'] }], clock: { x: 1990, y: 506 }, bulbs: [1650, 1900] }),
+      R(2100, 2400, 476, 640, 'plaster', { tone: '#7d786d', skirt: true }),
+      R(1500, 2400, 296, 460, 'peeling', { tone: '#7a7468', breach: [{ x: 2200, y: 360, r: 60 }], frames: 1 }),
+      R(1500, 2400, 848, 985, 'brickPlaster', { tone: '#655f55', border: true })
+    ],
+    shells: [
+      { x0: 800, x1: 1500, top: 400, bottom: G, wall: 'brick', roof: 'gable', roofH: 70, right: false,
+        gaps: { left: [{ y0: 690, y1: G }] } },
+      { x0: 1500, x1: 2400, top: 296, bottom: 985, wall: 'brickPlaster', roof: 'tiles', roofH: 110, hole: [2150, 2380],
+        tower: { x: 1850, w: 90, top: 120, bottom: 240, clock: true, spire: 70 }, gaps: { left: [{ y0: 690, y1: G }] } }
+    ],
+    things: [
+      { kind: 'goal', f: 0, x: 280 },
+      { kind: 'swing', f: 0, x: 620 },
+      { kind: 'tree', f: 0, x: 450, h: 240, back: true },
+      { kind: 'crater', f: 0, x: 520, w: 110 },
+      { kind: 'wall', f: 0, x: 60, w: 740, h: 36, rails: true, back: true }
+    ],
+    lights: [{ kind: 'brasero', x: 1250, y: 790, r: 200 }, { kind: 'candle', x: 930, y: 790, r: 90 }],
+    backdrop: { far: 'city', mid: ['towers', 'houses'], near: ['trees'] },
+    stairs: [
+      { a: { f: 0, x: 2340 }, b: { f: 2, x: 2160 } },
+      { a: { f: 2, x: 2250 }, b: { f: 3, x: 2080 } },
+      { a: { f: 0, x: 1560 }, b: { f: 1, x: 1720 } }
+    ],
+    walls: [{ f: 0, x: 1500 }, { f: 1, x: 1950 }, { f: 2, x: 2100 }],
+    windows: [
+      { f: 0, x: 900, kind: 'strip', y: 430, w: 150, h: 50, broken: true }, { f: 0, x: 1150, kind: 'strip', y: 430, w: 150, h: 50 },
+      { f: 0, x: 1380, kind: 'strip', y: 430, w: 150, h: 50, broken: true },
+      { f: 0, x: 1950, boarded: true }, { f: 2, x: 2050 }, { f: 2, x: 2300, broken: true }, { f: 3, x: 1900, broken: true },
+      { f: 1, x: 1700, vent: true }, { f: 1, x: 2200, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 740, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 0, x: 1460, p: 'wooden_bucket_01', h: 24 }, { f: 0, x: 2250, p: 'wooden_broom', h: 70 },
+      { f: 1, x: 1800, p: 'wooden_barrels_01', h: 30 }, { f: 1, x: 2300, p: 'cement_bag', h: 22 },
+      { f: 2, x: 2350, p: 'Television_01', h: 26 }, { f: 3, x: 1600, p: 'old_tyre', h: 24 }, { f: 3, x: 2050, p: 'wooden_ladder', h: 90 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      // Gymnase : les familles
+      { key: 'hal', kind: 'npc', npc: 'hal', f: 0, x: 900, w: 50, h: 70, facing: 1 },
+      { key: 'matelas', kind: 'cache', variant: 'valise', f: 0, x: 1000, w: 62, h: 36, owner: 'ecole', loot: { conserve: 2, cigarettes: 2, medicaments: 1 } },
+      { key: 'tim', kind: 'npc', npc: 'tim', f: 0, x: 1110, w: 40, h: 56, facing: 1 },
+      { key: 'carol', kind: 'npc', npc: 'carol', f: 0, x: 1190, w: 40, h: 90, facing: -1 },
+      { key: 'sacs', kind: 'cache', variant: 'caisse', f: 0, x: 1380, w: 78, h: 48, owner: 'ecole', loot: { eau: 3, conserve: 1, legumes: 2 } },
+      // Couloir
+      { key: 'vestiaire', kind: 'cache', variant: 'armoire', f: 0, x: 1900, w: 58, h: 112, loot: { bois: 2, livres: 2, composants: 1 } },
+      // Chaufferie
+      { key: 'charbon', kind: 'cache', variant: 'caisse', label: 'Réserve de charbon', f: 1, x: 1850, w: 78, h: 48, loot: { bois: 5, composants: 2 } },
+      { key: 'porte_chaufferie', kind: 'door', f: 1, x: 1950, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'gravats_cave', kind: 'rubble', f: 1, x: 2100, w: 84, h: 38, work: 60, loot: { composants: 2, pieces_meca: 1 } },
+      { key: 'cantine', kind: 'cache', variant: 'coffre', label: 'Réserve de la cantine', f: 1, x: 2280, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { conserve: 2, sucre: 2, pieces_elec: 1 } },
+      // Salle de classe
+      { key: 'biblio', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 1580, w: 70, h: 124, work: 90, loot: { bois: 4, livres: 4 } },
+      { key: 'pupitre1', kind: 'desk', f: 2, x: 1700, w: 56, h: 40, deco: true },
+      { key: 'pupitre2', kind: 'desk', f: 2, x: 1810, w: 56, h: 40, deco: true },
+      { key: 'infirmerie', kind: 'cache', variant: 'pharmacie', label: 'Armoire de l\'infirmière', f: 2, x: 1920, w: 50, h: 96, loot: { bandage: 1, herbes: 2, eau: 1 } },
+      { key: 'etagere_classe', kind: 'cache', variant: 'etagere', f: 2, x: 2030, w: 70, h: 104, loot: { livres: 4, composants: 1 } },
+      // 2e étage éventré
+      { key: 'caisse_grenier', kind: 'cache', variant: 'caisse', f: 3, x: 2200, w: 78, h: 48, loot: { bois: 3, composants: 2 } },
+      { key: 'eboulis', kind: 'rubble', f: 3, x: 1900, w: 104, h: 150, block: true, work: 150, loot: { bois: 3, composants: 3 } },
+      { key: 'objets_trouves', kind: 'cache', variant: 'valise', label: 'Objets trouvés', f: 3, x: 1650, w: 62, h: 36, loot: { bijoux: 1, cafe: 1, tabac: 1 } }
+    ]
+  });
+
+  // ============================================================ Hôtel Europa
+  // Hall haut de plafond, escalier d'honneur, réception où se sont réfugiés
+  // quelques civils. L'armée tient les étages : chambres des officiers, suites
+  // du dernier étage. Au sous-sol, les cuisines ; au-dessus, le toit-terrasse.
+  var ARCH = function (f, x, y, o) { return ext({ f: f, x: x, kind: 'arch', y: y, w: 48, h: 104 }, o || {}); };
+  C.MAPS.hotel = keepNpcs('hotel', {
+    theme: { dirt: 0.25 },
+    world: { W: 2120, H: 1010, left: 40, right: 2080, ground: G, walkMin: 60, walkMax: 2060, view: 1400 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Rue et hall', y: G, ceil: 620, x0: 60, x1: 2060, ground: true, thick: 28, carpet: [560, 1100, '#5c3a31'],
+        segs: [{ x0: 60, x1: 420, out: true }, { x0: 420, x1: 1900, tex: 'tiles' }, { x0: 1900, x1: 2060, out: true }] },
+      { name: 'Cuisines', y: 985, ceil: 848, x0: 432, x1: 1888, thick: 25, tex: 'tiles' },
+      { name: 'Étage des officiers', y: 604, ceil: 440, x0: 432, x1: 1888, tex: 'floor', carpet: [440, 1880, '#57362f'] },
+      { name: 'Suites', y: 424, ceil: 260, x0: 432, x1: 1888, tex: 'floor', carpet: [700, 1400, '#5b3a36'] },
+      { name: 'Toit-terrasse', y: 246, ceil: 20, x0: 427, x1: 1893, out: true, noSlab: true }
+    ],
+    rooms: [
+      R(420, 1500, 620, G, 'wallpaper', { tone: '#8a7f6d', paper: 16, skirt: true, frames: 3, clock: { x: 1300, y: 660 } }),
+      R(1500, 1900, 620, G, 'wallpaper', { tone: '#7f7768', paper: 16, skirt: true, frames: 1 }),
+      R(420, 1900, 440, 604, 'wallpaper', { tone: '#857a68', paper: 12, skirt: true, frames: 3, bulbs: [620, 1000, 1400, 1760] }),
+      R(420, 1900, 260, 424, 'wallpaper', { tone: '#8b7f6b', paper: 8, skirt: true, frames: 3, bulbs: [760, 1260] }),
+      R(420, 1900, 848, 985, 'tiles', { tone: '#77746b', wainscot: { h: 137, tone: '#86847b', grid: 16 }, tubes: [800, 1400] })
+    ],
+    shells: [
+      { x0: 420, x1: 1900, top: 260, bottom: 985, wall: 'brickPlaster', roof: 'flat', sign: { t: 'HÔTEL EUROPA', x: 1160, y: 180, missing: [3] },
+        gaps: { left: [{ y0: 680, y1: G }], right: [{ y0: 690, y1: G }] } }
+    ],
+    things: [
+      { kind: 'car', f: 0, x: 260, burnt: true },
+      { kind: 'hedgehog', f: 0, x: 1980, n: 1 }
+    ],
+    lights: [{ kind: 'lamp', x: 1000, y: 650, r: 200, a: 0.5 }, { kind: 'candle', x: 820, y: 380, r: 90 }, { kind: 'lamp', x: 1400, y: 470, r: 150, a: 0.5 }],
+    backdrop: { far: 'city', mid: ['towers', 'steeples'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 1100 }, b: { f: 2, x: 900 } },
+      { a: { f: 0, x: 1850 }, b: { f: 1, x: 1700 } },
+      { a: { f: 2, x: 1850 }, b: { f: 3, x: 1680 } },
+      { a: { f: 3, x: 1860 }, b: { f: 4, x: 1860 }, type: 'ladder' }
+    ],
+    walls: [{ f: 0, x: 1500 }, { f: 2, x: 1200 }, { f: 3, x: 1000 }, { f: 3, x: 1500 }, { f: 1, x: 1000 }],
+    windows: [
+      ARCH(0, 1300, 650, { h: 130, w: 54 }), ARCH(0, 1700, 650, { h: 130, w: 54, broken: true }),
+      ARCH(2, 640, 470, { shutters: true }), ARCH(2, 1000, 470), ARCH(2, 1400, 470, { broken: true }), ARCH(2, 1750, 470),
+      ARCH(3, 640, 290), ARCH(3, 1250, 290, { shutters: true }), ARCH(3, 1700, 290, { broken: true }),
+      { f: 1, x: 900, vent: true }, { f: 1, x: 1500, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 180, p: 'street_lamp_01', h: 200 }, { f: 0, x: 750, p: 'vintage_oil_lamp', h: 30 }, { f: 0, x: 1560, p: 'vintage_suitcase', h: 26 },
+      { f: 1, x: 560, p: 'wine_bottles_01', h: 20 }, { f: 1, x: 1180, p: 'russian_food_cans_01', h: 16 },
+      { f: 2, x: 1000, p: 'old_military_crate', h: 30 }, { f: 3, x: 1400, p: 'Television_01', h: 28 },
+      { f: 4, x: 700, p: 'small_lpg_tank', h: 34 }, { f: 4, x: 1500, p: 'old_tyre', h: 22 }
+    ],
+    zones: [
+      { id: 'etage_officiers', f: 2, x0: 432, x1: 1888, group: 'hotel', label: 'Étage des officiers' },
+      { id: 'suites', f: 3, x0: 432, x1: 1888, group: 'hotel', label: 'Suites occupées' }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      // Hall et réception
+      { key: 'fauteuil', kind: 'armchair', f: 0, x: 520, deco: true },
+      { key: 'irene', kind: 'npc', npc: 'irene', f: 0, x: 640, w: 40, h: 90, facing: 1 },
+      { key: 'reception', kind: 'cache', variant: 'commode', label: 'Comptoir de la réception', f: 0, x: 820, w: 64, h: 60, owner: 'hotel_refugies', loot: { cigarettes: 2, sucre: 1, livres: 2 } },
+      { key: 'recoin_hall', kind: 'hide', f: 0, x: 1450, w: 46, h: 108 },
+      { key: 'bagagerie', kind: 'cache', variant: 'valise', label: 'Bagages abandonnés', f: 0, x: 1650, w: 62, h: 36, loot: { livres: 1, bijoux: 1, cafe: 1 } },
+      // Cuisines
+      { key: 'cave_bar', kind: 'cache', variant: 'etagere', label: 'Réserve du bar', f: 1, x: 700, w: 70, h: 104, loot: { alcool: 2, sucre: 1, conserve: 1 } },
+      { key: 'porte_cuisines', kind: 'door', f: 1, x: 1000, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'chambre_froide', kind: 'cache', variant: 'armoire', label: 'Chambre froide', f: 1, x: 1300, w: 58, h: 112, owner: 'armee', loot: { conserve: 4, viande: 2, eau: 3 } },
+      { key: 'soldat_cuisine', kind: 'guard', type: 'soldat', f: 1, x: 1500, facing: -1, attitude: 'neutral', group: 'hotel', sleep: true },
+      // Étage des officiers
+      { key: 'sentinelle_hotel', kind: 'guard', type: 'soldat', f: 2, x: 700, facing: 1, attitude: 'neutral', group: 'hotel', patrol: [500, 1150] },
+      { key: 'recoin_couloir', kind: 'hide', f: 2, x: 1160, w: 46, h: 108 },
+      { key: 'chambre_12', kind: 'cache', variant: 'armoire', label: 'Chambre 12', f: 2, x: 1400, w: 58, h: 112, owner: 'armee', loot: { munitions: 8, medicaments: 1, cigarettes: 2 } },
+      { key: 'soldat_etage', kind: 'guard', type: 'soldat', f: 2, x: 1650, facing: -1, attitude: 'neutral', group: 'hotel', patrol: [1260, 1800] },
+      // Suites
+      { key: 'lit_officier', kind: 'bed', f: 3, x: 780, deco: true },
+      { key: 'officier', kind: 'guard', type: 'intendant', name: 'Lieutenant Kerr', f: 3, x: 840, facing: 1, attitude: 'neutral', group: 'hotel', sleep: true },
+      { key: 'suite_coffre', kind: 'cache', variant: 'coffre', label: 'Coffre de la suite', f: 3, x: 1150, w: 60, h: 48, owner: 'armee', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } },
+      { key: 'suite_bar', kind: 'cache', variant: 'etagere', label: 'Minibar', f: 3, x: 1330, w: 70, h: 104, owner: 'armee', loot: { alcool: 2, cafe: 2, cigarettes: 3 } },
+      { key: 'recoin_suite', kind: 'hide', f: 3, x: 1560, w: 46, h: 108 },
+      // Toit-terrasse : l'antenne de l'armée
+      { key: 'caisse_antenne', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 4, x: 1560, w: 90, h: 50, loot: { pieces_elec: 2, composants: 1 } }
+    ]
+  });
+})(window.CQR);

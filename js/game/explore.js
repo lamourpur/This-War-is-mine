@@ -99,6 +99,7 @@
     C.NAV_START = map.start ? { f: map.start.f, x: map.start.x } : { f: 1, x: 220 };
     // Plan à géométrie libre : son propre monde (taille, niveaux, décor)
     if (map.layout) {
+      if (!map.id) map.id = id;
       C.WORLD = map.world; C.FLOORS = map.floors; C.LAYOUT = map;
     } else {
       // Plan classique : les 4 étages du gabarit, sans l'abri du refuge
@@ -115,7 +116,13 @@
       G().spawnObject(o);
     });
     // Tas de débris laissés lors d'une visite précédente
-    (ls.extra || []).forEach(function (d) { G().spawnObject(U.copy(d)); });
+    // (le plan a pu changer depuis : on les ramène sur un niveau qui existe)
+    (ls.extra || []).forEach(function (d) {
+      var o = U.copy(d);
+      if (!C.FLOORS[o.f] || C.FLOORS[o.f].hidden) { o.f = C.NAV_START.f; o.x = C.NAV_START.x + 60; }
+      o.x = C.Nav.clampX(o.f, o.x);
+      G().spawnObject(o);
+    });
     // Soldats : ronde, vigilance, hostilité mémorisée
     est.objects.forEach(function (o) { if (o.kind === 'guard') C.Combat.init(o, ls); });
 
