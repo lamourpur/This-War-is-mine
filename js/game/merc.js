@@ -138,7 +138,7 @@
     var prev = st.merc.offer;
     st.merc.offer = makeOffer(st, prev && prev.day === st.day - 1 ? prev : null);
     st.merc.hired = null;
-    if (st.merc.offer.returning) add('people', first(st.merc.offer.name) + ' repasse voir Milo : il travaillerait de nouveau pour vous, un peu moins cher.', 'info');
+    if (st.merc.offer.returning) add('people', first(st.merc.offer.name) + ' repasse voir Milo : ' + (st.merc.offer.female ? 'elle' : 'il') + ' travaillerait de nouveau pour vous, un peu moins cher.', 'info');
   };
 
   // Engager / congédier (le paiement part tout de suite, rendu si on change d'avis)

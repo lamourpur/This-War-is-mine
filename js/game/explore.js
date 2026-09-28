@@ -76,7 +76,7 @@
 
     E.active = true;
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home; E.merc = !!plan.merc;
-    E.notes = []; E.effects = []; E.stolen = {}; E.caught = {}; E.helped = [];
+    E.notes = []; E.effects = []; E.sins = []; E.stolen = {}; E.caught = {}; E.helped = [];
     E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = []; E.warnedExposed = false;
     E.weapon = null;             // arme en main choisie (null = la meilleure)
     E.mode = 'explore';          // 'explore' | 'combat' (bouton, touche C)
@@ -269,8 +269,8 @@
         // La conscience, elle, sait tout : le moral du groupe en pâtit quand même.
         if (E.caught[ow]) ls.angry = true;
         E.notes.push({ t: first(s) + (!E.caught[ow] && od.quiet ? od.quiet : od.text) + (E.caught[ow] ? ' ' + E.caught[ow] + ' l\'a vu faire.' : ' Personne ne l\'a vu, mais ça n\'efface rien.'), k: 'bad' });
-        // Un mercenaire l'a fait pour nous : la faute est partagée, pas entière
-        G().moralAll(Math.round(od.moral * (E.merc ? 0.5 : 1)), { bad: true, key: od.key });
+        // Chacun jugera à sa façon (Mood.judge, plus bas)
+        E.sins.push({ act: 'steal', base: od.moral, victim: ow });
         if (od.horvat) home.flags.horvat = home.day + 3;
         // Ce qu'on apprendra plus tard (une seule fois par lieu)
         if (od.later && !ls.laterSet) {
@@ -280,6 +280,9 @@
       });
     }
     E.effects.forEach(function (fn) { fn(); });
+    // Ce que le groupe pense de la nuit : chacun à sa manière
+    var verdict = C.Mood.judge(E.sins, { merc: E.merc, mercFemale: !!(E.merc && s.look && s.look.female), except: E.merc || reason === 'dead' ? null : (E.sins.some(function (x) { return /kill/.test(x.act); }) ? s.id : null) });
+    verdict.forEach(function (l) { E.notes.push({ sec: 'people', t: l.t, k: l.k }); });
     if (reason === 'dead' && E.merc) {
       var elle = s.look && s.look.female;
       E.notes.unshift({ t: first(s) + ' n\'est pas revenu(e). ' + (elle ? 'Elle' : 'Il') + ' connaissait les risques ; personne ici ne ' + (elle ? 'la' : 'le') + ' pleurera. Ce qu\'on lui avait confié est perdu.', k: 'bad' });
@@ -580,7 +583,7 @@
     if (ow) E.stolen[ow] = true;
     E.ev('rob', { name: d.name, items: U.copy(got) });
     E.notes.push({ t: first(s) + ' a braqué ' + d.name + ', arme au poing.', k: 'bad' });
-    E.effects.push(function () { G().moralAll(-8, { bad: true, key: 'robbed' }); });
+    E.sins.push({ act: 'rob', base: -8, victim: d.name });
     E.home.stats.stole++;
     if (C.Audio.ready) C.Audio.sfx.alert();
   };

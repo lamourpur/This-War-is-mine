@@ -416,6 +416,7 @@
       UI.buildCards();
       UI.refreshDoor();
       C.Main.setSpeed(1);
+      if (C.Mood.replayReactions) C.Mood.replayReactions();
     });
     p.foot.appendChild(b);
     UI.modal(p);

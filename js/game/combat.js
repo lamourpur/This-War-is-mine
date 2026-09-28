@@ -972,9 +972,8 @@
       var who = k.who || ('un ' + k.name.toLowerCase());
       C.Surv.bio(s, { surrender: 'J\'ai tué ' + who + ' qui s\'était rendu. Il suppliait. Je n\'arrive pas à me le pardonner.', asleep: 'J\'ai tué ' + who + ' pendant son sommeil. Il n\'a jamais su ce qui lui arrivait.', villain: 'J\'ai tué ' + who + '. Il le méritait. Je crois.', unprovoked: 'J\'ai tué ' + who + '. Il ne m\'avait rien fait.' }[k.kind] || 'J\'ai tué ' + who + '. C\'était lui ou moi.');
       effects.push(function () {
-        s.moral = Math.max(0, s.moral - (G().hasTrait(s, 'cynique') ? self * 0.3 : self));
-        C.Mood.think(s, 'killed_self');
-        if (group) G().moralAll(Math.round(group * (ex.merc ? 0.5 : 1)), { bad: true, key: key, except: s.id, vars: { n: n } });
+        if (!ex.merc) { s.moral = Math.max(0, s.moral - (G().hasTrait(s, 'cynique') ? self * 0.3 : self)); C.Mood.think(s, 'killed_self'); }
+        if (group) ex.sins.push({ act: k.kind === 'surrender' ? 'kill_surrender' : 'kill', base: group, victim: who });
       });
     });
     ex.spared.forEach(function (t) {

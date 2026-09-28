@@ -6,6 +6,7 @@
   'use strict';
 
   function G() { return C.Game; }
+  var U = C.util;
   function first(s) { return s.name.split(' ')[0]; }
 
   var M = C.Mood = { chatter: 20 };
@@ -86,6 +87,109 @@
   };
 
   // Mise à jour de l'aube : deuil, confort, survivants brisés
+  // ============================================================ jugements
+  // Ce que le groupe pense des actes de la nuit (vol, braquage, meurtre),
+  // comme dans le jeu d'origine : chacun réagit selon son caractère et la
+  // situation. Certains approuvent (« il faut bien survivre »), d'autres
+  // sont mal à l'aise, d'autres choqués. Si c'est le mercenaire qui a agi,
+  // on s'en lave un peu les mains… mais c'est nous qui l'avons payé.
+  // sins : [{ act: 'steal'|'rob'|'kill'|'kill_surrender', base: moral (<0), victim }]
+  var JUDGE = {
+    ok: {
+      steal: ['Il fallait bien manger. Ils s\'en remettront.', 'On n\'a pas le luxe d\'avoir des scrupules.', 'Chacun pour soi. C\'est la guerre qui veut ça.'],
+      rob: ['Ils avaient de quoi. Nous, on n\'a rien. C\'est comme ça.', 'Mieux vaut qu\'ils aient peur de nous que l\'inverse.'],
+      kill: ['C\'était eux ou nous.', 'Un de moins pour nous tomber dessus.']
+    },
+    okMerc: ['C\'est {lui} qui l\'a fait, pas nous. Et on mange ce soir.', 'On l\'a payé{e} pour ramener de quoi vivre. {Il} l\'a fait.', 'Au moins, aucun de nous n\'a eu à se salir les mains.'],
+    meh: {
+      steal: ['Je sais qu\'on n\'avait pas le choix. Ça ne m\'aide pas à dormir.', 'On fait ce qu\'il faut… mais je n\'en suis pas fier(e).'],
+      rob: ['Braquer des gens… On en est là, alors.', 'Je comprends. Mais je préfère ne pas y penser.'],
+      kill: ['Il y a eu des morts. Je ne veux pas savoir comment.']
+    },
+    mehMerc: ['On a payé quelqu\'un pour faire le sale travail. Ça revient au même, non ?', 'Je préfère ne pas savoir ce qu\'{il} a fait là-bas.'],
+    ko: {
+      steal: ['On vole des gens qui n\'ont déjà presque rien. On est devenus quoi ?', 'Je ne peux plus regarder ce qu\'on mange sans penser à eux.'],
+      rob: ['Une arme sur la tempe de gens sans défense. On est devenus des bandits.', 'Ils tremblaient. Et on leur a tout pris. Je ne l\'oublierai pas.'],
+      kill: ['On a tué. Il n\'y a pas de retour possible.', 'Ce n\'est pas ça, survivre. Pas comme ça.']
+    },
+    koMerc: ['On a payé quelqu\'un pour faire ça à notre place. C\'est pire, d\'une certaine façon.', 'Nos vivres, nos affaires… pour ça. Je n\'en veux plus, de {ce} mercenaire.', 'Ce qu\'{il} a fait, {il} l\'a fait en notre nom.']
+  };
+  var ACT_WEIGHT = { steal: 0, rob: -1, kill: -1, kill_surrender: -3 };
+  function hash(str) { var h = 7; for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) % 9973; return h; }
+  M.stance = function (s, worst, st, merc) {
+    var H = G().hasTrait, score = 0;
+    if (H(s, 'cynique')) score += 2;
+    if (H(s, 'combattant')) score += 1;
+    if (H(s, 'empathique')) score -= 2;
+    if (H(s, 'soigneur')) score -= 1;
+    // Le ventre vide rend moins regardant
+    var present = G().present().length || 1;
+    if (G().foodCount() < present * 2) score += 1;
+    if (s.hunger >= 50) score += 1;
+    if (s.grief > 0) score -= 1;
+    score += ACT_WEIGHT[worst] || 0;
+    // Ce n'est pas l'un des nôtres qui l'a fait : plus facile à accepter
+    if (merc) score += 1;
+    // Un peu d'humeur du jour (stable pour une même nuit)
+    var r = hash(s.id + ':' + st.day + ':' + worst) % 10;
+    score += r < 3 ? -1 : r > 7 ? 1 : 0;
+    return score >= 2 ? 'ok' : score <= -1 ? 'ko' : 'meh';
+  };
+  M.judge = function (sins, opts) {
+    opts = opts || {};
+    if (!sins || !sins.length) return [];
+    var st = G().st, total = 0, worst = 'steal', order = ['steal', 'rob', 'kill', 'kill_surrender'];
+    sins.forEach(function (x) { if (order.indexOf(x.act) > order.indexOf(worst)) worst = x.act; });
+    // Plusieurs fautes la même nuit : la pire compte en entier, les autres
+    // alourdissent (sans cumul sans fin)
+    var bases = sins.map(function (x) { return x.base; }).sort(function (a, b) { return a - b; });
+    total = bases[0] + bases.slice(1).reduce(function (a, b) { return a + b; }, 0) * 0.35;
+    total = Math.max(total, -18);
+    var merc = !!opts.merc, lines = [], fe = function (s) { return s.look && s.look.female ? 'e' : ''; };
+    var cat = worst === 'kill_surrender' ? 'kill' : worst;
+    st.flags.reactions = [];
+    var used = {};
+    G().alive().forEach(function (s) {
+      if (s.away || s.id === opts.except) return;
+      var stance = M.stance(s, worst, st, merc), d;
+      if (stance === 'ok') d = merc ? 2 : 1;                                  // soulagé : on a de quoi tenir
+      else if (stance === 'meh') d = total * (merc ? 0.45 : 0.8);
+      else d = total * (merc ? 1.1 : 1.6);                                     // choqué (et par le mercenaire aussi)
+      d = Math.round(d);
+      s.moral = U.clamp(s.moral + d, 0, 100);
+      var pool = merc ? JUDGE[stance + 'Merc'] : JUDGE[stance][cat];
+      var mf = !!opts.mercFemale;
+      var pi = hash(s.id + st.day + cat) % pool.length;
+      for (var tries = 0; tries < pool.length && used[pool[pi]]; tries++) pi = (pi + 1) % pool.length;
+      used[pool[pi]] = true;
+      var txt = pool[pi].replace(/\(e\)/g, fe(s))
+        .replace(/\{lui\}/g, mf ? 'elle' : 'lui').replace(/\{Il\}/g, mf ? 'Elle' : 'Il').replace(/\{il\}/g, mf ? 'elle' : 'il')
+        .replace(/\{e\}/g, mf ? 'e' : '').replace(/\{ce\}/g, mf ? 'cette' : 'ce');
+      s.thoughts = s.thoughts || [];
+      s.thoughts.push({ d: st.day, t: txt });
+      var verb = stance === 'ok' ? ' approuve' : stance === 'meh' ? ' est mal à l\'aise' : ' est choqué' + fe(s);
+      lines.push({ t: first(s) + verb + ' : « ' + txt + ' »' + (d ? ' (moral ' + (d > 0 ? '+' : '') + d + ')' : ''), k: stance === 'ok' ? 'info' : 'bad', sid: s.id, stance: stance });
+      st.flags.reactions.push({ sid: s.id, t: txt });
+    });
+    // Ceux qui approuvent et ceux qui sont choqués ne se regardent plus pareil
+    var oks = lines.filter(function (l) { return l.stance === 'ok'; }), kos = lines.filter(function (l) { return l.stance === 'ko'; });
+    if (oks.length && kos.length) {
+      var a = G().surv(oks[0].sid), b = G().surv(kos[0].sid);
+      lines.push({ t: 'Le ton monte entre ' + first(a) + ' et ' + first(b) + '. Le groupe est divisé sur ce qui s\'est passé cette nuit.', k: 'bad' });
+      b.moral = Math.max(0, b.moral - 2);
+    }
+    if (C.UI && C.UI.floatMoral) C.UI.floatMoral(Math.round(total));
+    return lines;
+  };
+  // Au début de la journée, chacun dit ce qu'il en pense
+  M.replayReactions = function () {
+    var st = G().st, list = st.flags.reactions || [];
+    st.flags.reactions = [];
+    list.forEach(function (r, i) {
+      setTimeout(function () { var s = G().surv(r.sid); if (s && s.alive && !s.away) M.say(s, r.t, 6); }, 900 + i * 2600);
+    });
+  };
+
   M.dawn = function (st, report) {
     var comfort = M.comfort(st);
     var delta = Math.max(-3, Math.min(3, comfort - 2));
