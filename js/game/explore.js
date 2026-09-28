@@ -20,7 +20,7 @@
 
   // Sac en cases, comme dans This War of Mine : 10 cases (14 avec le trait
   // « grand sac »), chaque case contient une pile d'un seul objet (C.stackOf).
-  E.capacity = function (s) { return 10 + (s && G().hasTrait(s, 'grand_sac') ? 4 : 0) + (s && G().hasTrait(s, 'costaud') ? 3 : 0); };
+  E.capacity = function (s) { return 10 + (s && s.merc ? 2 : 0) + (s && G().hasTrait(s, 'grand_sac') ? 4 : 0) + (s && G().hasTrait(s, 'costaud') ? 3 : 0); };
   // Nombre de cases occupées (nom historique : weight)
   E.weight = function (inv) { var w = 0; for (var k in inv) if (inv[k] > 0) w += Math.ceil(inv[k] / C.stackOf(k)); return w; };
   E.slots = E.weight;
@@ -58,7 +58,8 @@
 
   // ------------------------------------------------------------ entrée
   E.start = function (plan, onDone) {
-    var home = G().st, s = G().surv(Object.keys(plan.roles).filter(function (k) { return plan.roles[k] === 'scav'; })[0]);
+    // Le pilleur : un survivant… ou le mercenaire engagé pour la nuit
+    var home = G().st, s = plan.merc ? (plan.mercBody || (plan.mercBody = C.Merc.body(plan.merc))) : G().surv(Object.keys(plan.roles).filter(function (k) { return plan.roles[k] === 'scav'; })[0]);
     var id = plan.scav.loc, map = C.MAPS[id], def = C.locationDef(id);
     var ls = locState(home, id);
 
@@ -70,9 +71,11 @@
       if (plan.scav.ammo) bag.munitions = plan.scav.ammo;
     }
     G().removeItems(bag);
+    // Son équipement personnel part avec lui (et lui reste)
+    if (plan.merc) { var mg = C.Merc.gear(plan.merc); for (var gk in mg) bag[gk] = (bag[gk] || 0) + mg[gk]; }
 
     E.active = true;
-    E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
+    E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home; E.merc = !!plan.merc;
     E.notes = []; E.effects = []; E.stolen = {}; E.caught = {}; E.helped = [];
     E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = []; E.warnedExposed = false;
     E.weapon = null;             // arme en main choisie (null = la meilleure)
@@ -240,7 +243,7 @@
     est.log.forEach(function (l) { home.log.push(l); });
     s.x = E.homePos.x; s.y = E.homePos.y; s.f = E.homePos.f; s.facing = E.homePos.facing;
     E.active = false;
-    if (C.UI) C.UI.showExploreHud(false);
+    if (C.UI) { C.UI.showExploreHud(false); if (C.UI.buildCards) C.UI.buildCards(); }
     if (wasLayout && C.Render.worldChanged) C.Render.worldChanged();
     if (C.Render.camReset) C.Render.camReset();
     C.Render.dirty = true;
@@ -256,8 +259,9 @@
         // Pas vu, pas pris : les habitants ne l'apprennent que s'ils ont vu faire.
         // La conscience, elle, sait tout : le moral du groupe en pâtit quand même.
         if (E.caught[ow]) ls.angry = true;
-        E.notes.push({ t: first(s) + od.text + (E.caught[ow] ? ' ' + E.caught[ow] + ' l\'a vu faire.' : ' Personne ne l\'a vu, mais ça n\'efface rien.'), k: 'bad' });
-        G().moralAll(od.moral, { bad: true, key: od.key });
+        E.notes.push({ t: first(s) + (!E.caught[ow] && od.quiet ? od.quiet : od.text) + (E.caught[ow] ? ' ' + E.caught[ow] + ' l\'a vu faire.' : ' Personne ne l\'a vu, mais ça n\'efface rien.'), k: 'bad' });
+        // Un mercenaire l'a fait pour nous : la faute est partagée, pas entière
+        G().moralAll(Math.round(od.moral * (E.merc ? 0.5 : 1)), { bad: true, key: od.key });
         if (od.horvat) home.flags.horvat = home.day + 3;
         // Ce qu'on apprendra plus tard (une seule fois par lieu)
         if (od.later && !ls.laterSet) {
@@ -267,7 +271,10 @@
       });
     }
     E.effects.forEach(function (fn) { fn(); });
-    if (reason === 'dead') {
+    if (reason === 'dead' && E.merc) {
+      var elle = s.look && s.look.female;
+      E.notes.unshift({ t: first(s) + ' n\'est pas revenu(e). ' + (elle ? 'Elle' : 'Il') + ' connaissait les risques ; personne ici ne ' + (elle ? 'la' : 'le') + ' pleurera. Ce qu\'on lui avait confié est perdu.', k: 'bad' });
+    } else if (reason === 'dead') {
       E.notes.unshift({ t: first(s) + ' a été abattu(e) sur place. Son corps et son sac sont restés là-bas.', k: 'bad' });
       C.Surv.kill(s, 'pillage');
     }
@@ -289,7 +296,7 @@
     ev.forEach(function (e) { if (e.name && /talk|help|donate|trade|rescue/.test(e.type)) met[e.name] = true; });
     var n = 0; for (k in gained) n += gained[k];
     return {
-      sid: s.id, loc: E.loc, start: 20 * 60, end: ev.length ? ev[ev.length - 1].m : 20 * 60, reason: reason,
+      sid: s.id, merc: E.merc ? { id: 'merc', defId: s.defId, name: s.name, look: s.look, alive: reason !== 'dead', moral: 70, fatigue: 20, wound: s.wound, sick: 0, traits: s.traits } : null, loc: E.loc, start: 20 * 60, end: ev.length ? ev[ev.length - 1].m : 20 * 60, reason: reason,
       gained: gained, gainedN: n, weight: E.weight(bag), cap: E.capacity(s),
       searched: ev.filter(function (e) { return e.type === 'loot'; }).length,
       met: Object.keys(met).length,

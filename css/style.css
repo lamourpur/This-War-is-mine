@@ -400,6 +400,18 @@ button { font-family: inherit; color: inherit; }
 .role.on { background: var(--bone); color: var(--ink); border-color: var(--bone); }
 .role.on.r-scav { background: var(--amber); border-color: var(--amber); }
 .role.on.r-guard { background: #b9c7d6; border-color: #b9c7d6; }
+/* Mercenaire du jour (écran de la nuit) */
+.night-card.merc { background: #1b1a17; border: 1px dashed #7a6a4c; }
+.night-card.merc.hired { border-style: solid; border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber) inset; }
+.night-card.merc h4 small { font-family: var(--f-body, inherit); font-size: 13px; letter-spacing: .06em; color: #c9a86a; text-transform: uppercase; margin-left: 6px; }
+.merc-price { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: #bdb3a0; }
+.merc-price span { margin-right: 4px; }
+.merc-price em { position: relative; display: inline-flex; padding: 2px; border: 1px solid #4a4336; background: #25221d; font-style: normal; }
+.merc-price em.rare { border-color: #c9a86a; }
+.merc-price em.ko { border-color: #a4473a; opacity: .7; }
+.merc-price em i { position: absolute; right: 1px; bottom: -2px; font-style: normal; font-size: 11px; color: #efe6d0; text-shadow: 0 1px 2px #000; }
+.role.on.r-merc { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+
 .role:disabled { opacity: .25; cursor: not-allowed; }
 .scav-box { margin-top: 18px; border: 1px solid var(--amber); padding: 16px 18px; background: #1b1814; }
 .scav-box h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-family: var(--f-display); font-weight: normal; font-size: 30px; letter-spacing: .04em; color: var(--amber); }

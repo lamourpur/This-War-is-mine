@@ -162,9 +162,21 @@
     if (!scav && plan.scav && plan.scav.explored && plan.scav.explored.dead) {
       // Le pilleur n'est pas revenu de l'exploration
       var dz = plan.scav.explored.exp && G().surv(plan.scav.explored.exp.sid), dfe = dz && dz.look && dz.look.female ? 'e' : '';
+      if (plan.merc) dfe = plan.merc.female ? 'e' : '';
       plan.scav.explored.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, dfe), nt.k); });
       st.pendingExp = plan.scav.explored.exp;
       st.lastScavLoc = plan.scav.loc;
+      if (plan.merc && C.Merc) C.Merc.lost(st);
+      reserved = {};
+    } else if (!scav && plan.merc && plan.scav && plan.scav.explored) {
+      // Le mercenaire rentre : le butin va à la réserve, il garde son équipement
+      var mx = plan.scav.explored, mfe = plan.merc.female ? 'e' : '';
+      mx.notes.forEach(function (nt) { add('scav', nt.t.replace(/\(e\)/g, mfe), nt.k); });
+      st.pendingExp = mx.exp;
+      st.lastScavLoc = plan.scav.loc;
+      var brought = C.Merc.back(st, mx.items);
+      G().addItems(brought, true);
+      add('scav', plan.merc.name.split(' ')[0] + ' a déposé le butin au refuge et s\'en est allé' + mfe + ' avant le jour.', 'info');
       reserved = {};
     } else if (scav && plan.scav && plan.scav.loc && plan.scav.explored) {
       // Exploration jouée : le sac revient tel quel (l'équipement est déjà parti avec)
@@ -410,6 +422,7 @@
     var wasWinter = C.World.isWinter(Object.assign({}, st, { day: prevDay }));
     C.World.rollWeather(st);
     if (C.Market) C.Market.dawn(st, add);
+    if (C.Merc) C.Merc.dawn(st, add);
     if (C.World.isWinter(st) && !wasWinter) { add('home', 'L\'hiver est arrivé. Le gel s\'installe sur la ville. Il va falloir chauffer le refuge.', 'bad'); G().alive().forEach(function (s) { C.Mood.think(s, 'winter'); }); }
     if (!C.World.isWinter(st) && wasWinter) add('home', 'Le redoux est là. Le pire du froid est passé.', 'good');
     if (st.day === st.crimeStart) add('home', 'Les rumeurs le disent : les bandes de pillards se multiplient dans le quartier.', 'bad');

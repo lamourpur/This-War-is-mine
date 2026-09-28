@@ -181,7 +181,7 @@
   C.OWNERS = {
     // desc : texte du menu · warn : fenêtre de confirmation · furn : meuble à démonter
     whitaker: {
-      text: ' a volé les Whitaker. Le vieil homme a supplié ; sa femme pleurait.', moral: -16, key: 'stole_old', horvat: true,
+      text: ' a volé les Whitaker. Le vieil homme a supplié ; sa femme pleurait.', quiet: ' a volé les Whitaker, deux vieux qui n\'ont presque plus rien.', moral: -16, key: 'stole_old', horvat: true,
       desc: 'Les affaires des Whitaker. Ce vieux couple n\'a presque plus rien.',
       warn: 'Tout ce qui est là appartient à Arthur et Edith Whitaker. Sans ça, ils ne passeront peut-être pas l\'hiver.',
       furn: 'Un meuble des Whitaker. Le démonter, c\'est les voler.'
@@ -199,7 +199,7 @@
       later: { days: 2, text: 'On raconte qu\'une fillette est morte à l\'hôpital de campagne, faute de médicaments.', moral: -7, key: 'hospital_death' }
     },
     ecole: {
-      text: ' a volé les familles réfugiées de l\'école. Des enfants ont tout vu.', moral: -13, key: 'stole_kids',
+      text: ' a volé les familles réfugiées de l\'école. Des enfants ont tout vu.', quiet: ' a volé les familles réfugiées de l\'école.', moral: -13, key: 'stole_kids',
       desc: 'Les affaires des familles réfugiées dans le gymnase.',
       warn: 'Ces affaires appartiennent aux familles de l\'école. Des enfants dorment juste à côté.'
     }

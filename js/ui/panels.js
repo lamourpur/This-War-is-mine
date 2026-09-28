@@ -46,6 +46,7 @@
 
   // ------------------------------------------------ dossier d'un survivant
   UI.openBio = function (s) {
+    if (s.merc) return;
     var d = C.survivorDef(s.defId);
     var p = UI.panel('Dossier', 'Survivant n° ' + (G().st.survivors.indexOf(s) + 1) + ' · refuge de la rue Maple', { wide: true });
     var grid = U.el('div', 'bio-grid');
@@ -430,7 +431,7 @@
   // temps, dans quel état, ce qui a été rapporté, et le carnet de la nuit.
   function hhmm(m) { m = Math.round(m) % 1440; return (m / 60 < 10 ? '0' : '') + Math.floor(m / 60) + ':' + (m % 60 < 10 ? '0' : '') + (m % 60); }
   function expeditionCard(x) {
-    var s = G().surv(x.sid), loc = C.locationDef(x.loc);
+    var s = G().surv(x.sid) || x.merc, loc = C.locationDef(x.loc);
     var fe = s && s.look && s.look.female ? 'e' : '';
     var dead = x.reason === 'dead' || (s && !s.alive);
     var stamp = dead ? 'N\'est pas revenu' + fe : x.wound >= 20 ? 'Blessé' + fe : x.reason === 'time' ? 'Rentré' + fe + ' à l\'aube' : 'Rentré' + fe;

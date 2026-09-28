@@ -74,7 +74,7 @@
 
   // plan : plan de nuit · s : explorateur · onGo : départ
   UI.openPack = function (plan, s, onGo, onClose) {
-    var st = G().st, loc = C.locationDef(plan.scav.loc), bag = plan.scav.bag, cap = C.Explore.capacity(s);
+    var st = G().st, loc = C.locationDef(plan.scav.loc), bag = plan.scav.bag, cap = C.Explore.capacity(s) - (s.gearSlots || 0);
     var p = UI.panel('Préparer l\'expédition', U.esc(first(s)) + ' part vers : ' + U.esc(loc.name) + ' · glissez les objets dans son sac', { dark: true, foot: true, noClose: true, wide: true });
     p.classList.add('pack-screen');
 

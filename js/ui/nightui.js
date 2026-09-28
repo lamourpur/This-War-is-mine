@@ -65,6 +65,7 @@
     // Les lits vont d'abord aux plus fatigués (on peut changer)
     var nBeds = G().countBuilt('bed');
     present.slice().sort(function (a, b) { return b.fatigue - a.fatigue; }).forEach(function (s, i) { plan.roles[s.id] = i < nBeds ? 'bed' : 'sleep'; });
+    if (C.Merc && C.Merc.hiredTonight(st)) plan.merc = C.Merc.offer(st);
     function bedsTaken(except) { return present.filter(function (x) { return x !== except && plan.roles[x.id] === 'bed'; }).length; }
 
     var p = UI.panel('La nuit tombe', 'Jour ' + st.day + ' · 20:00 — qui dort, qui veille, qui sort ?', { dark: true, foot: true, noClose: true, wide: true });
@@ -76,6 +77,7 @@
     p.body.appendChild(info);
 
     function scavenger() {
+      if (plan.merc) return plan.mercBody || (plan.mercBody = C.Merc.body(plan.merc));
       for (var id in plan.roles) if (plan.roles[id] === 'scav') return G().surv(id);
       return null;
     }
@@ -95,7 +97,7 @@
         var roles = U.el('div', 'roles');
         [['bed', 'Dormir dans un lit', 'bed'], ['sleep', 'Dormir par terre', 'moon'], ['guard', 'Monter la garde', 'shield'], ['scav', 'Partir explorer', 'pack']].forEach(function (r) {
           var b = U.el('button', 'role r-' + r[0] + (plan.roles[s.id] === r[0] ? ' on' : ''), C.Icon(r[2]) + '<span>' + r[1] + '</span>');
-          if (r[0] === 'scav' && anyScav && anyScav.id !== s.id) { b.disabled = true; b.title = 'Un seul survivant peut sortir par nuit'; }
+          if (r[0] === 'scav' && anyScav && anyScav.id !== s.id) { b.disabled = true; b.title = plan.merc ? 'Le mercenaire sort à votre place cette nuit' : 'Un seul survivant peut sortir par nuit'; }
           if (r[0] === 'bed') {
             if (!nBeds) { b.disabled = true; b.title = 'Aucun lit : construisez-en un à l\'établi'; }
             else if (plan.roles[s.id] !== 'bed' && bedsTaken(s) >= nBeds) { b.disabled = true; b.title = 'Tous les lits sont pris'; }
@@ -119,6 +121,44 @@
         c.appendChild(roles);
         grid.appendChild(c);
       });
+      mercCard(anyScav);
+    }
+
+    // Le mercenaire du jour (à partir du jour 10) : il part à la place du groupe
+    function mercCard(anyScav) {
+      var o = C.Merc && C.Merc.offer(st);
+      if (!o) return;
+      var hired = !!plan.merc;
+      var c = U.el('div', 'night-card merc' + (hired ? ' hired' : ''));
+      var body = plan.mercBody || C.Merc.body(o);
+      c.appendChild(UI.portrait(body, 56, 68));
+      c.appendChild(U.el('h4', '', U.esc(o.name.split(' ')[0]) + ' <small>' + U.esc(C.Merc.archLabel(o)) + '</small>'));
+      var talents = C.Merc.ARCH[o.arch].traits.map(function (t) { return C.TRAITS[t].name; }).join(', ');
+      var gear = C.Merc.gear(o), gearTxt = C.itemsText(gear);
+      c.appendChild(U.el('div', 'ns', '<b>Mercenaire</b>' + (o.returning ? ' · déjà venu (' + o.jobs + ' sortie' + (o.jobs > 1 ? 's' : '') + ')' : '') + '<br><i>' + U.esc(talents) + '</i><br>' + U.esc(C.Merc.describe(o)) + '<br>Son équipement : ' + U.esc(gearTxt) + ' (reste à lui).'));
+      var price = U.el('div', 'merc-price');
+      price.innerHTML = '<span>Son prix, payé d\'avance :</span>' + Object.keys(o.price).map(function (k) {
+        var have = hired || G().count(k) >= o.price[k];
+        return '<em class="' + (have ? '' : 'ko') + (k === o.rare ? ' rare' : '') + '" title="' + U.esc(C.ITEMS[k].name) + (k === o.rare ? (o.shortage ? ' — en pénurie en ce moment' : ' — objet précieux') : '') + (have ? '' : ' — il vous en manque') + '">' + C.ItemArt.img(k, 24) + '<i>' + o.price[k] + '</i></em>';
+      }).join('');
+      c.appendChild(price);
+      var roles = U.el('div', 'roles');
+      var btn = U.el('button', 'role r-merc' + (hired ? ' on' : ''), C.Icon('pack') + '<span>' + (hired ? 'Engagé pour la nuit' : 'L\'engager pour la nuit') + '</span>');
+      if (!hired && anyScav) { btn.disabled = true; btn.title = 'Un survivant part déjà explorer cette nuit'; }
+      else if (!hired && !C.Merc.canPay(st, o)) { btn.disabled = true; btn.title = 'Il vous manque de quoi le payer'; }
+      else btn.title = hired ? 'Congédier (on vous rend le paiement)' : 'Il part à votre place : le groupe reste au refuge. S\'il meurt, ce que vous lui avez confié est perdu, mais personne ne le pleurera.';
+      btn.addEventListener('click', function () {
+        if (plan.merc) { C.Merc.dismiss(st); plan.merc = null; plan.mercBody = null; plan.scav.bag = {}; }
+        else if (C.Merc.hire(st)) {
+          plan.merc = o; plan.mercBody = null; plan.scav.bag = {};
+          if (UI.hint) UI.hint('merc');
+        }
+        if (C.Audio.ready) C.Audio.sfx.click();
+        renderAll();
+      });
+      roles.appendChild(btn);
+      c.appendChild(roles);
+      grid.appendChild(c);
     }
 
     function seg(label, options, cur, onSet) {
@@ -173,7 +213,7 @@
       }
 
       // Le sac se prépare sur un écran à part (Préparer l'expédition)
-      var bag = plan.scav.bag, cap = C.Explore.capacity(s), used = C.Explore.slots(bag);
+      var bag = plan.scav.bag, cap = C.Explore.capacity(s) - (s.gearSlots || 0), used = C.Explore.slots(bag);
       var sum = U.el('div', 'bag-sum');
       var icons = Object.keys(bag).map(function (id) { return '<span title="' + U.esc(C.ITEMS[id].name) + '">' + C.ItemArt.img(id, 28) + (bag[id] > 1 ? '<i>' + bag[id] + '</i>' : '') + '</span>'; }).join('');
       sum.innerHTML = '<div class="bs-l">' + C.Icon('pack') + '<b>Sac de ' + U.esc(s.name.split(' ')[0]) + '</b><em>' + used + ' / ' + cap + ' cases</em></div><div class="bs-items">' + (icons || '<small>Vide : tout l\'espace pour le butin.</small>') + '</div>';
@@ -208,7 +248,7 @@
         tile(estTemp < 0 ? 'bad' : estTemp < 8 ? 'warn' : '', 'thermo', estTemp + ' °C', estTemp < 8 ? 'Nuit froide : risque de maladie' : 'Température prévue cette nuit');
       if (hungry.length) info.innerHTML += tile('warn', 'hunger', 'Faim', hungry.join(', ') + ' — nourrissez-les d\'abord');
       var s = scavenger();
-      var over = s && C.Explore.slots(plan.scav.bag) > C.Explore.capacity(s);
+      var over = s && C.Explore.slots(plan.scav.bag) > C.Explore.capacity(s) - (s.gearSlots || 0);
       go.disabled = !!(s && (!plan.scav.loc || over));
       go.textContent = !s ? 'Passer la nuit' : !plan.scav.loc ? 'Choisissez un lieu' : over ? 'Sac trop plein' : 'Préparer l\'expédition →';
     }
@@ -234,7 +274,7 @@
       UI.closeModal();
       var s = scavenger();
       if (!s) plan.scav = null;
-      C.Main.nightFade(true, s ? s.name.split(' ')[0] + ' s\'enfonce dans l\'obscurité vers : ' + C.locationDef(plan.scav.loc).name + '.' : 'Le refuge retient son souffle.');
+      C.Main.nightFade(true, s ? s.name.split(' ')[0] + (plan.merc ? ', le mercenaire,' : '') + ' s\'enfonce dans l\'obscurité vers : ' + C.locationDef(plan.scav.loc).name + '.' : 'Le refuge retient son souffle.');
       // Lieu jouable : on y entre et on le parcourt soi-même jusqu'à l'aube
       if (s && C.isPlayableLocation(plan.scav.loc)) {
         setTimeout(function () {

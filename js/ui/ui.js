@@ -87,7 +87,7 @@
     UI.cardEls = {};
     G().st.survivors.forEach(function (s) {
       if (!s.alive && G().st.day - (s.deathDay || G().st.day) > 1) return;
-      var d = C.survivorDef(s.defId);
+      var d = C.survivorDef(s.defId) || C.Merc.def(s);
       var el = U.el('div', 'card');
       var pf = UI.portrait(s, 64, 78);
       el.appendChild(pf);
@@ -104,7 +104,7 @@
       el.appendChild(body);
       el.appendChild(U.el('div', 'tags'));
       var foot = U.el('div', 'card-foot', '<span class="card-act"></span>');
-      if (s.alive) {
+      if (s.alive && !s.merc) {
         var bBio = U.el('button', 'card-btn', I('user') + 'Fiche'); bBio.title = 'Biographie, traits et pensées';
         var bNeed = U.el('button', 'card-btn', I('hunger') + 'Besoins'); bNeed.title = 'Manger, se soigner, consommer…';
         bBio.addEventListener('click', function (e) { e.stopPropagation(); UI.openBio(s); });
@@ -182,7 +182,7 @@
 
   UI.showTooltip = function (anchor, s) {
     var tt = $('tooltip');
-    var d = C.survivorDef(s.defId);
+    var d = C.survivorDef(s.defId) || C.Merc.def(s);
     var last = s.thoughts && s.thoughts.length ? s.thoughts[s.thoughts.length - 1].t : null;
     tt.innerHTML = '<h4>' + U.esc(s.name) + '</h4><div class="tt-sub">' + d.age + ' ans · ' + U.esc(d.job) + ' · ' + (s.alive ? C.Surv.moralLabel(s) : 'Disparu(e)') + '</div>' +
       (last ? '<div class="tt-quote">« ' + U.esc(last) + ' »</div>' : '') +

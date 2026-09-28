@@ -74,6 +74,7 @@
   var HINTS = {
     start: { icon: 'user', title: 'Premier jour', text: 'Cliquez sur un survivant (ou sur son dossier à gauche) pour le choisir, puis sur un meuble, un tas de gravats ou une porte pour voir ce qu\'il peut faire. Fouillez tout : chaque pièce cache de quoi tenir.' },
     craft: { icon: 'hammer', title: 'L\'établi', text: 'L\'établi fabrique lits, poêle, collecteur d\'eau, outils… Une fois terminé, un meuble attend d\'être installé : bouton « À installer » à droite.' },
+    merc: { icon: 'pack', title: 'Un mercenaire', text: 'Il part à votre place : le groupe dort ou garde le refuge. Vous le dirigez comme un des vôtres. Son équipement reste à lui ; ce que vous lui confiez est perdu s\'il meurt, mais personne ne le pleurera. Ses vols et ses meurtres pèsent moitié moins sur le moral du groupe.' },
     dusk: { icon: 'moon', title: 'La nuit tombe', text: 'Chacun dort (au lit, c\'est mieux), monte la garde ou part explorer. Choisissez un lieu sur la carte, puis préparez le sac de celui qui sort : on ne rapporte que ce qui tient dans ses cases.' },
     explore: { icon: 'search', title: 'Exploration', text: 'Clic : marcher (double-clic : courir, plus bruyant). Clic sur un meuble : fouiller. Molette, clic droit glissé ou flèches : voir tout le lieu ; F : revenir sur le pilleur. En mode exploration on parle ; touche C pour le mode combat, A pour changer d\'arme. Rentrez avant l\'aube : la cloche sonne à 4 h.' },
     guards: { icon: 'skull', title: 'Vous n\'êtes pas seul', text: 'Des gens armés sont ici. Les cercles de bruit montrent jusqu\'où on vous entend : marchez, restez dans l\'ombre, cachez-vous (clic sur une cachette). Regardez par la serrure avant d\'ouvrir une porte.' },
@@ -185,6 +186,7 @@
       return sec('moon', 'Le plan de nuit', [
         'À 20 h, chacun <b>dort dans un lit</b>, <b>dort par terre</b> (moins reposant), <b>monte la garde</b> ou <b>part explorer</b> (un seul par nuit).',
         'Gardes, armes, trous barricadés et porte renforcée protègent des pillards.',
+        'À partir du jour 10, Milo propose chaque jour un <b>mercenaire</b> : il sort à la place du groupe, contre un paiement d\'avance (toujours une ressource en pénurie). S\'il meurt, seul ce qu\'on lui a confié est perdu.',
         'Choisissez le lieu sur la carte : ce qu\'on en sait s\'affiche. Puis préparez le <b>sac</b> par glisser-déposer : chaque case contient une pile d\'un seul objet.'
       ]) + sec('search', 'Explorer', [
         '<b>Clic</b> : marcher. <b>Double-clic</b> : courir (plus vite, mais on vous entend de loin).',

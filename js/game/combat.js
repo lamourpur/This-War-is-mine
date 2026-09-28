@@ -967,7 +967,7 @@
       effects.push(function () {
         s.moral = Math.max(0, s.moral - (G().hasTrait(s, 'cynique') ? self * 0.3 : self));
         C.Mood.think(s, 'killed_self');
-        if (group) G().moralAll(group, { bad: true, key: key, except: s.id, vars: { n: n } });
+        if (group) G().moralAll(Math.round(group * (ex.merc ? 0.5 : 1)), { bad: true, key: key, except: s.id, vars: { n: n } });
       });
     });
     ex.spared.forEach(function (t) {
