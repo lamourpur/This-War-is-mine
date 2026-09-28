@@ -971,15 +971,11 @@
             ]);
           } : go('search')));
         } else if (o.owner && C.Explore && C.Explore.active) {
-          // Les affaires des habitants : fouiller, c'est voler
+          // Les affaires des habitants : regarder n'est pas voler ; c'est prendre qui l'est
           var ow = C.OWNERS[o.owner] || {};
-          m.desc = ow.desc || 'Ce n\'est pas à vous. Les gens qui vivent ici en ont besoin.';
-          m.entries.push(E('Fouiller (voler)', costSub(null, searchTime(o)) + ' · mauvais pour le moral', null, function () {
-            C.UI.dialog('Voler ?', '<p class="dialog-text">' + U.esc(ow.warn || 'Ces affaires appartiennent aux gens qui vivent ici. Ils en ont besoin pour survivre, eux aussi.') + '</p><p class="dialog-text">Tout le groupe l\'apprendra.</p>', [
-              { label: 'Renoncer', cls: 'ghost' },
-              { label: 'Fouiller quand même', run: go('search') }
-            ]);
-          }));
+          var watcher2 = C.Explore.npcWitness(s);
+          m.desc = (ow.desc || 'Ce n\'est pas à vous. Les gens qui vivent ici en ont besoin.') + ' Y prendre quelque chose, c\'est voler.';
+          m.entries.push(E('Fouiller', costSub(null, searchTime(o)) + (watcher2 ? ' · <span class="ko">' + U.esc(C.NPCS[watcher2.npc].name) + ' vous regarde</span>' : ' · personne ne vous voit'), null, go('search')));
         } else {
           m.desc = 'On peut le fouiller.';
           m.entries.push(E('Fouiller', costSub(null, searchTime(o)), null, go('search')));

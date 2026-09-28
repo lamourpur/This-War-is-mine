@@ -73,7 +73,7 @@
 
     E.active = true;
     E.plan = plan; E.onDone = onDone; E.s = s; E.loc = id; E.def = def; E.home = home;
-    E.notes = []; E.effects = []; E.stolen = {}; E.helped = [];
+    E.notes = []; E.effects = []; E.stolen = {}; E.caught = {}; E.helped = [];
     E.kills = []; E.spared = []; E.provoked = {}; E.events = []; E.gifts = []; E.warnedExposed = false;
     E.weapon = null;             // arme en main choisie (null = la meilleure)
     E.mode = 'explore';          // 'explore' | 'combat' (bouton, touche C)
@@ -253,8 +253,10 @@
         // Prendre à l'armée n'est pas voler des gens dans le besoin
         if (!od.moral) { E.notes.push({ t: first(s) + od.text, k: 'info' }); return; }
         home.stats.stole++;
-        ls.angry = true;
-        E.notes.push({ t: first(s) + od.text, k: 'bad' });
+        // Pas vu, pas pris : les habitants ne l'apprennent que s'ils ont vu faire.
+        // La conscience, elle, sait tout : le moral du groupe en pâtit quand même.
+        if (E.caught[ow]) ls.angry = true;
+        E.notes.push({ t: first(s) + od.text + (E.caught[ow] ? ' ' + E.caught[ow] + ' l\'a vu faire.' : ' Personne ne l\'a vu, mais ça n\'efface rien.'), k: 'bad' });
         G().moralAll(od.moral, { bad: true, key: od.key });
         if (od.horvat) home.flags.horvat = home.day + 3;
         // Ce qu'on apprendra plus tard (une seule fois par lieu)
@@ -330,8 +332,9 @@
           else if (lootLines === 5) add(e.m, 'Et d\'autres choses encore, ici et là.');
           break;
         case 'steal':
-          add(e.m, e.owner === 'armee' ? 'Je me suis servi' + fe + ' dans les réserves de l\'armée. Eux ne manqueront de rien.' : 'J\'ai pris ce qui ne m\'appartenait pas. Ils n\'avaient déjà presque rien.', e.owner === 'armee' ? '' : 'bad');
+          add(e.m, e.military ? 'Je me suis servi' + fe + ' dans les réserves' + (e.owner === 'armee' ? ' de l\'armée. Eux ne manqueront de rien.' : '.') : 'J\'ai pris ce qui ne m\'appartenait pas. Personne ne m\'a vu' + fe + '. Ils n\'avaient déjà presque rien.', e.military ? '' : 'bad');
           break;
+        case 'stealSeen': add(e.m, e.name + ' m\'a vu' + fe + ' prendre ses affaires. Je n\'oublierai pas son regard.', 'bad'); break;
         case 'rob': add(e.m, 'J\'ai pointé mon arme sur ' + e.name + '. Il a tout donné en tremblant' + (Object.keys(e.items || {}).length ? ' : ' + C.itemsText(e.items) : '') + '. Je n\'oublierai pas son regard.', 'bad'); break;
         case 'peek': add(e.m, 'J\'ai regardé par le trou d\'une serrure' + (e.guards ? ' : des hommes armés, de l\'autre côté.' : e.npcs ? ' : il y avait quelqu\'un.' : '. Personne.')); break;
         case 'caught': add(e.m, cap1(e.who || 'un soldat') + ' m\'a vu' + fe + ' faire. « Voleur ! »', 'bad'); break;
@@ -564,18 +567,34 @@
   E.afterRob = AFTER_ROB;
 
   // Un objet appartient-il aux habitants ? (prendre = voler)
+  // Un habitant voit-il le pilleur ? Même niveau, même pièce (rien de fermé
+  // entre eux), assez près, et pas endormi.
+  E.npcWitness = function (s) {
+    if (!s) return null;
+    function region(f, x) { return (C.Nav.regions || []).filter(function (r) { return r.f === f && x >= r.x0 - 1 && x <= r.x1 + 1; })[0] || null; }
+    var rs = region(s.f, s.x);
+    return G().st.objects.filter(function (x) {
+      if (x.kind !== 'npc' || x.f !== s.f || Math.abs(x.x - s.x) > 420) return false;
+      var d = C.NPCS[x.npc]; if (!d || d.asleep) return false;
+      return !rs || region(x.f, x.x) === rs;
+    }).sort(function (a, b) { return Math.abs(a.x - s.x) - Math.abs(b.x - s.x); })[0] || null;
+  };
   E.markStolen = function (o, items) {
     if (!o.owner) return;
     var any = false; for (var k in items) if (items[k] > 0) any = true;
     if (!any) return;
     E.stolen[o.owner] = true;
-    E.ev('steal', { owner: o.owner });
     // Matériel gardé (armée, bande) : grave seulement si quelqu'un voit faire
     var od = C.OWNERS[o.owner] || {};
     C.Combat.witnessTheft(E.s, o.owner);
-    if (od.military) return;
-    // Les habitants réagissent sur le moment
-    var npc = G().st.objects.filter(function (x) { return x.kind === 'npc' && C.NPCS[x.npc] && C.NPCS[x.npc].afterSteal; })[0];
-    if (npc) E.say(npc, C.NPCS[npc.npc].afterSteal[0], 6);
+    if (od.military) { E.ev('steal', { owner: o.owner, military: true }); return; }
+    // Pas vu, pas pris : seul un habitant qui a vu faire réagit
+    var wit = E.npcWitness(E.s);
+    if (wit) {
+      var d = C.NPCS[wit.npc];
+      E.caught[o.owner] = d.name;
+      E.say(wit, (d.caught || d.afterSteal || ['Hé ! Qu\'est-ce que vous faites ? C\'est à nous !'])[0], 6);
+      E.ev('stealSeen', { owner: o.owner, name: d.name });
+    } else E.ev('steal', { owner: o.owner });
   };
 })(window.CQR);
