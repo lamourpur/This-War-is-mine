@@ -227,6 +227,12 @@
       });
       if (Math.abs(x0 - rg.x0) < 1 && rg.x0 > C.Nav.x0(rg.f) + 10) x0 += pad;
       if (Math.abs(x1 - rg.x1) < 1 && rg.x1 < C.Nav.x1(rg.f) - 10) x1 -= pad;
+      // À ciel ouvert (toit, cour) : on voit au loin, simple voile au ras du sol
+      if (fl.out) {
+        ctx.fillStyle = 'rgba(12,11,10,0.3)';
+        ctx.fillRect(x0, fl.y - 130, x1 - x0, 130);
+        return;
+      }
       ctx.fillStyle = rg.peeked ? 'rgba(12,11,10,0.38)' : 'rgba(12,11,10,0.8)';
       ctx.fillRect(x0, fl.ceil, x1 - x0, fl.y - fl.ceil);
       if (rg.peeked) return;

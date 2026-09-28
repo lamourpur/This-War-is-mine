@@ -876,6 +876,11 @@
       for (var k = 0; k < 4; k++) SK.line(ctx, r, bx + dir * k * 6, y + 6, bx - dir * r.range(10, 26), y + r.range(20, 50), { w: 0.9, passes: 1 });
       SK.line(ctx, r, bx + dir * 8, y + 2, bx - dir * 14, y + 60, { w: 4, color: '#4a3e32', passes: 1 });
     });
+    // Mezzanine posée sur des poteaux
+    if (F.support) for (var sp = x0 + 20; sp < x1 - 10; sp += F.supportGap || 200) {
+      SK.fillRect(ctx, r, sp - 6, y + 14, 12, F.support - y - 14, '#4a4b4c', 0.2);
+      SK.line(ctx, r, sp - 6, y + 14, sp - 6, F.support, { w: 1.2 }); SK.line(ctx, r, sp + 6, y + 14, sp + 6, F.support, { w: 1.2 });
+    }
     if (F.carpet) {
       var cp = F.carpet;
       SK.fillRect(ctx, r, cp[0], y - 3, cp[1] - cp[0], 4, cp[2] || '#6a3f36', 0.2);
@@ -983,7 +988,7 @@
 
   // Grand décor dessiné : chariot élévateur, conteneur, camion bâché
   function thing(ctx, r, th) {
-    var y = fl(th.f).y, x = th.x, d = th.flip ? -1 : 1;
+    var y = fl(th.f).y - (th.dy || 0), x = th.x, d = th.flip ? -1 : 1;
     if (th.kind === 'forklift') {
       ctx.save(); ctx.translate(x, y); ctx.scale(d, 1);
       var body = [[-60, -14], [-60, -52], [-30, -58], [10, -58], [14, -14]];

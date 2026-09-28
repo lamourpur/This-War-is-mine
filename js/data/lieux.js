@@ -656,4 +656,372 @@
       { key: 'caisse_antenne', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 4, x: 1560, w: 90, h: 50, loot: { pieces_elec: 2, composants: 1 } }
     ]
   });
+
+  // ============================================================ Supermarché pillé (bandits)
+  // Tout en largeur : le parking et ses carcasses, la grande surface aux
+  // gondoles vidées, la réserve et son quai, le bureau du gérant au-dessus
+  // (le chef de la bande), la chambre froide en bas, le toit plat.
+  var GF = { y: G, ceil: 470 };
+  C.MAPS.supermarche = keepNpcs('supermarche', {
+    theme: { dirt: 0.42 },
+    world: { W: 2800, H: 1010, left: 40, right: 2760, ground: G, walkMin: 60, walkMax: 2740, view: 1500 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Parking et magasin', y: G, ceil: GF.ceil, x0: 60, x1: 2740, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 600, out: true }, { x0: 600, x1: 2000, tex: 'tiles' }, { x0: 2000, x1: 2600, tex: 'concrete' }, { x0: 2600, x1: 2740, out: true }] },
+      { name: 'Chambre froide', y: 985, ceil: 848, x0: 2012, x1: 2588, thick: 25, tex: 'tiles' },
+      { name: 'Bureau du gérant', y: 640, ceil: 484, x0: 2012, x1: 2588, tex: 'planks' },
+      { name: 'Toit', y: 456, ceil: 200, x0: 605, x1: 2595, out: true, noSlab: true }
+    ],
+    rooms: [
+      R(600, 2000, 470, G, 'plaster2', { tone: '#8a877e', wainscot: { h: 40, tone: '#7a776f', grid: 20 }, tubes: [760, 1010, 1260, 1510, 1760],
+        shelves: [{ x0: 860, x1: 1060, h: 130, label: 'CONSERVES' }, { x0: 1160, x1: 1400, h: 150, label: 'BOISSONS' }, { x0: 1500, x1: 1720, h: 120, label: 'HYGIÈNE' }],
+        signs: [{ t: 'PROMOTIONS', x: 660, y: 560, size: 26 }], posters: [{ x: 1830, y: 640, t: '-30 %\nSUR TOUT', rot: -0.05 }] }),
+      R(2000, 2600, 656, G, 'concrete', { tone: '#6d6a63', tubes: [2300], racks: [{ x0: 2150, x1: 2480, h: 150, levels: 2 }] }),
+      R(2000, 2600, 484, 640, 'paintedConcrete', { tone: '#7f7b72', frames: 1, bulbs: [2300], posters: [{ x: 2150, y: 540, t: 'PLANNING\nÉQUIPES' }] }),
+      R(2000, 2600, 848, 985, 'tiles', { tone: '#77766f', wainscot: { h: 137, tone: '#85847c', grid: 16 }, border: true })
+    ],
+    shells: [
+      { x0: 600, x1: 2600, top: 470, bottom: 985, wall: 'factoryBrick', roof: 'flat', sign: { t: 'SUPERMARCHÉ', x: 1300, y: 376, missing: [8] },
+        gaps: { left: [{ y0: 700, y1: G, shutter: 40 }], right: [{ y0: 700, y1: G, shutter: 36 }] } }
+    ],
+    things: [
+      { kind: 'car', f: 0, x: 240, burnt: true },
+      { kind: 'car', f: 0, x: 470, color: '#5f5a50', door: true },
+      { kind: 'barricade', f: 0, x: 2680, w: 100 }
+    ],
+    lights: [{ kind: 'brasero', x: 2300, y: 790, r: 210 }, { kind: 'candle', x: 2400, y: 600, r: 90 }],
+    backdrop: { far: 'city', mid: ['towers'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 2060 }, b: { f: 2, x: 2230 }, type: 'metal' },
+      { a: { f: 0, x: 2550 }, b: { f: 1, x: 2400 } },
+      { a: { f: 2, x: 2040 }, b: { f: 3, x: 2040 }, type: 'ladder' }
+    ],
+    walls: [{ f: 0, x: 2000 }, { f: 1, x: 2200 }],
+    windows: [
+      { f: 0, x: 760, kind: 'shop', w: 180, h: 110, text: 'SOLDES', broken: true }, { f: 0, x: 1300, kind: 'strip', y: 486, w: 320, h: 36, broken: true },
+      { f: 2, x: 2460 }, { f: 1, x: 2300, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 380, p: 'metal_trash_can', h: 34 }, { f: 0, x: 560, p: 'industrial_storage_cart', h: 56 }, { f: 0, x: 1120, p: 'trashbag', h: 30 },
+      { f: 0, x: 1450, p: 'cardboard_box_01', h: 28, shade: 0.3 }, { f: 0, x: 1800, p: 'plastic_crate_01', h: 24 }, { f: 0, x: 2450, p: 'hand_truck', h: 60 },
+      { f: 1, x: 2150, p: 'russian_food_cans_01', h: 16 }, { f: 1, x: 2330, p: 'wine_bottles_01', h: 20 },
+      { f: 3, x: 900, p: 'utility_box_01', h: 60 }, { f: 3, x: 1900, p: 'power_box_01', h: 50 }, { f: 3, x: 2300, p: 'cardboard_box_01', h: 28, shade: 0.3 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      // Surface de vente
+      { key: 'caisse_enreg', kind: 'cache', variant: 'coffre', label: 'Caisse enregistreuse', f: 0, x: 700, w: 60, h: 48, loot: { cigarettes: 3 } },
+      { key: 'rayon1', kind: 'cache', variant: 'etagere', label: 'Rayon vidé', f: 0, x: 960, w: 70, h: 104, loot: { conserve: 2, sucre: 1 } },
+      { key: 'recoin_rayons', kind: 'hide', variant: 'palettes', label: 'Derrière les rayons', f: 0, x: 1110, w: 70, h: 92 },
+      { key: 'rayon2', kind: 'cache', variant: 'etagere', label: 'Rayon renversé', f: 0, x: 1300, w: 70, h: 104, loot: { legumes: 2, eau: 2, composants: 2 } },
+      { key: 'guetteur', kind: 'guard', type: 'bandit', f: 0, x: 1700, facing: -1, attitude: 'hostile', group: 'bande', patrol: [1400, 1950] },
+      // Chambre froide
+      { key: 'chambre_froide', kind: 'cache', variant: 'armoire', label: 'Chambre froide', f: 1, x: 2100, w: 58, h: 112, loot: { conserve: 4, cafe: 2, tabac: 3 } },
+      { key: 'porte_froide', kind: 'door', f: 1, x: 2200, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'matelas_bandit', kind: 'bed', f: 1, x: 2300, deco: true },
+      { key: 'dormeur', kind: 'guard', type: 'bandit', f: 1, x: 2300, facing: 1, attitude: 'hostile', group: 'bande', sleep: true },
+      { key: 'reserve', kind: 'cache', variant: 'caisse', label: 'Réserve', f: 1, x: 2480, w: 78, h: 48, owner: 'bande', loot: { conserve: 4, cafe: 2, sucre: 2 } },
+      { key: 'recoin_cave', kind: 'hide', f: 1, x: 2565, w: 40, h: 108 },
+      // Bureau du gérant : le chef
+      { key: 'bureau', kind: 'cache', variant: 'bureau_metal', label: 'Bureau du gérant', f: 2, x: 2330, w: 110, h: 50, loot: { livres: 2, composants: 2 } },
+      { key: 'recoin_bureau', kind: 'hide', f: 2, x: 2440, w: 46, h: 108 },
+      { key: 'chef', kind: 'guard', type: 'bandit_arme', f: 2, x: 2300, facing: 1, attitude: 'hostile', group: 'bande', patrol: [2250, 2520] },
+      { key: 'butin_bande', kind: 'cache', variant: 'coffre', label: 'Butin de la bande', f: 2, x: 2535, w: 60, h: 48, owner: 'bande', loot: { alcool: 1, cigarettes: 3, conserve: 2, cafe: 1 } },
+      // Toit
+      { key: 'eboulis', kind: 'rubble', label: 'Verrière effondrée', f: 3, x: 1600, w: 104, h: 90, block: true, work: 150, loot: { bois: 3, composants: 2 } },
+      { key: 'cartons', kind: 'cache', variant: 'caisse', label: 'Cartons', f: 3, x: 1100, w: 78, h: 48, loot: { legumes: 2, eau: 2 } }
+    ]
+  });
+
+  // ============================================================ Boulangerie détruite
+  // Une boutique de quartier : la vitrine, le comptoir, le fournil et son
+  // grand four, séparés par un plafond effondré. Par la ruelle, une porte de
+  // service et une pente de gravats jusqu'au logement du boulanger.
+  C.MAPS.boulangerie = keepNpcs('boulangerie', {
+    theme: { dirt: 0.38 },
+    world: { W: 1900, H: 1010, left: 40, right: 1860, ground: G, walkMin: 60, walkMax: 1840, view: 1300 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Rue, boutique et fournil', y: G, ceil: 656, x0: 60, x1: 1840, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 420, out: true }, { x0: 420, x1: 1500, tex: 'tiles' }, { x0: 1500, x1: 1840, out: true, tex: 'rubble' }] },
+      { name: 'Réserve', y: 985, ceil: 848, x0: 432, x1: 1488, thick: 25, tex: 'concrete' },
+      { name: 'Logement', y: 640, ceil: 476, x0: 432, x1: 1488, tex: 'floor' },
+      { name: 'Grenier', y: 460, ceil: 340, x0: 460, x1: 1460, tex: 'planks' }
+    ],
+    rooms: [
+      R(420, 1000, 656, G, 'plaster', { tone: '#8b8374', wainscot: { h: 60, tone: '#8a8378' }, shelves: [{ x0: 640, x1: 900, h: 110, levels: 3, label: 'PAIN' }],
+        signs: [{ t: 'BOULANGERIE — PÂTISSERIE', x: 460, y: 690, size: 20 }], clock: { x: 950, y: 690 } }),
+      R(1000, 1500, 656, G, 'brick', { tone: '#6f6456', bulbs: [1300] }),
+      R(420, 1500, 476, 640, 'wallpaper', { tone: '#877f70', paper: 12, frames: 2, skirt: true }),
+      R(420, 1500, 340, 460, 'planks', { tone: '#5f574b', attic: 'both' }),
+      R(420, 1500, 848, 985, 'brickPlaster', { tone: '#665f55', vault: 180, spring: 20, border: true })
+    ],
+    shells: [
+      { x0: 420, x1: 1500, top: 340, bottom: 985, wall: 'brickPlaster', roof: 'tiles', roofH: 110, hole: [1150, 1400], chimneys: [1180],
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }, { y0: 520, y1: 640 }] } }
+    ],
+    things: [
+      { kind: 'oven', f: 0, x: 1150, w: 190, h: 140 },
+      { kind: 'bench', f: 0, x: 280 },
+      { kind: 'barricade', f: 0, x: 1790, w: 90 }
+    ],
+    lights: [{ kind: 'candle', x: 900, y: 598, r: 100 }],
+    backdrop: { far: 'city', mid: ['houses'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 480 }, b: { f: 2, x: 660 } },
+      { a: { f: 0, x: 1450 }, b: { f: 1, x: 1320 } },
+      { a: { f: 2, x: 1180 }, b: { f: 3, x: 1180 }, type: 'ladder' },
+      { a: { f: 0, x: 1720 }, b: { f: 2, x: 1470 }, type: 'debris' }
+    ],
+    walls: [{ f: 0, x: 1000 }, { f: 0, x: 1500 }, { f: 1, x: 900 }],
+    windows: [
+      { f: 0, x: 540, kind: 'shop', w: 130, h: 100, text: 'PAIN', broken: true }, { f: 2, x: 620 }, { f: 2, x: 1000, broken: true },
+      { f: 3, x: 800, y: 372, w: 44, h: 40 }, { f: 1, x: 700, vent: true }
+    ],
+    decor: [
+      { f: 0, x: 200, p: 'street_lamp_01', h: 200 }, { f: 0, x: 370, p: 'trashbag', h: 30 }, { f: 0, x: 1300, p: 'wooden_crate_02', h: 24 },
+      { f: 0, x: 1640, p: 'metal_trash_can', h: 34 }, { f: 1, x: 1000, p: 'compost_bags', h: 26 }, { f: 1, x: 1250, p: 'wooden_barrels_01', h: 30 },
+      { f: 2, x: 1400, p: 'wooden_stool_01', h: 28 }, { f: 3, x: 1300, p: 'wooden_ladder', h: 90 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'comptoir', kind: 'cache', variant: 'caisse', label: 'Comptoir', f: 0, x: 800, w: 78, h: 48, loot: { sucre: 1, composants: 1 } },
+      { key: 'effondrement', kind: 'rubble', label: 'Plafond effondré', f: 0, x: 1000, w: 104, h: 150, block: true, work: 150, loot: { bois: 3, composants: 2 } },
+      { key: 'fournil', kind: 'cache', variant: 'etagere', label: 'Étagères du fournil', f: 0, x: 1330, w: 70, h: 104, loot: { sucre: 2, legumes: 2, eau: 2 } },
+      { key: 'porte_arriere', kind: 'door', label: 'Porte de service', f: 0, x: 1500, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
+      { key: 'gravats_fournil', kind: 'rubble', label: 'Gravats de la ruelle', f: 0, x: 1610, w: 96, h: 42, work: 90, loot: { bois: 3, carburant: 1 } },
+      // Réserve (sous le fournil)
+      { key: 'sacs_cave', kind: 'cache', variant: 'etagere', label: 'Conserves du boulanger', f: 1, x: 1150, w: 70, h: 104, loot: { conserve: 2, eau: 1 } },
+      { key: 'porte_reserve', kind: 'door', f: 1, x: 900, w: 30, h: 112, tools: ['pied_de_biche'] },
+      { key: 'reserve', kind: 'cache', variant: 'caisse', label: 'Réserve de farine et de sucre', f: 1, x: 700, w: 78, h: 48, loot: { sucre: 3, conserve: 3, cafe: 1 } },
+      { key: 'gravats_cave', kind: 'rubble', f: 1, x: 530, w: 90, h: 40, work: 60, loot: { bois: 2, composants: 1 } },
+      // Logement
+      { key: 'logement', kind: 'cache', variant: 'armoire', label: 'Armoire du boulanger', f: 2, x: 820, w: 58, h: 112, loot: { legumes: 1, bois: 1, bandage: 1 } },
+      { key: 'lit', kind: 'bed', f: 2, x: 1010, deco: true },
+      { key: 'eboulis2', kind: 'rubble', f: 2, x: 1320, w: 96, h: 42, work: 90, loot: { bois: 2, composants: 2 } },
+      { key: 'grenier', kind: 'cache', variant: 'valise', label: 'Malle du grenier', f: 3, x: 900, w: 62, h: 36, loot: { sucre: 1, conserve: 1 } }
+    ]
+  });
+
+  // ============================================================ Garage du Centre
+  // Les pompes du parvis, l'atelier haut de plafond (pont élévateur, fosse
+  // de vidange), le bureau en mezzanine, le toit, et derrière, la casse où
+  // Ray démonte une camionnette.
+  C.MAPS.garage = keepNpcs('garage', {
+    theme: { dirt: 0.45 },
+    world: { W: 2600, H: 1010, left: 40, right: 2560, ground: G, walkMin: 60, walkMax: 2540, view: 1500 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Parvis, atelier et casse', y: G, ceil: 500, x0: 60, x1: 2540, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 700, out: true }, { x0: 700, x1: 1800, tex: 'concrete' }, { x0: 1800, x1: 2540, out: true, tex: 'rubble' }] },
+      { name: 'Fosse et sous-sol', y: 985, ceil: 848, x0: 1012, x1: 1588, thick: 25, tex: 'concrete' },
+      { name: 'Bureau', y: 640, ceil: 510, x0: 712, x1: 1150, tex: 'planks', support: G, supportGap: 210 },
+      { name: 'Toit', y: 486, ceil: 200, x0: 705, x1: 1795, out: true, noSlab: true }
+    ],
+    rooms: [
+      R(700, 1800, 500, G, 'brickPlaster', { tone: '#6f6a60', tubes: [900, 1250, 1600], signs: [{ t: 'VIDANGE — PNEUS — FREINS', x: 1200, y: 590, size: 22 }],
+        posters: [{ x: 1700, y: 660, t: 'CALENDRIER\n1991' }] }),
+      R(700, 1150, 510, 640, 'paintedConcrete', { tone: '#7d786e', frames: 1, bulbs: [930] }),
+      R(1000, 1600, 848, 985, 'concrete', { tone: '#605d57', border: true })
+    ],
+    shells: [
+      { x0: 700, x1: 1800, top: 500, bottom: 985, wall: 'brick', roof: 'flat', sign: { t: 'GARAGE DU CENTRE', x: 1250, y: 410, missing: [11] },
+        gaps: { left: [{ y0: 640, y1: G, shutter: 50 }], right: [{ y0: 700, y1: G }] } }
+    ],
+    fences: [{ f: 0, x0: 1820, x1: 2530, h: 100 }],
+    things: [
+      { kind: 'pumps', f: 0, x: 400 },
+      { kind: 'car', f: 0, x: 600, burnt: true, s: 0.9 },
+      { kind: 'lift', f: 0, x: 1450 },
+      { kind: 'car', f: 0, x: 2000, color: '#5a574e' },
+      { kind: 'car', f: 0, x: 2280, burnt: true },
+      { kind: 'car', f: 0, x: 2290, burnt: true, dy: 46, s: 0.9, flip: true }
+    ],
+    lights: [{ kind: 'brasero', x: 1900, y: 790, r: 190 }],
+    backdrop: { far: 'city', mid: ['chimneys', 'towers'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 1250 }, b: { f: 2, x: 1130 }, type: 'metal' },
+      { a: { f: 0, x: 1320 }, b: { f: 1, x: 1320 }, type: 'ladder' },
+      { a: { f: 2, x: 740 }, b: { f: 3, x: 740 }, type: 'ladder' }
+    ],
+    walls: [],
+    windows: [
+      { f: 0, x: 1000, kind: 'strip', y: 520, w: 180, h: 40, broken: true }, { f: 0, x: 1500, kind: 'strip', y: 520, w: 180, h: 40 },
+      { f: 2, x: 1000 }, { f: 1, x: 1450, vent: true }
+    ],
+    zones: [{ id: 'atelier_ray', f: 0, x0: 1560, x1: 1800, group: 'ray', label: 'L\'atelier de Ray', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' }],
+    decor: [
+      { f: 0, x: 250, p: 'metal_jerrycan', h: 28 }, { f: 0, x: 780, p: 'old_tyre', h: 26 }, { f: 0, x: 1100, p: 'metal_tool_chest', h: 30 },
+      { f: 0, x: 1560, p: 'portable_welding_cart', h: 56 }, { f: 0, x: 2150, p: 'old_tyre', h: 24 }, { f: 0, x: 2420, p: 'rusted_wheel_rim_01', h: 26 },
+      { f: 1, x: 1200, p: 'metal_jerrycan_green', h: 26 }, { f: 2, x: 1060, p: 'metal_office_desk', h: 40 },
+      { f: 3, x: 1000, p: 'old_tyre', h: 22 }, { f: 3, x: 1700, p: 'utility_box_01', h: 56 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'epave1', kind: 'cache', variant: 'epave', label: 'Voiture éventrée', f: 0, x: 900, w: 150, h: 60, loot: { pieces_meca: 2, composants: 3, carburant: 1 } },
+      { key: 'recoin_atelier', kind: 'hide', variant: 'bidons', label: 'Derrière les bidons', f: 0, x: 1050, w: 60, h: 70 },
+      { key: 'etabli', kind: 'cache', variant: 'etabli', label: 'Établi du mécanicien', f: 0, x: 1170, w: 78, h: 60, loot: { composants: 3, pieces_meca: 1 } },
+      { key: 'ray', kind: 'guard', type: 'pilleur', name: 'Ray', f: 0, x: 1700, facing: -1, attitude: 'neutral', group: 'ray', patrol: [1600, 1780] },
+      { key: 'epave2', kind: 'cache', variant: 'epave', label: 'Camionnette démontée', f: 0, x: 1690, w: 150, h: 60, owner: 'pilleur', loot: { pieces_meca: 3, carburant: 2, pieces_elec: 1 } },
+      // Fosse (par l'échelle)
+      { key: 'fosse', kind: 'cache', variant: 'caisse', label: 'Fosse de vidange', f: 1, x: 1460, w: 78, h: 48, loot: { carburant: 1, composants: 2 } },
+      { key: 'armoire_meca', kind: 'cache', variant: 'coffre', label: 'Armoire à outils fermée', f: 1, x: 1100, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_meca: 3, munitions: 6, pied_de_biche: 1 } },
+      // Bureau
+      { key: 'bureau', kind: 'cache', variant: 'armoire', label: 'Bureau du garage', f: 2, x: 830, w: 58, h: 112, loot: { conserve: 1, bois: 2, pieces_elec: 1 } },
+      { key: 'recoin2', kind: 'hide', f: 2, x: 910, w: 46, h: 108 },
+      { key: 'pneus', kind: 'rubble', label: 'Pile de pneus', f: 2, x: 1000, w: 80, h: 42, work: 60, loot: { composants: 2, bois: 1 } },
+      // Toit
+      { key: 'eboulis', kind: 'rubble', label: 'Verrière effondrée', f: 3, x: 1250, w: 104, h: 90, block: true, work: 150, loot: { bois: 2, composants: 2 } },
+      { key: 'caisse_toit', kind: 'cache', variant: 'caisse', f: 3, x: 1550, w: 78, h: 48, loot: { pieces_meca: 1, composants: 2 } }
+    ]
+  });
+
+  // ============================================================ Immeuble éventré
+  // Quatre étages d'appartements autour d'une cage d'escalier ; une volée
+  // s'est effondrée (on grimpe sur les gravats), le dernier étage est ouvert
+  // au ciel. Kurt, un pilleur, s'est approprié le 2e.
+  C.MAPS.immeuble = keepNpcs('immeuble', {
+    theme: { dirt: 0.36 },
+    world: { W: 2000, H: 1010, left: 40, right: 1960, ground: G, walkMin: 60, walkMax: 1940, view: 1300 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Rue et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 1940, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 400, out: true }, { x0: 400, x1: 1500, tex: 'floor' }, { x0: 1500, x1: 1940, out: true, tex: 'rubble' }] },
+      { name: 'Caves', y: 985, ceil: 848, x0: 412, x1: 1488, thick: 25, tex: 'concrete' },
+      { name: '1er étage', y: 640, ceil: 476, x0: 412, x1: 1488, tex: 'floor' },
+      { name: '2e étage', y: 460, ceil: 296, x0: 412, x1: 1488, tex: 'floor' },
+      { name: '3e étage', y: 280, ceil: 116, x0: 412, x1: 1400, tex: 'debris', broken: ['right'] }
+    ],
+    rooms: [
+      R(1300, 1500, 116, G, 'plaster2', { tone: '#6f6a60' }),
+      R(400, 1300, 656, G, 'peeling', { tone: '#7e786c', frames: 1, bulbs: [800], posters: [{ x: 1200, y: 720, t: 'AVIS À LA\nPOPULATION' }] }),
+      R(400, 800, 476, 640, 'wallpaper', { tone: '#88806f', paper: 12, frames: 2, skirt: true }),
+      R(800, 1300, 476, 640, 'wallpaper', { tone: '#7d7a70', paper: 9, frames: 1, skirt: true }),
+      R(400, 1300, 296, 460, 'wallpaper', { tone: '#857c6b', paper: 14, skirt: true, breach: [{ x: 620, y: 360, r: 46 }] }),
+      R(400, 1300, 116, 280, 'peeling', { tone: '#77726a', breach: [{ x: 1100, y: 180, r: 56 }] }),
+      R(400, 1500, 848, 985, 'brickPlaster', { tone: '#665f55', border: true })
+    ],
+    shells: [
+      { x0: 400, x1: 1500, top: 116, bottom: 985, wall: 'brickPlaster', roof: 'ruin',
+        gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 116, y1: 290 }] } }
+    ],
+    things: [
+      { kind: 'car', f: 0, x: 220, burnt: true },
+      { kind: 'barricade', f: 0, x: 1620, w: 130 },
+      { kind: 'crater', f: 0, x: 1800, w: 140 },
+      { kind: 'tree', f: 0, x: 1880, h: 220, back: true }
+    ],
+    lights: [{ kind: 'candle', x: 1000, y: 416, r: 110 }],
+    backdrop: { far: 'city', mid: ['towers'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 1460 }, b: { f: 2, x: 1320 } },
+      { a: { f: 2, x: 1460 }, b: { f: 3, x: 1320 }, type: 'debris' },
+      { a: { f: 3, x: 1460 }, b: { f: 4, x: 1320 } },
+      { a: { f: 0, x: 1340 }, b: { f: 1, x: 1200 } }
+    ],
+    walls: [{ f: 0, x: 1300 }, { f: 2, x: 800 }, { f: 2, x: 1300 }, { f: 3, x: 1300 }],
+    windows: [
+      { f: 0, x: 560 }, { f: 0, x: 1000, boarded: true }, { f: 2, x: 600 }, { f: 2, x: 1050, broken: true },
+      { f: 3, x: 900, broken: true }, { f: 3, x: 1200 }, { f: 4, x: 600, broken: true }, { f: 1, x: 900, vent: true }
+    ],
+    zones: [{ id: 'appart_kurt', f: 3, x0: 412, x1: 1300, group: 'kurt', label: 'L\'appartement de Kurt', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' }],
+    decor: [
+      { f: 0, x: 330, p: 'trashbag', h: 32 }, { f: 0, x: 1250, p: 'Television_01', h: 28 }, { f: 0, x: 1700, p: 'old_tyre', h: 24 },
+      { f: 1, x: 560, p: 'wooden_barrels_01', h: 30 }, { f: 2, x: 1150, p: 'wooden_stool_01', h: 28 }, { f: 2, x: 540, p: 'vintage_oil_lamp', h: 28 },
+      { f: 3, x: 1050, p: 'vintage_suitcase', h: 24 }, { f: 4, x: 500, p: 'old_tyre', h: 24 }, { f: 4, x: 1200, p: 'cardboard_box_01', h: 26, shade: 0.3 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'cuisine1', kind: 'cache', variant: 'armoire', label: 'Loge de la concierge', f: 0, x: 520, w: 58, h: 112, loot: { conserve: 2, eau: 2, legumes: 1 } },
+      { key: 'fauteuil', kind: 'armchair', f: 0, x: 700, deco: true },
+      { key: 'commode', kind: 'furniture', variant: 'commode', f: 0, x: 900, w: 64, h: 60, work: 60, loot: { bois: 3, livres: 1 } },
+      { key: 'gravats1', kind: 'rubble', f: 0, x: 1150, w: 96, h: 42, work: 90, loot: { bois: 2, composants: 3 } },
+      // Caves
+      { key: 'cave_casiers', kind: 'cache', variant: 'etagere', label: 'Casiers de la cave', f: 1, x: 700, w: 70, h: 104, loot: { eau: 2, legumes: 2, filtre: 1 } },
+      { key: 'coffre_cave', kind: 'cache', variant: 'coffre', label: 'Coffre-fort d\'un voisin', f: 1, x: 1000, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { conserve: 2, medicaments: 1, bijoux: 1 } },
+      // 1er : deux appartements
+      { key: 'chambre2', kind: 'cache', variant: 'armoire', label: 'Penderie', f: 2, x: 480, w: 58, h: 112, loot: { bandage: 1, livres: 2, cafe: 1 } },
+      { key: 'lit2', kind: 'bed', f: 2, x: 650, deco: true },
+      { key: 'biblio', kind: 'furniture', variant: 'bibliotheque', f: 2, x: 1000, w: 70, h: 124, work: 90, loot: { bois: 3, livres: 2 } },
+      { key: 'recoin2', kind: 'hide', f: 2, x: 1200, w: 46, h: 108 },
+      // 2e : chez Kurt
+      { key: 'placard3', kind: 'cache', variant: 'etagere', f: 3, x: 500, w: 70, h: 104, loot: { conserve: 1, bois: 3 } },
+      { key: 'butin_kurt', kind: 'cache', variant: 'valise', label: 'Sac de Kurt', f: 3, x: 700, w: 62, h: 36, owner: 'pilleur', loot: { conserve: 1, composants: 2, eau: 1 } },
+      { key: 'kurt', kind: 'guard', type: 'pilleur', name: 'Kurt', f: 3, x: 900, facing: -1, attitude: 'neutral', group: 'kurt', patrol: [500, 1250] },
+      { key: 'recoin3', kind: 'hide', f: 3, x: 1180, w: 46, h: 108 },
+      // 3e, ouvert au ciel
+      { key: 'eboulis_haut', kind: 'rubble', label: 'Plafond effondré', f: 4, x: 950, w: 104, h: 118, block: true, work: 120, loot: { bois: 3, composants: 2 } },
+      { key: 'appart_haut', kind: 'cache', variant: 'armoire', label: 'Appartement du dernier étage', f: 4, x: 650, w: 58, h: 112, loot: { conserve: 1, livres: 2, bandage: 1 } }
+    ]
+  });
+
+  // ============================================================ Squat délabré
+  // Un vieil immeuble de briques pris par des sans-abri : l'escalier a brûlé
+  // (on monte à l'échelle), un trou dans le plancher, un autre vers la cave,
+  // le feu de Gus au milieu du rez-de-chaussée, un pigeonnier sur le toit.
+  var TAG = function (t, x, y, o) { return ext({ t: t, x: x, y: y, font: '"Special Elite", monospace', size: 22, color: 'rgba(196,70,58,0.55)' }, o || {}); };
+  C.MAPS.squat = keepNpcs('squat', {
+    theme: { dirt: 0.55 },
+    world: { W: 2100, H: 1010, left: 40, right: 2060, ground: G, walkMin: 60, walkMax: 2040, view: 1400 },
+    start: { f: 0, x: 100 },
+    floors: [
+      { name: 'Terrain vague et rez-de-chaussée', y: G, ceil: 656, x0: 60, x1: 2040, ground: true, thick: 28,
+        segs: [{ x0: 60, x1: 500, out: true, tex: 'rubble' }, { x0: 500, x1: 1700, tex: 'debris' }, { x0: 1700, x1: 2040, out: true, tex: 'rubble' }] },
+      { name: 'Cave', y: 985, ceil: 848, x0: 512, x1: 1688, thick: 25, tex: 'concrete' },
+      { name: '1er étage : dortoir', y: 640, ceil: 476, x0: 512, x1: 1688, tex: 'planks' },
+      { name: 'Toit', y: 462, ceil: 200, x0: 505, x1: 1695, out: true, noSlab: true }
+    ],
+    rooms: [
+      R(500, 1700, 656, G, 'brick', { tone: '#5e5850', signs: [TAG('ICI ON PARTAGE', 1180, 700), TAG('PAS DE FLICS', 620, 740, { color: 'rgba(220,214,196,0.45)', size: 18 })] }),
+      R(500, 1700, 476, 640, 'peeling', { tone: '#6f695e', breach: [{ x: 820, y: 540, r: 40 }], signs: [TAG('ON TIENDRA', 1300, 520, { size: 20 })] }),
+      R(500, 1700, 848, 985, 'brickPlaster', { tone: '#5f5a52', border: true })
+    ],
+    shells: [
+      { x0: 500, x1: 1700, top: 476, bottom: 985, wall: 'factoryBrick', roof: 'flat', gaps: { left: [{ y0: 702, y1: G }], right: [{ y0: 702, y1: G }] } }
+    ],
+    things: [
+      { kind: 'tent', f: 0, x: 300, w: 160, h: 90, color: '#5d5a4f' },
+      { kind: 'car', f: 0, x: 1880, burnt: true },
+      { kind: 'wall', f: 3, x: 560, w: 150, h: 60, tex: 'planks', rails: true }
+    ],
+    lights: [{ kind: 'brasero', x: 1150, y: 790, r: 220 }, { kind: 'candle', x: 700, y: 600, r: 80 }],
+    backdrop: { far: 'city', mid: ['towers', 'chimneys'], near: ['ruins'] },
+    stairs: [
+      { a: { f: 0, x: 560 }, b: { f: 2, x: 560 }, type: 'ladder' },
+      { a: { f: 2, x: 1300 }, b: { f: 0, x: 1300 }, type: 'hole', w: 70 },
+      { a: { f: 2, x: 1650 }, b: { f: 3, x: 1650 }, type: 'ladder' },
+      { a: { f: 0, x: 900 }, b: { f: 1, x: 900 }, type: 'hole', w: 60 }
+    ],
+    walls: [],
+    windows: [{ f: 0, x: 1450, boarded: true }, { f: 2, x: 1100, broken: true }, { f: 2, x: 1500, boarded: true }, { f: 1, x: 1300, vent: true }],
+    zones: [
+      { id: 'chez_eux', f: 0, x0: 1000, x1: 1700, group: 'squat', label: 'Le coin du squat', sign: 'CHEZ NOUS', signHostile: 'ILS VOUS EN VEULENT' },
+      { id: 'dortoir', f: 2, x0: 1000, x1: 1688, group: 'squat', label: 'Le dortoir', sign: 'CHEZ NOUS', signHostile: 'ILS VOUS EN VEULENT' }
+    ],
+    decor: [
+      { f: 0, x: 440, p: 'metal_trash_can', h: 34 }, { f: 0, x: 1150, p: 'barrel_stove', h: 44 }, { f: 0, x: 1500, p: 'cardboard_box_01', h: 30 },
+      { f: 0, x: 1780, p: 'trashbag', h: 30 }, { f: 1, x: 1250, p: 'old_tyre', h: 26 }, { f: 2, x: 880, p: 'cardboard_box_01', h: 30 },
+      { f: 3, x: 1000, p: 'metal_jerrycan', h: 28 }, { f: 3, x: 1400, p: 'old_tyre', h: 22 }
+    ],
+    objects: [
+      { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
+      { key: 'detritus', kind: 'rubble', f: 0, x: 700, w: 96, h: 42, work: 60, loot: { bois: 3, composants: 2 } },
+      { key: 'recoin_entree', kind: 'hide', f: 0, x: 800, w: 46, h: 108 },
+      { key: 'squatteur_feu', kind: 'guard', type: 'squatteur', name: 'Gus', f: 0, x: 1250, facing: -1, attitude: 'neutral', group: 'squat', patrol: [1050, 1500] },
+      { key: 'reserve_commune', kind: 'cache', variant: 'caisse', label: 'Réserve commune', f: 0, x: 1600, w: 78, h: 48, owner: 'squat', loot: { conserve: 2, bois: 3, cigarettes: 1 } },
+      // Cave (par le trou)
+      { key: 'cave_bric', kind: 'cache', variant: 'caisse', label: 'Bric-à-brac', f: 1, x: 680, w: 78, h: 48, loot: { composants: 3, pieces_meca: 1 } },
+      { key: 'planches_cave', kind: 'rubble', f: 1, x: 1100, w: 90, h: 40, work: 60, loot: { bois: 2 } },
+      { key: 'caisse_cachee', kind: 'cache', variant: 'caisse', label: 'Caisse cachée des squatteurs', f: 1, x: 1450, w: 78, h: 48, owner: 'squat', loot: { conserve: 2, medicaments: 1, munitions: 4 } },
+      // Dortoir
+      { key: 'joe', kind: 'npc', npc: 'joe', f: 2, x: 700, w: 90, h: 30, facing: 1 },
+      { key: 'squatteur_dortoir', kind: 'guard', type: 'squatteur', name: 'Marv', f: 2, x: 1150, facing: 1, attitude: 'neutral', group: 'squat', sleep: true },
+      { key: 'matelas', kind: 'cache', variant: 'valise', label: 'Affaires sous un matelas', f: 2, x: 1480, w: 62, h: 36, owner: 'squat', loot: { bandage: 1, tabac: 2, bijoux: 1 } },
+      // Toit
+      { key: 'pigeonnier', kind: 'cache', variant: 'caisse', label: 'Pigeonnier', f: 3, x: 640, w: 78, h: 48, loot: { viande: 2, bois: 2 } },
+      { key: 'eboulis_toit', kind: 'rubble', label: 'Tôles effondrées', f: 3, x: 1000, w: 104, h: 90, block: true, work: 150, loot: { bois: 3, composants: 2 } },
+      { key: 'squatteur_toit', kind: 'guard', type: 'squatteur', name: 'Lou', f: 3, x: 1450, facing: -1, attitude: 'neutral', group: 'squat_toit', patrol: [1250, 1600] }
+    ]
+  });
 })(window.CQR);
