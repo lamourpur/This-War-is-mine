@@ -37,6 +37,7 @@
   // Le monde a changé de taille (entrée ou sortie d'un plan d'exploration)
   R.worldChanged = function () {
     W = C.WORLD.W; H = C.WORLD.H;
+    R.archGen = (R.archGen || 0) + 1;
     R.cam.follow = null; R.cam.z = 1;
     R.resize();
     R.cam.cx = CX0; R.cam.cy = CY0;
@@ -207,11 +208,29 @@
       ctx.drawImage(R.arch.cv, 0, 0);
       ctx.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
     } else {
-      drawOutside(ctx, SK.rng(11));
-      drawHouse(ctx, SK.rng(23));
+      // Refuge : les murs, le toit et la rue ne changent presque jamais. Ils
+      // sont rendus une fois dans leur propre image ; manger, soigner,
+      // arroser ne redessinent que les objets (sinon un gel à chaque action).
+      var fl4 = C.FLOORS[4];
+      var hkey = 'house|' + c.width + 'x' + c.height + '|' + !!(C.Tex && C.Tex.ready) + !!(C.Props && C.Props.ready) +
+        '|' + (fl4 && fl4.cellar && !fl4.hidden ? 'cave' : '') + '|' + JSON.stringify(C.THEME || {}) +
+        '|' + C.WALLS.length + '.' + C.STAIRS.length + '.' + C.WINDOWS.length + '|' + (R.archGen || 0) +
+        '|' + decorShown(st).join('');
+      if (!R.arch || R.arch.key !== hkey) {
+        var hc = document.createElement('canvas');
+        hc.width = c.width; hc.height = c.height;
+        var hx = hc.getContext('2d');
+        hx.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
+        drawOutside(hx, SK.rng(11));
+        drawHouse(hx, SK.rng(23));
+        drawDecor(hx, st);
+        R.arch = { key: hkey, cv: hc };
+      }
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(R.arch.cv, 0, 0);
+      ctx.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
     }
-    drawDecor(ctx, st);
-    if (LAY()) C.Layout.drawFront(ctx, LAY());
+    if (LAY()) { drawDecor(ctx, st); C.Layout.drawFront(ctx, LAY()); }
 
     // Objets : trous d'abord (au mur), puis le reste
     var objs = st.objects.slice().sort(function (a, b) { return (a.kind === 'hole' ? 0 : 1) - (b.kind === 'hole' ? 0 : 1); });
@@ -250,13 +269,20 @@
   }
 
   // Objets détourés du décor (C.DECOR), cachés si une construction occupe la place
+  function decorShown(st) {
+    if (!C.Props.ready || !C.DECOR) return [];
+    return C.DECOR.map(function (d) {
+      var w = d.h * C.Props.aspect(d.p);
+      return d.out || !st.objects.some(function (o) {
+        return o.f === d.f && o.kind !== 'hole' && Math.abs(o.x - d.x) < (o.w || 60) / 2 + w / 2 - 4;
+      }) ? 1 : 0;
+    });
+  }
   function drawDecor(ctx, st) {
     if (!C.Props.ready || !C.DECOR) return;
-    C.DECOR.forEach(function (d) {
-      var w = d.h * C.Props.aspect(d.p);
-      if (!d.out && st.objects.some(function (o) {
-        return o.f === d.f && o.kind !== 'hole' && Math.abs(o.x - d.x) < (o.w || 60) / 2 + w / 2 - 4;
-      })) return;
+    var shown = decorShown(st);
+    C.DECOR.forEach(function (d, i) {
+      if (!shown[i]) return;
       var y = (d.out ? C.WORLD.ground : C.FLOORS[d.f].y) - (d.dy || 0);
       if (d.wall) {
         // Clou au mur

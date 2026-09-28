@@ -160,8 +160,12 @@
     // La réserve se voit dans le décor du refuge (couche statique). En
     // exploration, le sac n'est dessiné nulle part : pas de reconstruction
     // du décor à chaque munition tirée ou objet ramassé (sinon saccades).
+    // Au refuge, seules les étagères de la réserve en dépendent : on ne
+    // reconstruit que si leur aspect change.
     invDirty: function () {
-      if (!(C.Explore && C.Explore.active)) Game.markDirty();
+      if (C.Explore && C.Explore.active) return;
+      var look = C.ObjDraw && C.ObjDraw.stockLook ? C.ObjDraw.stockLook(Game.st.inventory) : null;
+      if (look === null || look !== Game._stockLook) { Game._stockLook = look; Game.markDirty(); }
     },
     addItems: function (items, silent) {
       var inv = Game.st.inventory;

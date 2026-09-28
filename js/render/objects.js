@@ -165,6 +165,19 @@
     ['metal_jerrycan', 24, 2, ['carburant']],
     ['wooden_crate_02', 18, 2, ['composants', 'pieces_meca', 'pieces_elec', 'bois']]
   ];
+  // Ce qui se voit des étagères : le décor n'est redessiné que si ça change
+  // (manger une conserve sur douze ne change rien à l'image)
+  D.stockLook = function (inv) {
+    var total = 0, k;
+    for (k in inv) total += inv[k];
+    var sig = C.Props && C.Props.ready ? ':' : Math.min(24, Math.round(total / 3)) + ':';
+    STOCK_PROPS.forEach(function (sp) {
+      var n = 0;
+      sp[3].forEach(function (id) { n += inv[id] || 0; });
+      sig += Math.min(4, Math.ceil(n / 3));
+    });
+    return sig;
+  };
   function stockProps(ctx, o, x, shelves, inv) {
     var rows = [[], [], []];
     STOCK_PROPS.forEach(function (sp) {
