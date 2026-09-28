@@ -200,6 +200,7 @@
 
   // Mise à jour de l'aube : jardins, pièges, eau de pluie nocturne
   World.dawnStations = function (st, report, nightRain) {
+    if (C.Cellar) C.Cellar.dawn(st, report);
     st.objects.forEach(function (o) {
       // Le piège prend un rat une nuit sur deux ; il peut en garder deux
       // avant qu'on le relève (clic sur le piège, « Relever le piège »)

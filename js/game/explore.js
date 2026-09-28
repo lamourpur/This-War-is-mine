@@ -100,6 +100,10 @@
     // Plan à géométrie libre : son propre monde (taille, niveaux, décor)
     if (map.layout) {
       C.WORLD = map.world; C.FLOORS = map.floors; C.LAYOUT = map;
+    } else {
+      // Plan classique : les 4 étages du gabarit, sans l'abri du refuge
+      C.FLOORS = C.FLOORS.slice(0, 4);
+      if (C.WORLD.H !== 900) { C.WORLD = U.copy(C.WORLD); C.WORLD.H = 900; }
     }
     G().st = est;
 
@@ -123,7 +127,7 @@
     s.f = C.NAV_START.f; s.x = C.NAV_START.x + 10; s.y = C.FLOORS[s.f].y; s.facing = 1; s.path = []; s.act = null; s.run = false; s.hidden = false;
 
     C.Render.arch = null;
-    if (map.layout && C.Render.worldChanged) C.Render.worldChanged();
+    if (C.Render.worldChanged && (map.layout || C.WORLD !== E.saved.WORLD)) C.Render.worldChanged();
     C.Render.dirty = true;
     C.Render.particles = [];
     C.Render.pops = [];
@@ -218,7 +222,7 @@
     // Restaure le refuge
     C.STAIRS = E.saved.STAIRS; C.WALLS = E.saved.WALLS; C.WINDOWS = E.saved.WINDOWS; C.SLOTS = E.saved.SLOTS;
     C.DECOR = E.saved.DECOR; C.THEME = E.saved.THEME; C.NAV_START = E.saved.NAV_START;
-    var wasLayout = !!C.LAYOUT;
+    var wasLayout = !!C.LAYOUT || C.WORLD !== E.saved.WORLD;
     C.WORLD = E.saved.WORLD; C.FLOORS = E.saved.FLOORS; C.LAYOUT = E.saved.LAYOUT;
     G().st = home;
     est.log.forEach(function (l) { home.log.push(l); });

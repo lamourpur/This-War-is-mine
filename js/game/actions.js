@@ -139,6 +139,13 @@
       }
     },
 
+    // Trappe de la cave : mène à l'abri souterrain (js/game/cellar.js)
+    pry: {
+      work: true, label: 'Force la trappe', sound: 'search', fatigue: 4,
+      dur: function () { return G().count('pied_de_biche') > 0 ? 30 : 90; },
+      done: function (s, o) { G().markDirty(); return C.Cellar.open(G().st, s, o); }
+    },
+
     cut: {
       work: true, label: 'Scie la grille', sound: 'saw', fatigue: 4,
       check: function () { if (G().count('scie') < 1) return 'Il faut une scie à métaux.'; },
@@ -932,6 +939,11 @@
         (o.tools || []).forEach(function (t) {
           m.entries.push(E('Ouvrir : ' + C.ITEMS[t].name.toLowerCase(), costSub(null, t === 'passe_partout' ? 45 : 30), G().count(t) ? null : 'Il faut : ' + C.ITEMS[t].name, go('unlock', { tool: t })));
         });
+        break;
+      case 'trapdoor':
+        if (o.open) { m.desc = 'La trappe ouverte. Un escalier de pierre descend vers l\'abri.'; break; }
+        m.desc = 'Une trappe dans le sol de la cave, fermée par un cadenas rouillé. Un courant d\'air froid monte entre les planches.';
+        m.entries.push(E(G().count('pied_de_biche') ? 'Forcer la trappe (pied-de-biche)' : 'Forcer la trappe (à la barre de fer)', costSub(null, G().count('pied_de_biche') ? 30 : 90), null, go('pry')));
         break;
       case 'grate':
         m.desc = 'Une grille soudée condamne l\'accès. Une scie à métaux en viendrait à bout.';

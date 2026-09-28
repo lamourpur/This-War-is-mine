@@ -115,6 +115,7 @@
   Nav.computeRegions = function () {
     var regions = [];
     C.FLOORS.forEach(function (fl, f) {
+      if (fl.hidden) return;                      // abri pas encore découvert
       var xs = barriersOn(f).map(function (o) { return o; }).sort(function (a, b) { return a.x - b.x; });
       var start = Nav.x0(f);
       xs.forEach(function (b) {

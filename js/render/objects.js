@@ -491,6 +491,28 @@
     ctx.beginPath(); ctx.moveTo(x + o.w + 44, top + 30); ctx.lineTo(x + o.w + 24, top + 30); ctx.moveTo(x + o.w + 31, top + 23); ctx.lineTo(x + o.w + 24, top + 30); ctx.lineTo(x + o.w + 31, top + 37); ctx.stroke();
   };
 
+  // Trappe dans le sol de la cave (abri souterrain)
+  D.trapdoor = function (ctx, r, o, y) {
+    var x = o.x - o.w / 2;
+    if (o.open) {
+      // Ouverture sombre dans la dalle, abattant relevé contre le mur
+      ctx.fillStyle = '#0f0e0d'; ctx.fillRect(x, y, o.w, 30);
+      SK.line(ctx, r, x, y, x, y + 30, { w: 1.4 }); SK.line(ctx, r, x + o.w, y, x + o.w, y + 30, { w: 1.4 });
+      var lid = [[x + o.w, y], [x + o.w + 8, y], [x + o.w + 8, y - o.w], [x + o.w, y - o.w + 4]];
+      P(ctx, r, lid, WOOD2, 0.4); SK.poly(ctx, r, lid, true, { w: 1.2 });
+      return;
+    }
+    // Abattant de planches au ras du sol, anneau de fer, cadenas
+    F(ctx, r, x, y - 5, o.w, 5, WOOD2, 0.3);
+    for (var i = 1; i < 4; i++) SK.line(ctx, r, x + i * o.w / 4, y - 5, x + i * o.w / 4, y, { w: 0.6, passes: 1 });
+    SK.rect(ctx, r, x, y - 5, o.w, 5, { w: 1.2 });
+    ctx.strokeStyle = SK.INK; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(o.x - 10, y - 8, 4, 0, Math.PI * 2); ctx.stroke();
+    if (o.locked) { F(ctx, r, o.x + 8, y - 13, 9, 9, METAL, 0.2); SK.rect(ctx, r, o.x + 8, y - 13, 9, 9, { w: 0.9 }); ctx.beginPath(); ctx.arc(o.x + 12.5, y - 13, 3.5, Math.PI, 0); ctx.stroke(); }
+    // Courant d'air : poussière soulevée
+    for (var k = 0; k < 4; k++) SK.stone(ctx, r, x + r.next() * o.w, y - 1, 1.5, '#6a645a');
+  };
+
   // Banc d'église (vu de côté)
   D.pew = function (ctx, r, o, y) {
     var x = o.x - o.w / 2;

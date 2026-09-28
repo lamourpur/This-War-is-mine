@@ -12,7 +12,9 @@
     { y: 800, ceil: 642, name: 'Cave' },
     { y: 630, ceil: 472, name: 'Rez-de-chaussée' },
     { y: 460, ceil: 302, name: '1er étage' },
-    { y: 290, ceil: 132, name: '2e étage' }
+    { y: 290, ceil: 132, name: '2e étage' },
+    // Abri souterrain (js/game/cellar.js) : caché jusqu'à sa découverte, vers le jour 10
+    { y: 985, ceil: 832, name: 'Abri souterrain', x0: 170, x1: 1430, cellar: true, hidden: true }
   ];
 
   // Escaliers : a et b = extrémités (étage, x)

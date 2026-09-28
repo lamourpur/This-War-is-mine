@@ -68,7 +68,7 @@
             txt += ' Un pan de plafond s\'est effondré (' + C.FLOORS[sl.f].name.toLowerCase() + ') : il faudra déblayer.';
           }
         } else txt += ' Par miracle, rien n\'a cédé.';
-        var upstairs = G().present().filter(function (s) { return s.f >= 2; });
+        var upstairs = G().present().filter(function (s) { return s.f === 2 || s.f === 3; });
         if (upstairs.length && R().chance(0.35)) {
           var v = R().pick(upstairs);
           v.wound = Math.min(95, v.wound + R().int(8, 18));
@@ -172,7 +172,7 @@
       weight: 2, minDay: 3, icon: 'alert', title: 'Tirs dans la rue',
       run: function () {
         if (C.Audio.ready) { C.Audio.sfx.gun(); setTimeout(C.Audio.sfx.gun, 400); }
-        var exposed = G().present().filter(function (s) { return s.f >= 1; });
+        var exposed = G().present().filter(function (s) { return s.f >= 1 && s.f <= 3; });
         if (exposed.length && R().chance(0.25)) {
           var v = R().pick(exposed);
           v.wound = Math.min(95, v.wound + R().int(8, 15));

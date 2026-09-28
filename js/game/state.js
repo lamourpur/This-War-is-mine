@@ -57,6 +57,7 @@
       C.World.planVisitor(st);
       C.World.planDayEvents(st);
       Game.log('Jour 1. La ville est encerclée. Il faut tenir jusqu\'à la fin des combats.', 'story');
+      if (C.Cellar) C.Cellar.apply(st);
       return st;
     },
 
@@ -70,6 +71,7 @@
         if (s.act && (s.act.phase === 'walk' || s.act.kind === 'talk' || s.act.kind === 'listen')) s.act = null;
         Game.migrateSurvivor(s);
       });
+      if (C.Cellar) C.Cellar.apply(state);
       Game.markDirty();
     },
 
@@ -122,6 +124,7 @@
           return cn + (o.searched ? (masc ? ' (fouillé)' : ' (fouillée)') : o.locked ? (masc ? ' verrouillé' : ' verrouillée') : '');
         case 'furniture': return C.FURNITURE_NAMES[o.variant] || 'Meuble';
         case 'hole': return o.boarded ? 'Trou barricadé' : 'Trou dans le mur';
+        case 'trapdoor': return o.open ? 'Trappe ouverte' : 'Trappe cadenassée';
         case 'npc': return C.NPCS && C.NPCS[o.npc] ? C.NPCS[o.npc].name : 'Quelqu\'un';
         case 'exit': return 'Sortie';
         case 'pew': return 'Banc d\'église';

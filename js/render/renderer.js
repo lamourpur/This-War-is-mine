@@ -63,6 +63,13 @@
     var extra = Math.max(0, (cw - leftUI - rightUI - 20 * dpr) - houseW * R.scale);
     R.ox = leftUI + 10 * dpr - C.WORLD.left * R.scale + extra / 2;
     R.oy = Math.max(70 * dpr - 40 * R.scale, (ch - H * R.scale) / 2 + 20 * dpr);
+    // Refuge agrandi (abri souterrain) : du toit jusqu'au sol de l'abri, sous le bandeau
+    if (!C.WORLD.view && H > 900) {
+      R.scale = Math.min((cw - leftUI - rightUI - 20 * dpr) / houseW, (ch - 72 * dpr) / (H - 25), cw / W * 1.25);
+      extra = Math.max(0, (cw - leftUI - rightUI - 20 * dpr) - houseW * R.scale);
+      R.ox = leftUI + 10 * dpr - C.WORLD.left * R.scale + extra / 2;
+      R.oy = 72 * dpr - 25 * R.scale + Math.max(0, (ch - 72 * dpr) - (H - 25) * R.scale) / 2;
+    }
     // Cadrage de base (vue d'ensemble) : la caméra zoome à partir de là
     R.base = { scale: R.scale, ox: R.ox, oy: R.oy };
     R.applyCam();
@@ -295,6 +302,7 @@
 
   function drawHouse(ctx, r) {
     var L = C.WORLD.left, Rr = C.WORLD.right;
+    drawCellar(ctx, SK.rng(61));
     // Toit endommagé
     var roofTop = 40, eave = C.FLOORS[3].ceil - 12;
     var roofL = [[L - 30, eave], [W / 2 - 160, roofTop], [W / 2 + 40, roofTop + 14], [W / 2 + 90, eave - 50], [W / 2 + 140, eave - 20], [W / 2 + 190, eave - 60], [Rr + 30, eave]];
@@ -364,6 +372,7 @@
     // Murs du fond, par pièce
     var tones = ['#8a8478', '#7f796d', '#8e8778', '#837d70', '#7a7468', '#8b8577'];
     C.FLOORS.forEach(function (fl, f) {
+      if (fl.cellar) return;
       var walls = C.WALLS.filter(function (w) { return w.f === f; }).map(function (w) { return w.x; });
       var xs = [L].concat(walls).concat([Rr]);
       for (var k = 0; k < xs.length - 1; k++) {
@@ -490,6 +499,7 @@
 
     // Dalles entre les étages
     C.FLOORS.forEach(function (fl, f) {
+      if (fl.cellar) return;
       var y0 = fl.y, h = f === 0 ? 30 : 12;
       SK.fillRect(ctx, r, L - 12, y0, Rr - L + 24, h, '#35322d', 0);
       C.Tex.paint(ctx, { x: L - 12, y: y0, w: Rr - L + 24, h: h }, 'debris', { tile: 90, alpha: 0.85, blend: 'overlay', oy: y0 });
@@ -540,8 +550,72 @@
 
     // Petits débris au sol
     C.FLOORS.forEach(function (fl) {
+      if (fl.cellar) return;
       for (var d = 0; d < 10; d++) SK.stone(ctx, r, r.range(L + 20, Rr - 20), fl.y - 2, r.range(1.5, 3.5), '#4b4740');
     });
+  }
+
+  // Abri souterrain (sous la cave) : briques voûtées, piliers, inscriptions
+  // de la défense passive. Dessiné seulement une fois découvert.
+  function drawCellar(ctx, r) {
+    var fl = C.FLOORS[4];
+    if (!fl || !fl.cellar || fl.hidden) return;
+    var x0 = fl.x0, x1 = fl.x1, top = fl.ceil, y = fl.y, h = y - top, w = x1 - x0;
+    // Terre creusée tout autour
+    SK.fillRect(ctx, r, x0 - 30, top - 4, w + 60, h + 40, '#2a2723', 0);
+    SK.fillRect(ctx, r, x0, top, w, h, '#5b564e', 0);
+    C.Tex.paint(ctx, { x: x0, y: top, w: w, h: h }, 'brick', { tile: 100, alpha: 0.85, blend: 'overlay', ox: 17 });
+    C.Tex.paint(ctx, { x: x0, y: top, w: w, h: h }, 'plaster2', { tile: 260, alpha: 0.35, blend: 'multiply' });
+    SK.hatch(ctx, r, x0, top, w, h, { gap: 9, alpha: 0.12, angle: -1.1 });
+    // Salpêtre et coulures d'humidité
+    for (var s = 0; s < 7; s++) SK.stain(ctx, r.range(x0 + 20, x1 - 20), r.range(top + 20, y - 20), r.range(25, 60), r.range(0.12, 0.25));
+    for (var c = 0; c < 4; c++) SK.crack(ctx, r, r.range(x0 + 30, x1 - 30), top + 4, r.range(30, 70), Math.PI / 2 + r.range(-0.4, 0.4));
+    // Voûtes en berceau et piliers
+    var bay = 210;
+    for (var ax = x0; ax < x1 - 10; ax += bay) {
+      var aw = Math.min(bay, x1 - ax);
+      ctx.save();
+      ctx.fillStyle = 'rgba(20,18,16,0.35)';
+      ctx.beginPath(); ctx.moveTo(ax, top); ctx.lineTo(ax, top + 44); ctx.quadraticCurveTo(ax + aw / 2, top - 8, ax + aw, top + 44); ctx.lineTo(ax + aw, top); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      ctx.strokeStyle = SK.INK; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(ax, top + 44); ctx.quadraticCurveTo(ax + aw / 2, top - 8, ax + aw, top + 44); ctx.stroke();
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(ax + 6, top + 48); ctx.quadraticCurveTo(ax + aw / 2, top + 2, ax + aw - 6, top + 48); ctx.stroke();
+      if (ax > x0) {
+        SK.fillRect(ctx, r, ax - 9, top + 36, 18, h - 36, '#4f4a43', 0.3);
+        C.Tex.paint(ctx, { x: ax - 9, y: top + 36, w: 18, h: h - 36 }, 'brick', { tile: 60, alpha: 0.9, blend: 'overlay' });
+        SK.line(ctx, r, ax - 9, top + 36, ax - 9, y, { w: 1.2 }); SK.line(ctx, r, ax + 9, top + 36, ax + 9, y, { w: 1.2 });
+      }
+    }
+    // Inscriptions peintes au pochoir (défense passive)
+    ctx.save();
+    ctx.font = '22px "Bebas Neue", sans-serif'; ctx.fillStyle = 'rgba(214,206,186,0.38)';
+    ctx.fillText('ABRI — 60 PERSONNES', 1100, top + 76);
+    ctx.fillText('SILENCE', 800, top + 76);
+    ctx.font = '16px "Bebas Neue", sans-serif';
+    ctx.fillText('SORTIE ↑', 1300, top + 100);
+    ctx.fillText('1942', 300, top + 70);
+    // Traits de craie : quelqu'un a compté les jours
+    ctx.strokeStyle = 'rgba(214,206,186,0.35)'; ctx.lineWidth = 1;
+    for (var k = 0; k < 17; k++) { var tx = 420 + k * 6 + Math.floor(k / 5) * 6; ctx.beginPath(); ctx.moveTo(tx, top + 96); ctx.lineTo(tx + (k % 5 === 4 ? -26 : 0), top + 112); ctx.stroke(); }
+    ctx.restore();
+    // Sol en terre battue et dalles
+    SK.fillRect(ctx, r, x0 - 16, y, w + 32, 22, '#35322d', 0);
+    C.Tex.paint(ctx, { x: x0 - 16, y: y, w: w + 32, h: 22 }, 'debris', { tile: 90, alpha: 0.85, blend: 'overlay', oy: y });
+    SK.line(ctx, r, x0 - 16, y, x1 + 16, y, { w: 1.8 });
+    for (var d = 0; d < 14; d++) SK.stone(ctx, r, r.range(x0 + 20, x1 - 20), y - 2, r.range(1.5, 3.5), '#4b4740');
+    // Murs de fondation
+    [[x0 - 16, 16], [x1, 16]].forEach(function (wl) {
+      SK.fillRect(ctx, r, wl[0], top - 4, wl[1], h + 26, '#4a453e', 0);
+      C.Tex.paint(ctx, { x: wl[0], y: top - 4, w: wl[1], h: h + 26 }, 'brick', { tile: 70, alpha: 0.95, blend: 'overlay' });
+      SK.line(ctx, r, wl[0], top - 4, wl[0], y + 22, { w: 1.6 }); SK.line(ctx, r, wl[0] + wl[1], top - 4, wl[0] + wl[1], y + 22, { w: 1.6 });
+    });
+    // Ampoules nues
+    for (var lx = x0 + 150; lx < x1 - 60; lx += 420) {
+      SK.line(ctx, r, lx, top + 10, lx, top + 26, { w: 0.7, passes: 1 });
+      ctx.strokeStyle = SK.INK; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(lx, top + 30, 4, 0, Math.PI * 2); ctx.stroke();
+    }
   }
 
   // ============================================================ survivants
@@ -1500,6 +1574,7 @@
     var best = null, bd = Infinity;
     for (var f = 0; f < C.FLOORS.length; f++) {
       var fl = C.FLOORS[f];
+      if (fl.hidden) continue;
       if (wx < C.Nav.x0(f) || wx > C.Nav.x1(f)) continue;
       if (wy < fl.ceil || wy > fl.y + 10) continue;
       var d = fl.y - wy;
