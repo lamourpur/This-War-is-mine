@@ -2,7 +2,7 @@
    Fouille : fenêtre de transfert par glisser-déposer
    À gauche le contenu du meuble fouillé, à droite la réserve du refuge.
    - glisser une pile d'un côté à l'autre : toute la pile passe
-   - clic : un seul objet · Maj+clic ou double-clic : toute la pile
+   - clic : un seul objet · Maj+clic : toute la pile
    - « Tout prendre » vide le meuble
    Ce qui reste dans le meuble y reste : on peut revenir le chercher.
    ========================================================= */
@@ -33,7 +33,7 @@
     if (inBag) { meter = U.el('div', 'bag-meter'); right.el.insertBefore(meter, right.grid); }
     wrap.appendChild(left.el); wrap.appendChild(mid); wrap.appendChild(right.el);
     p.body.appendChild(wrap);
-    var hint = U.el('p', 'loot-hint', 'Clic : un objet · Maj + clic ou double-clic : toute la pile · Glisser-déposer : toute la pile');
+    var hint = U.el('p', 'loot-hint', 'Clic : un objet · Maj + clic : toute la pile · Glisser-déposer : toute la pile');
     p.body.appendChild(hint);
 
     var takeAll = U.el('button', 'btn primary', 'Tout prendre');
@@ -112,7 +112,6 @@
       });
       b.addEventListener('dragend', function () { b.classList.remove('dragging'); drag.from = null; });
       b.addEventListener('click', function (e) { move(from, id, e.shiftKey ? n : 1); });
-      b.addEventListener('dblclick', function (e) { e.preventDefault(); move(from, id, from === 'cache' ? (o.loot[id] || 0) : G().count(id)); });
       return b;
     }
 

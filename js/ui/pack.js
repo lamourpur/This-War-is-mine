@@ -96,7 +96,7 @@
     var meter = U.el('div', 'bag-meter'); sac.el.insertBefore(meter, sac.grid);
     var intelBox = U.el('div', 'pack-intel');
     wrap.appendChild(res.el); wrap.appendChild(U.el('div', 'loot-mid', I('trade') + '<span>Glisser</span>')); wrap.appendChild(sac.el); wrap.appendChild(intelBox);
-    p.body.appendChild(U.el('p', 'loot-hint', 'Glisser-déposer : toute la pile · Clic : un objet · Maj + clic ou double-clic : toute la pile. Ce que vous emportez prend des cases, qui ne serviront plus au butin.'));
+    p.body.appendChild(U.el('p', 'loot-hint', 'Glisser-déposer : toute la pile · Clic : un objet · Maj + clic : toute la pile. Ce que vous emportez prend des cases, qui ne serviront plus au butin.'));
 
     var intel = UI.locationIntel(st, loc.id), useful = {};
     intel.forEach(function (it) { (it.need || []).forEach(function (id) { if (!useful[id]) useful[id] = it.t; }); });
@@ -149,7 +149,6 @@
       });
       b.addEventListener('dragend', function () { b.classList.remove('dragging'); drag.from = null; });
       b.addEventListener('click', function (e) { move(from, id, e.shiftKey ? (from === 'res' ? avail(id) : n) : 1); });
-      b.addEventListener('dblclick', function (e) { e.preventDefault(); move(from, id, from === 'res' ? avail(id) : n); });
       return b;
     }
     function render() {
