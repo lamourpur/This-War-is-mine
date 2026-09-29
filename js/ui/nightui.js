@@ -224,7 +224,7 @@
       function tile(cls, icon, big, small) { return '<div class="ni ' + cls + '">' + C.Icon(icon) + '<div><b>' + big + '</b>' + small + '</div></div>'; }
       info.innerHTML =
         tile(sleepers > inBeds ? 'warn' : '', 'bed', inBeds + ' / ' + beds + ' lit' + (beds > 1 ? 's' : ''), sleepers > inBeds ? (sleepers - inBeds) + (sleepers - inBeds > 1 ? ' dormiront' : ' dormira') + ' par terre' : sleepers ? 'Chacun dort dans un lit' : 'Personne ne dort') +
-        tile(risk >= 0.3 && def < 2 ? 'bad' : '', 'shield', 'Défense ' + def.toFixed(1), 'Risque d\'attaque : ' + riskTxt + (st.raidBonus ? ' (menace de la milice)' : '')) +
+        tile(risk >= 0.3 && def < 2 ? 'bad' : '', 'shield', 'Défense ' + def.toFixed(1), 'Risque d\'attaque : ' + riskTxt + (st.raidBonus ? ' (menace de la milice)' : '') + (C.Threat && C.Threat.label(st) ? ' · ' + C.Threat.label(st) : '')) +
         tile(estTemp < 0 ? 'bad' : estTemp < 8 ? 'warn' : '', 'thermo', estTemp + ' °C', estTemp < 8 ? 'Nuit froide : risque de maladie' : 'Température prévue cette nuit');
       if (hungry.length) info.innerHTML += tile('warn', 'hunger', 'Faim', hungry.join(', ') + ' — nourrissez-les d\'abord');
       var s = scavenger();

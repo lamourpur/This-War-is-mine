@@ -192,6 +192,7 @@
       return sec('moon', 'Le plan de nuit', [
         'À 20 h, chacun <b>dort dans un lit</b>, <b>dort par terre</b> (moins reposant), <b>monte la garde</b> ou <b>part explorer</b> (un seul par nuit).',
         'Gardes, armes, trous barricadés et porte renforcée protègent des pillards.',
+        'Une <b>bande</b> finit par vous repérer : chauffage qui fume, réserves qui se savent, nuits sans garde… Elle apprend vos habitudes (pas de garde = elle attaque plus souvent ; toujours la même garde = elle frappe plus fort). Les rumeurs du matin vous préviennent ; un émissaire peut réclamer un tribut (payer, refuser ou menacer). Au plus haut, elle peut assiéger le refuge deux nuits.',
         'À partir du jour 10, Milo propose chaque jour un <b>mercenaire</b> : il sort à la place du groupe, contre un paiement d\'avance (toujours une ressource en pénurie). S\'il meurt, seul ce qu\'on lui a confié est perdu.',
         'Choisissez le lieu sur la carte : ce qu\'on en sait s\'affiche. Puis préparez le <b>sac</b> par glisser-déposer : chaque case contient une pile d\'un seul objet.'
       ]) + sec('search', 'Explorer', [
@@ -218,6 +219,7 @@
     }],
     ['Visiteurs et troc', 'door', function () {
       return sec('door', 'On frappe', [
+        'Chaque partie a ses <b>événements uniques</b> (chien errant, voleur dans la réserve, appel à l\'aide suspect…), tirés au sort et jamais deux fois : deux parties ne se ressemblent pas.',
         'Chaque jour ou presque, quelqu\'un frappe : voisins qui demandent de l\'aide, réfugiés, marchands, pillards qui menacent.',
         'Envoyer un survivant ouvrir. Personne n\'ouvre ? La personne repart, et on ne saura jamais ce qu\'elle voulait.'
       ]) + sec('pack', 'Le troc', [

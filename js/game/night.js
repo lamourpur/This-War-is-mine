@@ -23,7 +23,7 @@
     st.survivors.forEach(function (s) {
       if (s.alive && s.away) {
         s.x = 240; s.f = 1; s.y = C.FLOORS[1].y;
-        var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution', accouchement: 'de chez Sara' }[s.away] || '';
+        var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution', accouchement: 'de chez Sara', incendie: 'de l\'immeuble en feu', camion: 'du camion des secours' }[s.away] || '';
         var fe = s.look && s.look.female ? 'e' : '', hurt = false;
         if (s.awayRisk && C.R.chance(s.awayRisk)) {
           s.wound = Math.min(95, s.wound + C.R.int(15, 30));
@@ -96,7 +96,8 @@
     if (st.flags && st.flags.guardedUntil && st.day <= st.flags.guardedUntil) c *= 0.3;   // le sergent Hollis fait passer les patrouilles
     if (C.World.crimeHigh(st)) c += 0.2;
     if (C.World.isWinter(st)) c += 0.05;
-    return U.clamp(c, 0, 0.85);
+    if (C.Threat) c = C.Threat.adjust(st, c);
+    return U.clamp(c, 0, 0.92);
   };
 
   // plan = { roles: {id: 'sleep'|'guard'|'scav'}, scav: {loc, stance, prio, equip:[ids]} }
@@ -227,15 +228,17 @@
 
     // ---------------- Raid sur le refuge
     var chance = Night.raidChance(st);
+    var raided = false, repelled = false;
     if (R.chance(chance)) {
+      raided = true;
       st.stats.raids++;
-      var strength = R.range(1, 2.4 + st.day / 11) + (C.World.crimeHigh(st) ? 1 : 0);
+      var strength = R.range(1, 2.4 + st.day / 11) + (C.World.crimeHigh(st) ? 1 : 0) + (C.Threat ? C.Threat.strength(st, guards) : 0);
       var def = Night.defense(st, guards, reserved);
       if (def.value >= strength) {
-        st.stats.raidsRepelled++;
+        st.stats.raidsRepelled++; repelled = true;
         var shots = def.armed.filter(function (a) { return a.w && C.ITEMS[a.w].ammo; });
         if (shots.length) G().removeItems({ munitions: Math.min(G().count('munitions'), shots.length * R.int(1, 2)) });
-        add('home', 'Des pillards ont tenté d\'entrer cette nuit. ' + (guards.length ? guards.map(first).join(' et ') + (guards.length > 1 ? ' les ont' : ' les a') + ' repoussés.' : 'Les barricades ont tenu.'), 'good');
+        add('home', (C.Threat ? C.Threat.who(st) : 'Des pillards') + ' ont tenté d\'entrer cette nuit. ' + (guards.length ? guards.map(first).join(' et ') + (guards.length > 1 ? ' les ont' : ' les a') + ' repoussés.' : 'Les barricades ont tenu.'), 'good');
         guards.forEach(function (g) {
           g.moral = Math.min(100, g.moral + 3); C.Mood.think(g, 'repelled');
           C.Surv.bio(g, 'Des pillards ont tenté d\'entrer cette nuit. Je montais la garde : on les a repoussés.');
@@ -251,7 +254,7 @@
           }
         });
         G().removeItems(stolen);
-        add('home', 'Le refuge a été pillé pendant la nuit ! Volé : ' + itemsText(stolen) + '.', 'bad');
+        add('home', (C.Threat && C.Threat.get(st).level >= 2 ? C.Threat.band(st) + ' ont pillé le refuge cette nuit ! Volé : ' : 'Le refuge a été pillé pendant la nuit ! Volé : ') + itemsText(stolen) + '.', 'bad');
         var victims = guards.length ? guards : (R.chance(0.5) ? [R.pick(sleepers.length ? sleepers : present)] : []);
         victims.forEach(function (v) {
           if (!v || !v.alive) return;
@@ -264,6 +267,8 @@
     } else if (guards.length) {
       add('home', 'La nuit a été calme. ' + guards.map(first).join(' et ') + ' n\'' + (guards.length > 1 ? 'ont' : 'a') + ' rien vu passer.', 'info');
     }
+
+    if (C.Threat) C.Threat.after(st, { raid: raided, repelled: repelled, guards: guards.length, burned: burned }, add);
 
     // ---------------- Divers
     if (burned) add('home', heat > 0 ? 'Le chauffage a tenu une partie de la nuit (' + nightTemp + ' °C dans le refuge).' : '', 'info');
@@ -430,6 +435,7 @@
     C.World.rollWeather(st);
     if (C.Market) C.Market.dawn(st, add);
     if (C.Merc) C.Merc.dawn(st, add);
+    if (C.Threat) C.Threat.dawn(st, add);
     C.World.dawnClosures(st, add);
     if (st.day === st.crimeStart + 6) add('home', 'Les patrouilles ont chassé les bandes des quartiers : la criminalité retombe. Pendant deux jours, la rue est calme.', 'good');
     if (C.World.isWinter(st) && !wasWinter) { add('home', 'L\'hiver est arrivé. Le gel s\'installe sur la ville. Il va falloir chauffer le refuge.', 'bad'); G().alive().forEach(function (s) { C.Mood.think(s, 'winter'); }); }

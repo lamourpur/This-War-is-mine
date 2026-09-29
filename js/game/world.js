@@ -205,7 +205,7 @@
       var entries = [];
       for (var id in C.DAY_EVENTS) {
         var d = C.DAY_EVENTS[id];
-        if (used[id] || st.day < (d.minDay || 1)) continue;
+        if (!d.weight || used[id] || st.day < (d.minDay || 1)) continue;
         if (d.cond && !d.cond(st)) continue;
         entries.push([id, d.weight]);
       }
@@ -217,6 +217,8 @@
       st.dayEvents.push({ id: pick, at: at });
     }
     st.dayEvents.sort(function (a, b) { return a.at - b.at; });
+    if (C.Uniques) C.Uniques.plan(st);
+    if (C.Threat) C.Threat.plan(st);
   };
 
   World.fireEvent = function (st, id) {
