@@ -52,7 +52,7 @@
     mourn: ['J\'ai allumé la bougie pour {n}. Ça m\'a fait du bien de lui parler.', 'Je raconte nos journées à {n}. Ça m\'aide à tenir.'],
     death: ['{n} n\'est plus là. Plus rien n\'a de sens.', 'On aurait dû faire plus pour {n}.', 'Je garde la place de {n} près du poêle.'],
     suicide: ['{n}… on n\'a rien vu venir. Ou on n\'a pas voulu voir.', 'J\'aurais dû parler à {n}. J\'aurais dû.'],
-    left: ['{n} est parti(e). Je comprends, un peu.', 'Même {n} a abandonné…'],
+    left: ['{n} est parti{ne}. Je comprends, un peu.', 'Même {n} a abandonné…'],
     raided: ['Ils sont entrés chez nous. Plus aucun endroit n\'est sûr.', 'Tout ce qu\'on avait réuni, envolé en une nuit.'],
     repelled: ['On les a repoussés. On peut encore se défendre.', 'Ils ne passeront pas. Pas cette fois.'],
     scav_good: ['Bonne nuit dehors. On va tenir un peu plus longtemps.', 'Je suis rentré(e) entier et les bras pleins.'],

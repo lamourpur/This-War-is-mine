@@ -169,7 +169,7 @@
       Surv.bio(o, cause === 'parti' ? n + ' est parti(e) sans se retourner. Je n\'ai pas su le(la) retenir.'.replace('le(la)', s.look && s.look.female ? 'la' : 'le') : n + ' est mort(e). ' + (cause === 'faim' ? 'De faim. Nous n\'avons pas su le(la) nourrir.' : cause === 'pillage' ? 'Il(elle) n\'est jamais revenu(e) de la nuit.' : cause === 'suicide' ? 'Personne n\'a rien vu venir.' : 'Je n\'arrive pas à y croire.').replace(/le\(la\)/g, s.look && s.look.female ? 'la' : 'le').replace(/Il\(elle\)/g, s.look && s.look.female ? 'Elle' : 'Il').replace(/\(e\)/g, s.look && s.look.female ? 'e' : ''));
     });
     if (cause === 'parti') {
-      G().moralAll(-8, { key: 'left', vars: { n: n } });
+      G().moralAll(-8, { key: 'left', vars: { n: n, nf: !!(s.look && s.look.female) } });
     } else {
       G().moralAll(cause === 'suicide' ? -25 : -22, { bad: true, key: cause === 'suicide' ? 'suicide' : 'death', vars: { n: n } });
       G().alive().forEach(function (o) { o.grief = 3; o.griefFor = n; });
