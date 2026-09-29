@@ -45,6 +45,8 @@
       restock: 4,
       say: 'Les soldats me paient en cigarettes et en gnôle. Moi, c\'est de la nourriture qu\'il me faut.'
     },
+    when: [{ 'if': 'npc:gabriel.rescued', lines: ['Monsieur Roche est libre ! On l\'a vu descendre par l\'escalier de service, il pleurait. C\'est vous ?', 'Je n\'oublierai pas. Quand on a vécu vingt ans ici, on sait ce que ça coûte.'], say: 'Le directeur est sauvé, grâce à vous. Pour vous, ce sera moins cher.' },
+      { 'if': 'freed:hotel', lines: ['Les soldats ne descendent plus. Je n\'ose pas monter voir. Vous savez ce qui s\'est passé ?', 'Si l\'armée revient et me demande, je n\'ai rien vu. Vous non plus.'] }],
     afterSteal: ['Vous aussi ? Je croyais que vous étiez différents.', 'Partez avant que je n\'appelle les soldats.']
   };
   C.NPCS.viktor = {
@@ -58,6 +60,8 @@
       thanks: 'Voilà, c\'est ouvert. Prenez aussi ces cigarettes, les soldats m\'en donnent pour que je me taise. Et s\'ils vous gênent : la cage de l\'ascenseur monte jusqu\'aux suites. Personne n\'y pense.',
       opens: ['porte_cuisines'], reward: { cigarettes: 3 }, moral: 4
     },
+    when: [{ 'if': 'npc:gabriel.rescued', lines: ['Le directeur est libre ? Vous avez fait ça… Quarante ans que je tiens cette porte, et personne n\'avait osé.', 'Les quatre types ne reviendront pas. Je peux enfin dormir sans les entendre marcher au-dessus.'] },
+      { 'if': 'freed:hotel', lines: ['Plus un bruit au premier. Les soldats… ils sont partis ? Ou pire ?', 'Sans eux, je n\'ai plus personne à qui cacher les clés. Étrange comme ça manque.'] }],
     after: ['Prenez l\'ascenseur. Enfin… ce qu\'il en reste.', 'Faites attention au lieutenant. Il dort, mais d\'un œil.'],
     afterSteal: ['Quarante ans… et voilà comment ça finit.']
   };
@@ -108,6 +112,7 @@
       restock: 4,
       say: 'Nina tousse depuis une semaine. Des médicaments, si vous en avez. Je paierai ce qu\'il faut.'
     },
+    when: [{ 'if': 'npc:nina.helped', lines: ['Nina a dormi toute la nuit. La fièvre est tombée. Je ne sais pas comment vous remercier.', 'Elle tousse encore un peu, mais elle a mangé. Elle a même demandé si le chat était revenu.', 'Si vous avez besoin de quelque chose, dites-le. On n\'a plus grand-chose, mais ce qu\'on a est à vous.'], say: 'Nina va mieux. Prenez ce qu\'il vous faut, je vous le dois bien.' }],
     afterSteal: ['Vous avez volé une gamine malade. Vous êtes contents ?', 'Sortez de chez moi.']
   };
   C.NPCS.nina = {
@@ -121,7 +126,8 @@
       thanks: 'Merci. Papa ! Papa, regarde ! … Il va vouloir vous donner quelque chose, il est comme ça.',
       reward: { filtre: 1, legumes: 2 }, moral: 8
     },
-    after: ['Je me sens mieux. Vous reviendrez ?']
+    healed: 'sit',
+    after: ['Je me sens mieux. Vous reviendrez ?', 'Papa a arrêté de faire les cent pas. Il a dormi, lui aussi.']
   };
 
   C.OWNERS.hotel_refugies = {

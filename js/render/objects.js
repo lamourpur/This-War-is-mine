@@ -45,8 +45,9 @@
     if (o.kind === 'note') return o.wall ? { x: o.x - 16, y: y - (o.dy || 90) - 4, w: 32, h: 38 } : { x: o.x - 18, y: y - 16, w: 36, h: 20 };
     if (o.kind === 'npc' && C.NPCS && C.NPCS[o.npc]) {
       var nd = C.NPCS[o.npc], nh = C.Figure.BASE * nd.look.h;
-      if (nd.pose === 'lie') { var ly = o.onBed ? y - 42 : y - 9; return { x: o.x - nh * 0.58, y: ly - 22, w: nh * 1.1, h: 30 }; }
-      return { x: o.x - 22, y: y - nh * (nd.pose === 'sit' ? 0.82 : 1.05), w: 44, h: nh * (nd.pose === 'sit' ? 0.82 : 1.05) };
+      var np = C.Explore && C.Explore.active ? C.Explore.pose(o) : nd.pose;
+      if (np === 'lie') { var ly = o.onBed ? y - 42 : y - 9; return { x: o.x - nh * 0.58, y: ly - 22, w: nh * 1.1, h: 30 }; }
+      return { x: o.x - 22, y: y - nh * (np === 'sit' ? 0.82 : 1.05), w: 44, h: nh * (np === 'sit' ? 0.82 : 1.05) };
     }
     if (o.kind === 'blackboard') return { x: o.x - o.w / 2 - 5, y: y - 155, w: o.w + 10, h: o.h + 14 };
     return { x: o.x - o.w / 2, y: y - o.h, w: o.w, h: o.h };
@@ -482,14 +483,16 @@
   D.npc = function (ctx, r, o, y) {
     var d = C.NPCS && C.NPCS[o.npc];
     if (!d) return;
+    var ex = C.Explore && C.Explore.active, cured = ex && C.Explore.cured(o), pose = ex ? C.Explore.pose(o) : d.pose;
+    var cond = cured ? {} : (d.cond || {});
     var fake = {
       id: 'npc_' + o.npc, look: d.look, traits: [], path: [], x: o.x, y: y, f: o.f, anim: 0,
-      moral: d.pose === 'lie' ? 30 : 60, fatigue: 30, wound: (d.cond && d.cond.wound) || 0, sick: (d.cond && d.cond.sick) || 0,
-      act: d.pose === 'lie' ? { kind: 'sleepfloor', phase: 'work' } : d.pose === 'sit' ? { kind: 'rest', phase: 'work' } : null
+      moral: pose === 'lie' ? 30 : cured ? 75 : 60, fatigue: cured ? 15 : 30, wound: cond.wound || 0, sick: cond.sick || 0,
+      act: pose === 'lie' ? { kind: 'sleepfloor', phase: 'work' } : pose === 'sit' ? { kind: 'rest', phase: 'work' } : null
     };
     var H = C.Figure.BASE * d.look.h;
     var dir = o.facing || 1;
-    if (d.pose === 'lie') {
+    if (pose === 'lie') {
       var ly = o.onBed ? y - 42 : y - 9;
       if (!o.onBed) {
         // Couverture / carton au sol
@@ -502,10 +505,10 @@
       P(ctx, r, bl, d.blanket || '#77705f', 0.6);
       SK.hatchPoly(ctx, r, bl, { gap: 3.5, alpha: 0.3, angle: 0.9 });
       SK.poly(ctx, r, bl, false, { w: 1, passes: 1 });
-      if (d.blood) { ctx.fillStyle = 'rgba(110,25,20,0.55)'; ctx.beginPath(); ctx.ellipse(o.x + H * 0.3, ly - 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill(); }
+      if (d.blood && !cured) { ctx.fillStyle = 'rgba(110,25,20,0.55)'; ctx.beginPath(); ctx.ellipse(o.x + H * 0.3, ly - 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill(); }
       return;
     }
-    if (d.pose === 'sit') {
+    if (pose === 'sit') {
       // Assis sur une caisse
       var cw = 36, chh = H * 0.28, cx = o.x - 6 * dir - cw / 2;
       F(ctx, r, cx, y - chh, cw, chh, WOOD, 0.4); SK.rect(ctx, r, cx, y - chh, cw, chh, { w: 1, passes: 1 });

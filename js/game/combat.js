@@ -166,6 +166,11 @@
 
   function sayG(g, kind, secs) {
     var T = K.type(g), pool = T.say[kind] || C.GUARD_TYPES.soldat.say[kind];
+    if (pool && kind === 'idle') {
+      // Le garçon est libre : la bande ne parle plus de lui
+      var lsn = E().home && E().home.locations[E().loc], luk = lsn && lsn.npc && lsn.npc.lukas;
+      if (luk && luk.rescued) pool = pool.filter(function (l) { return !/gamin|pleurer|Ton père|Tony|réserve/i.test(l); });
+    }
     if (!pool || !pool.length || K.unseen(g)) return;
     g.lastSay = g.lastSay || {};
     var now = performance.now();

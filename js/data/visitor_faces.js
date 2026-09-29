@@ -29,7 +29,7 @@
   C.npcPortrait = function (o) {
     if (!o) return null;
     var id = null, st = {}, name = '';
-    if (o.kind === 'npc' && C.NPCS[o.npc]) { id = o.npc; st = C.NPCS[o.npc].cond || {}; name = C.NPCS[o.npc].name; }
+    if (o.kind === 'npc' && C.NPCS[o.npc]) { id = o.npc; st = C.Explore && C.Explore.active && C.Explore.cured(o) ? {} : (C.NPCS[o.npc].cond || {}); name = C.NPCS[o.npc].name; }
     else if (o.kind === 'guard') {
       id = GUARD_FACE[o.key] || (o.type === 'soldat' ? 'soldat' : null);
       name = o.name || (C.GUARD_TYPES[o.type] || {}).name;

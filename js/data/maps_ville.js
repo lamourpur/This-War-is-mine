@@ -141,6 +141,8 @@
     },
     donate: { items: { conserve: 1 }, alt: { legumes: 1 }, label: 'Donner à manger pour les enfants', thanks: 'Que Dieu vous le rende. Les petits mangeront ce soir.', moral: 5,
       reward: { filtre: 1, eau: 2 }, giveLine: 'Prenez de l\'eau, et ce filtre. On en a deux, il en faut bien un pour vous.' },
+    when: [{ 'if': 'freed:tireur', lines: ['Plus de coups de feu depuis hier. Vous avez fait taire le tireur ? On peut de nouveau remonter chercher de l\'eau.', 'Les petits ont demandé s\'ils pouvaient jouer dehors. J\'ai dit pas encore.'] },
+      { 'if': 'self:donated', lines: ['Les petits ont mangé, ce soir. Vous ne savez pas ce que ça change.', 'Les enfants vous appellent « le monsieur du haut ». Ils guettent l\'entrée.'] }],
     afterSteal: ['Vous volez des enfants ? Partez. Partez !']
   };
   C.OWNERS.metro = {

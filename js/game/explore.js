@@ -456,6 +456,35 @@
   E.npcDef = function (o) { return C.NPCS[o.npc]; };
   E.npcState = function (o) { var ls = locState(E.home, E.loc); if (!ls.npc[o.npc]) ls.npc[o.npc] = {}; return ls.npc[o.npc]; };
 
+  // Conditions des répliques (champ `when` des PNJ) : 'npc:nina.helped' (état d'un autre
+  // habitant), 'self:helped', 'shelled', 'freed:groupe' (plus aucun garde de ce groupe)
+  E.cond = function (c, o) {
+    var ls = locState(E.home, E.loc);
+    if (c === 'shelled') return !!ls.shelled;
+    if (c.indexOf('freed:') === 0) return C.Combat.freed(c.slice(6));
+    var m = /^(npc|self):(?:([a-z_]+)\.)?(\w+)$/.exec(c);
+    if (!m) return false;
+    var ns = m[1] === 'self' ? E.npcState(o) : (ls.npc[m[2]] || {});
+    return !!ns[m[3]];
+  };
+  // Première réplique conditionnelle applicable : { if, lines, say }
+  E.pickWhen = function (list, o) {
+    for (var i = 0; list && i < list.length; i++) if (E.cond(list[i]['if'], o)) return list[i];
+    return null;
+  };
+  // Soigné : on lui a donné ce qu'il fallait, ou quelqu'un de sa famille (curedBy)
+  E.cured = function (o) {
+    var d = E.npcDef(o), ls = locState(E.home, E.loc);
+    if (E.npcState(o).helped) return true;
+    var k = d.curedBy && ls.npc[d.curedBy];
+    return !!(k && (k.helped || k.donated));
+  };
+  // Pose effective : un malade soigné se redresse (champ `healed`)
+  E.pose = function (o) {
+    var d = E.npcDef(o);
+    return d.healed && E.cured(o) ? d.healed : d.pose;
+  };
+
   // Bulle au-dessus d'un personnage non joueur ou du survivant
   E.say = function (who, text, secs) {
     if (!C.Render || !text) return;
@@ -485,7 +514,8 @@
       E.say(o, d.rescued[(ns.after - 1) % d.rescued.length], 6);
       return;
     }
-    var pool = ns.robbed ? AFTER_ROB : ls.angry && d.afterSteal ? d.afterSteal : ls.shelled && d.shelled && !ns.gaveBack ? d.shelled : ns.helped && d.after ? d.after : d.greet;
+    var w = E.pickWhen(d.when, o);
+    var pool = ns.robbed ? AFTER_ROB : ls.angry && d.afterSteal ? d.afterSteal : ls.shelled && d.shelled && !ns.gaveBack ? d.shelled : w ? w.lines : E.cured(o) && d.after ? d.after : d.greet;
     ns.talk = (ns.talk || 0) + 1;
     E.say(o, pool[(ns.talk - 1) % pool.length]);
     E.ev('talk', { name: d.name });
@@ -545,6 +575,7 @@
     G().removeItems(pay);
     need = U.copy(need); need.items = pay;
     ns.helped = true;
+    G().markDirty();                       // le malade se redresse, sa famille aussi
     E.say(o, need.thanks, 7);
     // La récompense vient après le merci, pas avant
     if (need.reward) E.giveLater(s, o, need.reward, 'Cadeau de ' + d.name, 2.2);
@@ -603,8 +634,11 @@
   E.trade = function (s, o) {
     var d = E.npcDef(o);
     if (locState(E.home, E.loc).angry) { E.say(o, d.afterSteal ? d.afterSteal[1] : 'Je n\'ai rien à échanger avec vous.'); return; }
-    E.say(o, d.trade.say || 'Voyons ce que vous avez.', 4);
-    C.TradeUI.open(s, E.traderStock(o), null, { name: d.name, likes: d.trade.likes, bag: true, face: C.npcPortrait(o), faceLine: d.trade.say });
+    var tw = E.pickWhen(d.trade.when, o), say = tw ? tw.say : null;
+    for (var wi = 0; !say && d.when && wi < d.when.length; wi++) if (d.when[wi].say && E.cond(d.when[wi]['if'], o)) say = d.when[wi].say;
+    say = say || d.trade.say;
+    E.say(o, say || 'Voyons ce que vous avez.', 4);
+    C.TradeUI.open(s, E.traderStock(o), null, { name: d.name, likes: d.trade.likes, bag: true, face: C.npcPortrait(o), faceLine: say });
   };
 
   // ------------------------------------------------------------ braquage

@@ -25,7 +25,8 @@
         thanks: 'Merci… Tenez, prenez ça. Je n\'en aurai plus besoin là où je vais. Au grenier, derrière les gravats, il y a encore une valise.',
         reward: { passe_partout: 1 }, moral: 6
       },
-      after: ['Ça tient. Grâce à vous.', 'Je partirai demain, vers le sud. Faites attention à vous.']
+      after: ['Ça tient. Grâce à vous.', 'Je partirai demain, vers le sud. Faites attention à vous.'],
+      healed: 'sit'
     },
     arthur: {
       name: 'Arthur Whitaker', title: 'Vieil homme',
@@ -35,8 +36,10 @@
       trade: {
         stock: { conserve: 2, legumes: 2, cafe: 1, livres: 3, tabac: 2, bijoux: 1 },
         likes: { medicaments: 1.8, bandage: 1.5, remede: 1.6, bois: 1.3, conserve: 1.2 },
-        say: 'Des médicaments… c\'est tout ce qui compte pour nous.'
+        say: 'Des médicaments… c\'est tout ce qui compte pour nous.',
+        when: [{ 'if': 'npc:edith.helped', say: 'Edith va mieux, grâce à vous. Maintenant, c\'est du bois qu\'il nous faut pour l\'hiver, et de quoi manger.' }]
       },
+      when: [{ 'if': 'npc:edith.helped', lines: ['Edith a mangé un peu ce matin. La fièvre est tombée. Sans vous, je l\'aurais perdue.', 'Elle s\'est assise dans son lit. Elle a demandé des nouvelles du quartier. Ça faisait des jours.', 'La remise reste fermée au cadenas, mais prenez ce qu\'il vous faut de mes outils si vous en avez besoin.'] }],
       afterSteal: ['Pourquoi ? Nous ne vous avions rien fait…', 'Partez. S\'il vous plaît, partez.']
     },
     edith: {
@@ -50,7 +53,8 @@
         thanks: 'Que Dieu vous garde. Arthur, donne-leur la montre de ton père. Il le faut.',
         reward: { montre: 1 }, moral: 9
       },
-      after: ['Je me sens un peu mieux. Merci, mon petit.']
+      after: ['Je me sens un peu mieux. Merci, mon petit.'],
+      healed: 'sit'
     },
     sal: {
       name: 'Sal', title: 'Marchand',
@@ -62,7 +66,8 @@
         likes: { bijoux: 1.25, montre: 1.3, diamants: 1.35, alcool: 1.3, cigarettes: 1.2, cafe: 1.2 },
         restock: 3,
         say: 'Les bijoux, la gnôle, le café : voilà ce qui a de la valeur, maintenant.'
-      }
+      },
+      when: [{ 'if': 'npc:daniel.donated', lines: ['Le père m\'a dit que quelqu\'un avait nourri les réfugiés. Alors pour vous, je ferme les yeux sur deux ou trois prix.', 'Tout s\'échange, l\'ami. Mais les gens qui donnent, je m\'en souviens.'] }]
     },
     daniel: {
       name: 'Père Daniel', title: 'Prêtre',
@@ -73,7 +78,8 @@
         items: { conserve: 1 }, alt: { legumes: 2 }, label: 'Faire un don de nourriture',
         thanks: 'Ce repas nourrira deux enfants ce soir. Merci.', moral: 5,
         reward: { alcool: 1, herbes: 1 }, giveLine: 'Prenez ceci. Le vin de messe… Dieu comprendra. Et les herbes du cloître, pour la fièvre.'
-      }
+      },
+      when: [{ 'if': 'self:donated', lines: ['Vos dons ont nourri des enfants qui n\'avaient rien mangé depuis deux jours. Que Dieu vous garde.', 'Nous tenons encore. Onze personnes, et ce matin, personne n\'a pleuré de faim.'] }]
     },
     rosa: {
       name: 'Rosa', title: 'Réfugiée',
@@ -86,13 +92,14 @@
         thanks: 'Merci… merci. Prenez ma bague. Non, prenez-la. C\'est tout ce que j\'ai.',
         reward: { bijoux: 1 }, moral: 10
       },
-      after: ['Elle dort enfin. Je n\'oublierai pas votre visage.']
+      after: ['Elle dort enfin. Je n\'oublierai pas votre visage.', 'Lili a mangé une soupe ce soir. Une vraie soupe. Vous ne savez pas ce que ça veut dire.']
     },
     lili: {
       name: 'Lili', title: 'Enfant malade',
       look: { hair: 'long', build: 0.6, h: 0.6, coat: '#6f665b', pants: '#3a3632', coatLen: 0.1, skin: '#b4a592', hairColor: '#2a2420', female: true, top: 'cardigan', shirt: '#8c8478' },
-      pose: 'lie', cond: { sick: 60 },
-      greet: ['…'], silent: true
+      pose: 'lie', cond: { sick: 60 }, curedBy: 'rosa', healed: 'sit',
+      greet: ['…'], silent: true,
+      when: [{ 'if': 'npc:rosa.helped', lines: ['Maman dit que c\'est vous qui avez apporté le médicament.', 'J\'ai plus chaud. J\'ai plus mal à la tête.', 'Merci, monsieur.'] }]
     },
 
     // ---- Hôpital de campagne
@@ -112,7 +119,7 @@
         thanks: 'Merci. Chaque bandage compte, ici.', moral: 4, alts: [{ medicaments: 1 }, { remede: 1 }], shelledThanks: 'Vous les avez retrouvés… Vous avez sauvé trois vies ce soir. Je n\'ai pas les mots.', shelledMoral: 12,
         reward: { remede: 1 }, giveLine: 'Tenez, un remède que Benny prépare avec les plantes. Pour les vôtres.'
       },
-      after: ['Le soldat du rez-de-chaussée va s\'en sortir. Grâce à vous, en partie.', 'Reposez-vous quand vous pouvez. Personne ne le fait jamais.'],
+      after: ['On a pu désinfecter les plaies cette nuit. Ça sauvera des jambes. Grâce à vous, en partie.', 'Reposez-vous quand vous pouvez. Personne ne le fait jamais.'],
       afterSteal: ['Vous avez pris les médicaments ? Des gens vont mourir cette nuit. Vous comprenez ça ?', 'Sortez. Je ne veux plus vous voir ici.'],
       // Après le bombardement de l'aile est
       shelled: ['Un obus a fait s\'effondrer le fond du sous-sol. Toutes nos fournitures sont sous les gravats… Si quelqu\'un pouvait les dégager.', 'Trois blessés attendent du matériel. Ils ne tiendront pas jusqu\'à demain sans.', 'Ce que vous trouverez là-dessous, rapportez-le-moi. Je vous en supplie.']
@@ -128,6 +135,12 @@
         restock: 3,
         say: 'Du carburant pour le groupe électrogène, de l\'alcool, du bois pour stériliser : c\'est ce qui nous manque.'
       },
+      when: [
+        { 'if': 'npc:ruth.gaveBack', lines: ['Le docteur m\'a dit : vous avez retrouvé les fournitures sous les gravats. Trois blessés vivent grâce à vous. Moi, je n\'ai pas les mots.', 'On a pu rouvrir la salle d\'opération. Ça sent l\'alcool et le savon. Ça sent la vie.'], say: 'On a de quoi soigner grâce à vous. Il nous faut encore du carburant pour le groupe électrogène.' },
+        { 'if': 'npc:ruth.donated', lines: ['Le docteur m\'a parlé de vos dons. Chaque bandage compte, ici, et vous le savez.', 'Vous êtes des nôtres maintenant, si vous voulez. On ne dit pas ça souvent.'], say: 'Le docteur dit que vous êtes fiables. Je vous fais de meilleures conditions.' },
+        { 'if': 'npc:ruth.helped', lines: ['Le docteur m\'a dit ce que vous avez apporté. Ça va sauver des jambes.', 'Vous êtes des nôtres maintenant, si vous voulez. On ne dit pas ça souvent.'], say: 'Le docteur dit que vous êtes fiables. Je vous fais de meilleures conditions.' },
+        { 'if': 'shelled', lines: ['Tout est sous les gravats, au sous-sol. Bandages, fils, antibiotiques… Le docteur n\'ose pas le dire, mais on va devoir choisir qui on soigne.', 'Vous descendez ? Faites attention aux poutres.'], say: 'Presque plus rien à vendre : les réserves sont sous les décombres.' }
+      ],
       afterSteal: ['Hé ! C\'est la pharmacie de l\'hôpital !', 'On n\'a plus rien à se dire.']
     },
     dale: {
@@ -141,7 +154,8 @@
         thanks: 'T\'es un frère. Tiens, prends mes cartouches : là où je suis, je ne tirerai plus sur personne.',
         reward: { munitions: 5 }, moral: 4
       },
-      after: ['Ça va mieux. Le docteur dit que je garderai la jambe.', 'Fais attention dehors, camarade.']
+      after: ['Ça va mieux. Le docteur dit que je garderai la jambe.', 'Fais attention dehors, camarade.'],
+      healed: 'sit'
     },
 
     // ---- École bombardée
@@ -176,7 +190,8 @@
       name: 'Tim', title: 'Enfant',
       look: { hair: 'short', build: 0.62, h: 0.62, coat: '#5d6a6e', pants: '#3a3632', coatLen: 0.08, skin: '#b8a693', hairColor: '#7a5e42', top: 'work', shirt: '#8c8478' },
       pose: 'sit',
-      greet: ['T\'es qui, toi ? T\'as un fusil ?', 'Madame Carol dit que la guerre finira avant l\'été.', 'Mon papa, il est parti se battre. Il revient bientôt.']
+      greet: ['T\'es qui, toi ? T\'as un fusil ?', 'Madame Carol dit que la guerre finira avant l\'été.', 'Mon papa, il est parti se battre. Il revient bientôt.'],
+      when: [{ 'if': 'npc:carol.helped', lines: ['J\'ai eu un gâteau ! Enfin, du pain avec du sucre. Mais avec une bougie !', 'Tu es le fantôme gentil ? C\'est toi qui as apporté le sucre ?', 'J\'ai huit ans. Huit ! Et j\'ai fait un vœu, mais faut pas le dire.'] }]
     }
   };
 
