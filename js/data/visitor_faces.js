@@ -122,6 +122,48 @@
       figs: [{ hair: 'buzz', build: 0.95, h: 0.99, coat: '#5c5448', pants: '#2c2a26', coatLen: 0.3, skin: '#dcbc9f', hairColor: '#b89a62', top: 'overcoat', shirt: '#6e685e' }]
     }
     ,
+    sara_1: {
+      name: 'Sara',
+      face: { skin: '#d8b89c', hair: '#3a2a20', hairStyle: 'long', fw: 31, fh: 45, jaw: 0.74, eye: 1.08, iris: '#5a4a3a', brow: 1.6, nose: 'small', lips: 1.0, age: 0.12, female: true, clothes: 'coat', cloth: '#4a4640', scarf: '#6a4a3e', turn: 0.1 },
+      state: { fatigue: 65, moral: 30 },
+      figs: [{ hair: 'long', build: 1.05, h: 0.94, coat: '#4a4640', pants: '#2e2c28', coatLen: 0.4, skin: '#d8b89c', hairColor: '#3a2a20', female: true, lips: true, top: 'overcoat', shirt: '#6a5e52', scarf: '#6a4a3e' }]
+    },
+    sara_2: {
+      name: 'Sara',
+      face: { skin: '#d4b499', hair: '#3a2a20', hairStyle: 'long', fw: 31, fh: 45, jaw: 0.74, eye: 1.08, iris: '#5a4a3a', brow: 1.6, nose: 'small', lips: 0.9, age: 0.12, female: true, clothes: 'coat', cloth: '#4a4640', scarf: '#6a4a3e', turn: 0.1 },
+      state: { fatigue: 85, moral: 20, sick: 20 },
+      figs: [{ hair: 'long', build: 1.05, h: 0.92, coat: '#4a4640', pants: '#2e2c28', coatLen: 0.4, skin: '#d4b499', hairColor: '#3a2a20', female: true, lips: true, top: 'overcoat', shirt: '#6a5e52', scarf: '#6a4a3e' }],
+      hurt: true
+    },
+    sara_3: {
+      name: 'Sara et Caleb',
+      face: { skin: '#caa98c', hair: '#6a5240', hairStyle: 'short', fw: 34, fh: 48, jaw: 0.86, eye: 0.95, iris: '#4a5a6a', brow: 2.2, nose: 'straight', lips: 0.9, age: 0.25, beard: 'stubble', beardColor: '#5a4636', clothes: 'work', cloth: '#5c5a52', turn: 0.14 },
+      state: { wound: 25 },
+      figs: [
+        { hair: 'short', build: 0.92, h: 1.0, coat: '#5c5a52', pants: '#302d29', coatLen: 0.08, skin: '#caa98c', hairColor: '#6a5240', beard: 'stubble', top: 'work', shirt: '#7a7266' },
+        { hair: 'long', build: 0.86, h: 0.94, coat: '#4a4640', pants: '#2e2c28', coatLen: 0.35, skin: '#d8b89c', hairColor: '#3a2a20', female: true, lips: true, top: 'overcoat', shirt: '#6a5e52', scarf: '#8a7a64' }
+      ]
+    },
+    soldat_1: {
+      name: 'Sergent Hollis',
+      face: { skin: '#c49f82', hair: '#3a3028', hairStyle: 'buzz', fw: 37, fh: 50, jaw: 1.0, eye: 0.85, iris: '#4a4a3a', brow: 2.8, nose: 'straight', lips: 0.8, age: 0.4, beard: 'stubble', clothes: 'coat', cloth: '#4d5140', turn: 0.12 },
+      state: { wound: 60, fatigue: 80, moral: 30 },
+      figs: [soldier({ hat: null, hair: 'buzz', hairColor: '#3a3028', skin: '#c49f82', bag: false })],
+      hurt: true, armed: true
+    },
+    soldat_2: {
+      name: 'Sergent Hollis',
+      face: { skin: '#d0b09a', hair: '#3a3028', hairStyle: 'buzz', fw: 37, fh: 50, jaw: 1.0, eye: 0.85, iris: '#4a4a3a', brow: 2.8, nose: 'straight', lips: 0.7, age: 0.4, beard: 'stubble', clothes: 'coat', cloth: '#4d5140', turn: 0.12 },
+      state: { wound: 70, sick: 70, fatigue: 90, moral: 15 },
+      figs: [soldier({ hat: null, hair: 'buzz', hairColor: '#3a3028', skin: '#d0b09a', bag: false })],
+      hurt: true
+    },
+    soldat_3: {
+      name: 'Sergent Hollis',
+      face: { skin: '#c49f82', hair: '#3a3028', hairStyle: 'buzz', hat: 'cap', hatColor: '#3f4334', fw: 37, fh: 50, jaw: 1.0, eye: 0.85, iris: '#4a4a3a', brow: 2.8, nose: 'straight', lips: 0.85, age: 0.4, clothes: 'coat', cloth: '#4d5140', turn: 0.12 },
+      figs: [soldier({ hat: 'cap', hatColor: '#3f4334', hair: 'buzz', hairColor: '#3a3028', skin: '#c49f82', beard: null }), soldier({ h: 0.98 })],
+      armed: true
+    },
     voisin_outil: {
       name: 'Nate, le voisin du coin',
       face: { skin: '#c8a489', hair: '#5a4636', hairStyle: 'short', fw: 35, fh: 49, jaw: 0.9, eye: 0.9, iris: '#4a5a4a', brow: 2.4, nose: 'straight', lips: 0.9, age: 0.4, beard: 'stubble', clothes: 'work', cloth: '#6b6358', turn: 0.14 },

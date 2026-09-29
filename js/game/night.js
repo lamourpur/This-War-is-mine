@@ -23,7 +23,7 @@
     st.survivors.forEach(function (s) {
       if (s.alive && s.away) {
         s.x = 240; s.f = 1; s.y = C.FLOORS[1].y;
-        var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution' }[s.away] || '';
+        var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution', accouchement: 'de chez Sara' }[s.away] || '';
         var fe = s.look && s.look.female ? 'e' : '', hurt = false;
         if (s.awayRisk && C.R.chance(s.awayRisk)) {
           s.wound = Math.min(95, s.wound + C.R.int(15, 30));
@@ -92,6 +92,7 @@
     if (st.day < 3) return 0;
     var holes = st.objects.filter(function (o) { return o.kind === 'hole' && !o.boarded; }).length;
     var c = 0.1 + st.day * 0.006 + holes * 0.03 + (st.raidBonus || 0);
+    if (st.flags && st.flags.guardedUntil && st.day <= st.flags.guardedUntil) c *= 0.3;   // le sergent Hollis fait passer les patrouilles
     if (C.World.crimeHigh(st)) c += 0.2;
     if (C.World.isWinter(st)) c += 0.05;
     return U.clamp(c, 0, 0.85);
