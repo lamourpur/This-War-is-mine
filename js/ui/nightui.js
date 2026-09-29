@@ -70,10 +70,8 @@
 
     var p = UI.panel('La nuit tombe', 'Jour ' + st.day + ' · 20:00 — qui dort, qui veille, qui sort ?', { dark: true, foot: true, noClose: true, wide: true });
     var grid = U.el('div', 'night-grid');
-    var scavBox = U.el('div', 'scav-box');
     var info = U.el('div', 'night-info');
     p.body.appendChild(grid);
-    p.body.appendChild(scavBox);
     p.body.appendChild(info);
 
     function scavenger() {
@@ -160,68 +158,50 @@
       grid.appendChild(c);
     }
 
-    function seg(label, options, cur, onSet) {
-      var g = U.el('div', 'opt-group', '<span>' + label + '</span>');
-      var sg = U.el('div', 'seg');
-      options.forEach(function (o) {
-        var b = U.el('button', o[0] === cur ? 'on' : '', o[1]);
-        if (o[2]) b.title = o[2];
-        b.addEventListener('click', function () { onSet(o[0]); renderAll(); });
-        sg.appendChild(b);
-      });
-      g.appendChild(sg);
-      return g;
-    }
-
-    function renderScav() {
-      var s = scavenger();
-      scavBox.classList.toggle('hidden', !s);
-      if (!s) return;
-      scavBox.innerHTML = '<h3>' + C.Icon('pack') + 'Expédition de ' + U.esc(s.name.split(' ')[0]) + '</h3>';
-      // Carte de la ville : on choisit la sortie en cliquant sur un repère
+    // Second écran : où aller cette nuit ? (carte de la ville, photo du lieu)
+    function openLocation() {
+      var s = scavenger(); if (!s) return;
+      var n = s.name.split(' ')[0];
+      var lp = UI.panel('Où aller cette nuit ?', U.esc(n) + (plan.merc ? ', le mercenaire,' : '') + ' partira à la nuit tombée · choisissez un lieu sur la carte', { dark: true, foot: true, noClose: true, wide: true });
+      lp.classList.add('loc-screen');
+      var box = U.el('div', 'loc-wrap');
+      lp.body.appendChild(box);
       var mapBox = U.el('div', 'cm-box');
-      scavBox.appendChild(mapBox);
-      C.CityMap.render(mapBox, st, plan.scav.loc, function (id) { plan.scav.loc = id; renderAll(); }, function (l) {
-        var ls = st.locations[l.id] || {};
-        if (l.unlock > st.day) return '<b>' + U.esc(l.name) + '</b><span>On n\'en sait encore rien. (jour ' + l.unlock + ')</span>';
-        return '<b>' + U.esc(l.name) + '</b><span class="danger' + l.danger + '">' + C.DANGER_LABELS[l.danger] + '</span> · ' + C.RESIDENT_LABELS[l.residents] + (Object.keys(ls.hostile || {}).length ? ' · <em>hostiles</em>' : '') +
-          '<span>' + lootLevel(st, l) + ' · ' + (ls.visits || 0) + ' visite' + ((ls.visits || 0) > 1 ? 's' : '') + '</span>';
-      });
-      var loc = plan.scav.loc ? C.locationDef(plan.scav.loc) : null;
-      if (loc) {
-        // Grande photo du lieu choisi, description tapée à la machine par-dessus
-        var ph = U.el('div', 'loc-photo', '<div class="loc-photo-cap"><b>' + U.esc(loc.name) + '</b><p>' + U.esc(loc.desc) + '</p></div>');
-        ph.style.backgroundImage = 'url(assets/locations/' + loc.id + '.jpg)';
-        scavBox.appendChild(ph);
+      var side = U.el('div', 'loc-side');
+      box.appendChild(mapBox); box.appendChild(side);
+      var back = U.el('button', 'btn ghost', '← Retour');
+      back.title = 'Revenir au choix de qui dort, veille ou sort';
+      back.addEventListener('click', function () { UI.closeModal(); });
+      var next = U.el('button', 'btn', 'Préparer le sac →');
+      next.addEventListener('click', function () { if (plan.scav.loc) UI.openPack(plan, s, depart, renderLoc); });
+      lp.foot.appendChild(back); lp.foot.appendChild(next);
+      function renderLoc() {
+        mapBox.innerHTML = '';
+        C.CityMap.render(mapBox, st, plan.scav.loc, function (id) { plan.scav.loc = id; if (C.Audio.ready) C.Audio.sfx.click(); renderLoc(); }, function (l) {
+          var ls = st.locations[l.id] || {};
+          if (l.unlock > st.day) return '<b>' + U.esc(l.name) + '</b><span>On n\'en sait encore rien. (jour ' + l.unlock + ')</span>';
+          return '<b>' + U.esc(l.name) + '</b><span class="danger' + l.danger + '">' + C.DANGER_LABELS[l.danger] + '</span> · ' + C.RESIDENT_LABELS[l.residents] + (Object.keys(ls.hostile || {}).length ? ' · <em>hostiles</em>' : '') +
+            '<span>' + lootLevel(st, l) + ' · ' + (ls.visits || 0) + ' visite' + ((ls.visits || 0) > 1 ? 's' : '') + '</span>';
+        });
+        side.innerHTML = '';
+        var loc = plan.scav.loc ? C.locationDef(plan.scav.loc) : null;
+        if (!loc) {
+          side.appendChild(U.el('div', 'loc-empty', C.Icon('search') + '<p>Cliquez sur un repère de la carte.<br>Ce qu\'on sait du lieu s\'affichera ici.</p>'));
+        } else {
+          var ls = st.locations[loc.id] || {};
+          var ph = U.el('div', 'loc-photo', '<div class="loc-photo-cap"><b>' + U.esc(loc.name) + '</b><p>' + U.esc(loc.desc) + '</p></div>');
+          ph.style.backgroundImage = 'url(assets/locations/' + loc.id + '.jpg)';
+          side.appendChild(ph);
+          side.appendChild(U.el('p', 'loc-facts', '<span class="danger' + loc.danger + '">' + C.DANGER_LABELS[loc.danger] + '</span> · ' + C.RESIDENT_LABELS[loc.residents] + ' · ' + lootLevel(st, loc) + ' · ' + (ls.visits ? ls.visits + ' visite' + (ls.visits > 1 ? 's' : '') : 'jamais visité')));
+          side.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(n) + ' sur place jusqu\'à 5 h du matin.</span>'));
+          var danger = dangerNote(st, loc);
+          if (danger) side.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + danger + '</span>'));
+        }
+        next.disabled = !loc;
+        next.title = loc ? '' : 'Choisissez d\'abord un lieu sur la carte';
       }
-
-      var row = U.el('div', 'opt-row');
-      if (loc && C.isPlayableLocation(loc.id)) {
-        // Lieu jouable : c'est vous qui menez l'exploration
-        scavBox.appendChild(U.el('p', 'loc-note', C.Icon('clock') + '<span>Vous dirigerez ' + U.esc(s.name.split(' ')[0]) + ' sur place jusqu\'à 5 h du matin. Remplissez son sac ci-dessous : ce que vous emportez prend des cases, qui ne serviront plus au butin.</span>'));
-        var danger = dangerNote(st, loc);
-        if (danger) scavBox.appendChild(U.el('p', 'loc-note warn', C.Icon('shield') + '<span>' + danger + '</span>'));
-      } else {
-        row.appendChild(seg('Attitude', [
-          ['discret', 'Discrète', 'Moins de rencontres, moins de butin'],
-          ['normal', 'Normale', ''],
-          ['agressif', 'Agressive', 'Plus de butin, prend aussi aux habitants (civils) — mauvais pour le moral']
-        ], plan.scav.stance, function (v) { plan.scav.stance = v; }));
-        row.appendChild(seg('Priorité', C.LOOT_PRIORITIES.map(function (x) { return [x[0], x[1]]; }), plan.scav.prio, function (v) { plan.scav.prio = v; }));
-        scavBox.appendChild(row);
-      }
-
-      // Le sac se prépare sur un écran à part (Préparer l'expédition)
-      var bag = plan.scav.bag, cap = C.Explore.capacity(s) - (s.gearSlots || 0), used = C.Explore.slots(bag);
-      var sum = U.el('div', 'bag-sum');
-      var icons = Object.keys(bag).map(function (id) { return '<span title="' + U.esc(C.ITEMS[id].name) + '">' + C.ItemArt.img(id, 28) + (bag[id] > 1 ? '<i>' + bag[id] + '</i>' : '') + '</span>'; }).join('');
-      sum.innerHTML = '<div class="bs-l">' + C.Icon('pack') + '<b>Sac de ' + U.esc(s.name.split(' ')[0]) + '</b><em>' + used + ' / ' + cap + ' cases</em></div><div class="bs-items">' + (icons || '<small>Vide : tout l\'espace pour le butin.</small>') + '</div>';
-      var prep = U.el('button', 'btn ghost', 'Préparer le sac →');
-      prep.disabled = !loc;
-      prep.title = loc ? '' : 'Choisissez d\'abord un lieu sur la carte';
-      prep.addEventListener('click', function () { UI.openPack(plan, s, depart, renderAll); });
-      sum.appendChild(prep);
-      scavBox.appendChild(sum);
+      renderLoc();
+      UI.modal(lp);
     }
 
     function syncBag() { UI.syncBag(plan); }
@@ -247,12 +227,11 @@
         tile(estTemp < 0 ? 'bad' : estTemp < 8 ? 'warn' : '', 'thermo', estTemp + ' °C', estTemp < 8 ? 'Nuit froide : risque de maladie' : 'Température prévue cette nuit');
       if (hungry.length) info.innerHTML += tile('warn', 'hunger', 'Faim', hungry.join(', ') + ' — nourrissez-les d\'abord');
       var s = scavenger();
-      var over = s && C.Explore.slots(plan.scav.bag) > C.Explore.capacity(s) - (s.gearSlots || 0);
-      go.disabled = !!(s && (!plan.scav.loc || over));
-      go.textContent = !s ? 'Passer la nuit' : !plan.scav.loc ? 'Choisissez un lieu' : over ? 'Sac trop plein' : 'Préparer l\'expédition →';
+      go.disabled = false;
+      go.textContent = !s ? 'Passer la nuit' : 'Choisir le lieu →';
     }
 
-    function renderAll() { renderCards(); renderScav(); renderInfo(); }
+    function renderAll() { renderCards(); renderInfo(); }
 
     var feed = U.el('button', 'btn ghost', 'Nourrir / soigner d\'abord');
     feed.title = 'Revenir un instant au refuge (le temps reste figé à 20 h)';
@@ -264,13 +243,12 @@
     });
     var go = U.el('button', 'btn', 'Passer la nuit');
     go.addEventListener('click', function () {
-      var sc = scavenger();
-      // Un explorateur et un lieu : on passe d'abord par la préparation du sac
-      if (sc && plan.scav.loc) { UI.openPack(plan, sc, depart, renderAll); return; }
+      // Quelqu'un sort : second écran, le choix du lieu
+      if (scavenger()) { openLocation(); return; }
       depart();
     });
     function depart() {
-      UI.closeModal();
+      UI.closeAllModals();
       var s = scavenger();
       if (!s) plan.scav = null;
       C.Main.nightFade(true, s ? s.name.split(' ')[0] + (plan.merc ? ', le mercenaire,' : '') + ' s\'enfonce dans l\'obscurité vers : ' + C.locationDef(plan.scav.loc).name + '.' : 'Le refuge retient son souffle.');

@@ -1048,3 +1048,13 @@ body.skipping #tb-clock { color: var(--amber); }
 .ts-vals b.ok { color: #3f5a2a; } .ts-vals b.ko { color: #a4472c; }
 .trade-panel .trade-say { text-align: center; }
 @media (max-width: 900px) { .trade2 { grid-template-columns: 1fr; } }
+
+/* ---------- second écran de la nuit : le lieu */
+.loc-screen { width: min(1320px, 96vw); }
+.loc-wrap { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 18px; align-items: start; }
+.loc-side { display: flex; flex-direction: column; gap: 6px; }
+.loc-side .loc-photo { height: 250px; margin: 0; }
+.loc-facts { margin: 6px 0 0; font-size: 14.5px; color: var(--bone-2); }
+.loc-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 250px; border: 1px dashed #4a443a; color: #8a8070; text-align: center; font-size: 15px; }
+.loc-empty svg { width: 36px; height: 36px; opacity: .6; }
+@media (max-width: 900px) { .loc-wrap { grid-template-columns: 1fr; } }
