@@ -37,6 +37,7 @@
     poings: { name: 'poings', tool: null, dmg: [6, 12], time: 1.0, stealth: 30 }
   };
   K.GUNS = {
+    fusil_lunette: { name: 'fusil à lunette', tool: 'rifle', dmg: [48, 68], acc: 0.94, range: 900, time: 0.7, loud: 1.15 },
     fusil_assaut: { name: 'fusil d\'assaut', tool: 'rifle', dmg: [40, 58], acc: 0.84, range: 680, time: 0.6, loud: 1.2 },
     fusil: { name: 'fusil', tool: 'rifle', dmg: [55, 80], acc: 0.86, range: 620, time: 1.7 },
     fusil_pompe: { name: 'fusil à pompe', tool: 'rifle', dmg: [70, 110], acc: 0.9, range: 300, time: 1.6, loud: 1.3 },
@@ -52,6 +53,7 @@
   };
   K.bestGun = function () {
     if (G().count('munitions') <= 0) return null;
+    if (G().count('fusil_lunette') > 0) return 'fusil_lunette';
     if (G().count('fusil_assaut') > 0) return 'fusil_assaut';
     if (G().count('fusil') > 0) return 'fusil';
     if (G().count('fusil_pompe') > 0) return 'fusil_pompe';
@@ -66,7 +68,7 @@
   K.MELEE_ORDER = ['hachette', 'couteau', 'pied_de_biche', 'pelle'];
   K.weapons = function () {
     var out = [];
-    ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux'].forEach(function (id) {
+    ['fusil_lunette', 'fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux'].forEach(function (id) {
       if (G().count(id) > 0) out.push({ id: id, gun: true, name: K.GUNS[id].name, ok: G().count('munitions') > 0, why: G().count('munitions') > 0 ? '' : 'pas de munitions' });
     });
     K.MELEE_ORDER.forEach(function (id) { if (G().count(id) > 0) out.push({ id: id, name: K.MELEE[id].name, ok: true }); });
@@ -876,7 +878,7 @@
     }
     m.entries.push(entry(lbl, sub, null, confirmNeutral(start('attack', { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) })), mw === 'poings' ? null : mw));
     var gun = K.isGun(held) ? held : K.bestGun();
-    var anyGun = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux'].filter(function (x) { return G().count(x) > 0; })[0];
+    var anyGun = ['fusil_lunette', 'fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux'].filter(function (x) { return G().count(x) > 0; })[0];
     if (gun || anyGun) {
       var gd = K.GUNS[gun || anyGun];
       var d = Math.abs(g.x - s.x);

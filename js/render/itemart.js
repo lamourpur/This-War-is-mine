@@ -388,6 +388,17 @@
         line(4, 31.5, 18, 31.5, 0.8, W3);
       });
     },
+    fusil_lunette: function () {
+      D.fusil_assaut();
+      // Lunette de visée montée sur le rail
+      rot(32, 32, -0.5, function () {
+        shape([[14, 19], [38, 19], [38, 24], [14, 24]], '#2b2d2f', { shade: false, w: 1.5 });
+        shape(ell(38.5, 21.5, 3.6, 3.6), '#26282a', { shade: false, w: 1.3 });
+        shape(ell(13.5, 21.5, 2.6, 2.6), '#26282a', { shade: false, w: 1.1 });
+        line(22, 24, 22, 27, 1, INK); line(30, 24, 30, 27, 1, INK);
+        dot(38.5, 21.5, 1.3, 'rgba(160,190,210,0.8)');
+      });
+    },
     casque: function () {
       shape([[10, 40], [12, 26], [22, 15], [32, 12], [42, 15], [52, 26], [54, 40]], '#5d6450', { from: 0.5, alpha: 0.4 });
       shape([[6, 40], [58, 40], [56, 46], [8, 46]], '#4c5242', { shade: false, w: 1.6 });

@@ -57,6 +57,13 @@
   };
 
   // ------------------------------------------------------------ entrée
+  // Objets qui n'existent que sous condition (`only`)
+  E.onlyOK = function (d, ls) {
+    if (d.only === 'grisha_dead') return !!(ls.npc && ls.npc.grisha && ls.npc.grisha.dead);
+    if (d.only === 'shelled') return !!ls.shelled;
+    if (d.only === 'team') return !!ls.team;
+    return true;
+  };
   E.start = function (plan, onDone) {
     // Le pilleur : un survivant… ou le mercenaire engagé pour la nuit
     var home = G().st, s = plan.merc ? (plan.mercBody || (plan.mercBody = C.Merc.body(plan.merc))) : G().surv(Object.keys(plan.roles).filter(function (k) { return plan.roles[k] === 'scav'; })[0]);
@@ -110,6 +117,13 @@
     G().st = est;
 
     var returned = [];
+    // Chantier : un groupe de tireurs s'y trouve parfois (tiré une fois, à la première visite)
+    if (id === 'chantier' && ls.team == null) ls.team = C.R.chance(0.7);
+    // Hôpital : un obus a soufflé l'aile est pendant la guerre
+    if (id === 'hopital' && home.day >= 9 && !ls.shelled) {
+      ls.shelled = true;
+      E.notes.push({ t: 'Un obus a fait s\'effondrer le fond du sous-sol de l\'hôpital : des fournitures médicales sont ensevelies sous les gravats.', k: 'info' });
+    }
     map.objects.forEach(function (d) {
       var o = U.copy(d);
       var saved = ls.map[d.key];
@@ -117,6 +131,17 @@
       // effacé sans raison connue (vieille sauvegarde) revient.
       if (saved === 'gone' && !(d.kind === 'guard' && !(ls.gone || {})[d.key])) return;
       if (saved === 'gone') { saved = null; returned.push(d); delete ls.map[d.key]; }
+      // Grisha : entrevu puis laissé sans nourriture, il n'a pas passé la nuit
+      if (d.npc === 'grisha') {
+        var gs = ls.npc.grisha || (ls.npc.grisha = {});
+        if (gs.talk && !gs.helped && !gs.dead) {
+          gs.dead = true;
+          E.notes.push({ t: 'Grisha, le sans-abri qui demandait à manger, est mort : personne n\'est revenu à temps. Un autre homme a pris sa place.', k: 'bad' });
+          E.effects.push(function () { G().moralAll(-4, { bad: true, key: 'death_neighbor' }); });
+        }
+        if (gs.dead) o.npc = 'squat_inconnu';
+      }
+      if (d.only && !E.onlyOK(d, ls)) return;
       if (saved) for (var k in saved) o[k] = saved[k];
       G().spawnObject(o);
     });
@@ -233,7 +258,7 @@
       keep.forEach(function (k) { if (o[k] !== undefined) rec[k] = U.copy(o[k]); });
       ls.map[o.key] = rec;
     });
-    C.MAPS[E.loc].objects.forEach(function (d) { if (!present[d.key]) ls.map[d.key] = 'gone'; });
+    C.MAPS[E.loc].objects.forEach(function (d) { if (!present[d.key] && !d.only) ls.map[d.key] = 'gone'; });   // (les objets à condition ne sont pas « disparus » s'ils n'ont pas encore paru)
 
     var bag = reason === 'dead' ? {} : est.inventory;
     // Mila : libérée, ou laissée au soldat ivre
@@ -460,7 +485,7 @@
       E.say(o, d.rescued[(ns.after - 1) % d.rescued.length], 6);
       return;
     }
-    var pool = ns.robbed ? AFTER_ROB : ls.angry && d.afterSteal ? d.afterSteal : ns.helped && d.after ? d.after : d.greet;
+    var pool = ns.robbed ? AFTER_ROB : ls.angry && d.afterSteal ? d.afterSteal : ls.shelled && d.shelled && !ns.gaveBack ? d.shelled : ns.helped && d.after ? d.after : d.greet;
     ns.talk = (ns.talk || 0) + 1;
     E.say(o, pool[(ns.talk - 1) % pool.length]);
     E.ev('talk', { name: d.name });
@@ -507,10 +532,18 @@
     list.forEach(function (g) { E.give(g.s, g.o, g.items, g.label); });
   };
 
+  // Ce que le PNJ accepte, parmi ce qu'on a (need.items, sinon une des alternatives)
+  E.needPay = function (need) {
+    var opts = [need.items].concat(need.alts || []);
+    for (var i = 0; i < opts.length; i++) if (G().has(opts[i])) return opts[i];
+    return null;
+  };
   E.help = function (s, o) {
     var d = E.npcDef(o), ns = E.npcState(o), need = d.need;
-    if (!need || ns.helped || !G().has(need.items)) return;
-    G().removeItems(need.items);
+    var pay = need && !ns.helped ? E.needPay(need) : null;
+    if (!pay) return;
+    G().removeItems(pay);
+    need = U.copy(need); need.items = pay;
     ns.helped = true;
     E.say(o, need.thanks, 7);
     // La récompense vient après le merci, pas avant
@@ -525,7 +558,7 @@
     E.ev('help', { name: d.name, items: U.copy(need.items), reward: need.reward ? U.copy(need.reward) : null });
     E.home.stats.helped++;
     var name = d.name;
-    E.notes.push({ t: first(s) + ' a aidé ' + name + ' (' + C.itemsText(need.items) + ')' + (need.reward ? '. En remerciement : ' + C.itemsText(need.reward) : need.opens ? ', qui lui a ouvert le passage' : '') + '.', k: 'good' });
+    E.notes.push({ t: first(s) + ' a aidé ' + name + ' (' + C.itemsText(need.items) + ')' + (need.reward ? '. En remerciement : ' + C.itemsText(need.reward) : need.opens ? (need.openNote || ', qui lui a ouvert le passage') : '') + '.', k: 'good' });
     E.effects.push(function () { G().moralAll(need.moral || 5, { good: true, key: 'helped' }); });
     G().log(first(s) + ' a aidé ' + name + '.', 'good');
     if (C.Audio.ready) C.Audio.sfx.pickup();
@@ -533,11 +566,18 @@
 
   E.donate = function (s, o) {
     var d = E.npcDef(o), don = d.donate, ns = E.npcState(o);
-    var items = G().has(don.items) ? don.items : don.alt && G().has(don.alt) ? don.alt : null;
+    var opts = [don.items].concat(don.alt ? [don.alt] : [], don.alts || []);
+    var items = null;
+    // Après un bombardement, ce qu'on rapporte du décombre passe en premier
+    var ls0 = locState(E.home, E.loc);
+    if (ls0.shelled && don.alts) { for (var oi = 1; oi < opts.length; oi++) if (opts[oi].medicaments || opts[oi].remede) { if (G().has(opts[oi])) { items = opts[oi]; break; } } }
+    for (var oj = 0; !items && oj < opts.length; oj++) if (G().has(opts[oj])) items = opts[oj];
     if (!items) return;
     G().removeItems(items);
     ns.donated = (ns.donated || 0) + 1;
-    E.say(o, don.thanks, 6);
+    var shellGive = ls0.shelled && don.shelledThanks && (items.medicaments || items.remede || items.bandage);
+    if (shellGive) ns.gaveBack = true;
+    E.say(o, shellGive ? don.shelledThanks : don.thanks, 6);
     // On ne donne pas pour rien : la première fois (puis une fois sur trois),
     // ils partagent ce qu'ils ont en retour
     var back = don.reward && ns.donated % 3 === 1 ? don.reward : null;
@@ -545,7 +585,7 @@
     E.ev('donate', { name: d.name, items: U.copy(items), reward: back ? U.copy(back) : null });
     E.home.stats.helped++;
     E.notes.push({ t: first(s) + ' a fait un don à ' + d.name + ' (' + C.itemsText(items) + ')' + (back ? '. En retour : ' + C.itemsText(back) : '') + '.', k: 'good' });
-    E.effects.push(function () { G().moralAll(don.moral || 4, { good: true, key: 'helped' }); });
+    E.effects.push(function () { G().moralAll(shellGive ? (don.shelledMoral || 10) : (don.moral || 4), { good: true, key: 'helped' }); });
     if (C.Audio.ready) C.Audio.sfx.pickup();
   };
 

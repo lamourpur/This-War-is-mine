@@ -24,7 +24,7 @@
     var ls = st.locations[l.id], map = C.MAPS[l.id], cur = 0, init = 0;
     map.objects.forEach(function (o) {
       var n = 0; for (var k in (o.loot || {})) n += o.loot[k];
-      if (!n) return;
+      if (!n || (o.only && !C.Explore.onlyOK(o, { npc: ls.npc || {}, shelled: ls.shelled, team: ls.team }))) return;
       init += n;
       var sv = (ls.map || {})[o.key];
       if (sv === 'gone') return;

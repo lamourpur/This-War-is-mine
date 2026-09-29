@@ -508,6 +508,11 @@
       { key: 'ruth', kind: 'npc', npc: 'ruth', f: 2, x: 1100, w: 40, h: 90, facing: -1 },
       { key: 'bureau', kind: 'furniture', variant: 'commode', f: 2, x: 1500, w: 64, h: 60, work: 60, owner: 'hopital', loot: { bois: 3, livres: 2 } },
       // 2e étage : le plafond s'est effondré au milieu du couloir
+      // Après le bombardement : le fond du sous-sol s'est effondré sur les fournitures
+      { key: 'effondrement_a', kind: 'rubble', label: 'Gravats du sous-sol', only: 'shelled', f: 1, x: 1960, w: 104, h: 120, block: true, work: 110, loot: { composants: 2 } },
+      { key: 'effondrement_b', kind: 'rubble', label: 'Gravats du sous-sol', only: 'shelled', f: 1, x: 2090, w: 100, h: 110, block: true, work: 110, loot: { bois: 2 } },
+      { key: 'effondrement_c', kind: 'rubble', label: 'Gravats du sous-sol', only: 'shelled', f: 1, x: 2210, w: 96, h: 100, block: true, work: 100, loot: { composants: 1 } },
+      { key: 'fournitures', kind: 'cache', variant: 'caisse', label: 'Fournitures médicales ensevelies', only: 'shelled', f: 1, x: 2330, w: 86, h: 52, loot: { medicaments: 3, bandage: 4, remede: 1, eau: 1 } },
       { key: 'paquetage', kind: 'cache', variant: 'valise', f: 3, x: 1600, w: 62, h: 36, loot: { munitions: 4, cigarettes: 2, couteau: 1, pieces_armes: 1 } },
       { key: 'eboulis', kind: 'rubble', f: 3, x: 1250, w: 104, h: 150, block: true, work: 150, loot: { bois: 3, composants: 3 } },
       { key: 'archives', kind: 'cache', variant: 'etagere', f: 3, x: 800, w: 70, h: 104, loot: { livres: 3, filtre: 1 } },
@@ -690,7 +695,8 @@
     ],
     zones: [
       { id: 'etage_officiers', f: 2, x0: 432, x1: 1888, group: 'hotel', label: 'Étage des officiers' },
-      { id: 'suites', f: 3, x0: 432, x1: 1888, group: 'hotel', label: 'Suites occupées' }
+      { id: 'suites', f: 3, x0: 432, x1: 1000, group: 'hotel', label: 'Suites occupées' },
+      { id: 'suite_voyous', f: 3, x0: 1000, x1: 1350, group: 'voyous', label: 'La suite des ravisseurs', sign: 'ILS SONT ARMÉS', signHostile: 'ILS VOUS ONT VU' }
     ],
     objects: [
       { key: 'exit', kind: 'exit', variant: 'portail', f: 0, x: 100, w: 44, h: 104 },
@@ -718,8 +724,15 @@
       { key: 'suite_coffre', kind: 'cache', variant: 'coffre', label: 'Coffre de la suite', f: 3, x: 520, w: 60, h: 48, owner: 'armee', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } },
       { key: 'lit_officier', kind: 'bed', f: 3, x: 740, deco: true },
       { key: 'officier', kind: 'guard', type: 'intendant', name: 'Lieutenant Kerr', f: 3, x: 800, facing: 1, attitude: 'neutral', group: 'hotel', sleep: true },
+      // La suite du fond, entre deux portes : des voyous y séquestrent le directeur de l'hôtel
+      { key: 'porte_ravisseurs', kind: 'door', label: 'Porte de la suite du fond (scellée)', f: 3, x: 1350, w: 30, h: 112, tools: ['passe_partout', 'pied_de_biche'] },
       { key: 'porte_suite', kind: 'door', label: 'Porte de la suite', f: 3, x: 1000, w: 30, h: 112, tools: ['passe_partout', 'pied_de_biche'] },
-      { key: 'suite_bar', kind: 'cache', variant: 'etagere', label: 'Minibar', f: 3, x: 1150, w: 70, h: 104, owner: 'armee', loot: { alcool: 2, cafe: 2, cigarettes: 3 } },
+      { key: 'suite_bar', kind: 'cache', variant: 'etagere', label: 'Minibar', f: 3, x: 1150, w: 70, h: 104, owner: 'bande', loot: { alcool: 2, cafe: 2, cigarettes: 3 } },
+      { key: 'voyou_a', kind: 'guard', type: 'bandit_arme', f: 3, x: 1070, facing: 1, attitude: 'hostile', group: 'voyous', patrol: [1035, 1110] },
+      { key: 'voyou_b', kind: 'guard', type: 'bandit', f: 3, x: 1250, facing: -1, attitude: 'hostile', group: 'voyous', patrol: [1210, 1320] },
+      { key: 'voyou_c', kind: 'guard', type: 'bandit_arme', f: 3, x: 1140, facing: -1, attitude: 'hostile', group: 'voyous', patrol: [1115, 1195] },
+      { key: 'voyou_d', kind: 'guard', type: 'bandit', f: 3, x: 1190, facing: 1, attitude: 'hostile', group: 'voyous', sleep: true },
+      { key: 'gabriel', kind: 'npc', npc: 'gabriel', f: 3, x: 1300, w: 50, h: 70, facing: -1 },
       { key: 'recoin_suite', kind: 'hide', f: 3, x: 1450, w: 46, h: 108 },
       // Toit-terrasse : l'antenne de l'armée
       { key: 'caisse_antenne', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 4, x: 1560, w: 90, h: 50, loot: { pieces_elec: 2, composants: 1 } }
@@ -1099,7 +1112,9 @@
       { key: 'planches_cave', kind: 'rubble', f: 1, x: 1100, w: 90, h: 40, work: 60, loot: { bois: 2 } },
       { key: 'caisse_cachee', kind: 'cache', variant: 'caisse', label: 'Caisse cachée des squatteurs', f: 1, x: 1450, w: 78, h: 48, owner: 'squat', loot: { conserve: 2, medicaments: 1, munitions: 4 } },
       // Dortoir
-      { key: 'joe', kind: 'npc', npc: 'joe', f: 2, x: 700, w: 90, h: 30, facing: 1 },
+      { key: 'grisha', kind: 'npc', npc: 'grisha', f: 2, x: 700, w: 50, h: 70, facing: 1 },
+      { key: 'corps_grisha', kind: 'cache', variant: 'linceul', label: 'Corps de Grisha', only: 'grisha_dead', f: 2, x: 640, w: 90, h: 24, loot: { tabac: 1, cigarettes: 1 } },
+      { key: 'cachette_grisha', kind: 'cache', variant: 'caisse', label: 'Cachette sous le plancher', f: 2, x: 560, w: 70, h: 30, locked: true, tools: [], lockedNote: 'Des planches clouées. Grisha sait comment les soulever.', loot: { bijoux: 2, alcool: 2 } },
       { key: 'squatteur_dortoir', kind: 'guard', type: 'squatteur', name: 'Marv', f: 2, x: 1150, facing: 1, attitude: 'neutral', group: 'squat', sleep: true },
       { key: 'matelas', kind: 'cache', variant: 'valise', label: 'Affaires sous un matelas', f: 2, x: 1480, w: 62, h: 36, owner: 'squat', loot: { bandage: 1, tabac: 2, bijoux: 1 } },
       // Toit
@@ -1152,7 +1167,10 @@
     ],
     walls: [],
     windows: [],
-    zones: [{ id: 'coin_rick', f: 3, x0: 1300, x1: 1900, group: 'rick', label: 'Le coin de Rick', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' }],
+    zones: [
+      { id: 'coin_rick', f: 3, x0: 1300, x1: 1900, group: 'rick', label: 'Le coin de Rick', sign: 'CHASSE GARDÉE', signHostile: 'IL VOUS EN VEUT' },
+      { id: 'nid_tireurs', f: 4, x0: 1400, x1: 1700, group: 'tireurs', label: 'Le nid des tireurs', sign: 'ZONE MILITAIRE', signHostile: 'ILS VOUS ONT VU', only: 'team' }
+    ],
     decor: [
       { f: 0, x: 200, p: 'street_lamp_01', h: 200 }, { f: 0, x: 1080, p: 'cement_bag', h: 22 }, { f: 0, x: 1650, p: 'wooden_ladder', h: 90 },
       { f: 0, x: 2250, p: 'portable_generator', h: 44 }, { f: 0, x: 2480, p: 'old_tyre', h: 26 }, { f: 1, x: 1400, p: 'old_tyre', h: 26 },
@@ -1178,7 +1196,11 @@
       // Dalle du haut
       { key: 'palette_toit', kind: 'cache', variant: 'palettes', label: 'Palettes', f: 4, x: 1150, w: 90, h: 92, loot: { bois: 4, composants: 3 } },
       { key: 'eboulis', kind: 'rubble', label: 'Coffrage effondré', f: 4, x: 1350, w: 104, h: 118, block: true, work: 150, loot: { bois: 3, composants: 2 } },
-      { key: 'bidons', kind: 'cache', variant: 'bac', label: 'Bidons', f: 4, x: 1560, w: 76, h: 40, loot: { carburant: 1, engrais: 1, conserve: 1 } }
+      { key: 'bidons', kind: 'cache', variant: 'bac', label: 'Bidons', f: 4, x: 1560, w: 76, h: 40, loot: { carburant: 1, engrais: 1, conserve: 1 } },
+      // Un nid de tireurs, derrière le coffrage effondré : ils surveillent la rue, dos tourné
+      { key: 'guetteur_nid', kind: 'guard', type: 'soldat', only: 'team', name: 'Le guetteur', f: 4, x: 1450, facing: 1, attitude: 'neutral', group: 'tireurs', patrol: [1420, 1500] },
+      { key: 'tireur_nid', kind: 'guard', type: 'tireur_elite', only: 'team', f: 4, x: 1640, facing: 1, attitude: 'neutral', group: 'tireurs', patrol: [1600, 1670] },
+      { key: 'repaire_tireurs', kind: 'cache', variant: 'caisse_mil', label: 'Matériel des tireurs', only: 'team', f: 4, x: 1520, w: 90, h: 50, loot: { munitions: 6, conserve: 2, cigarettes: 2, pieces_armes: 1 } }
     ]
   });
 

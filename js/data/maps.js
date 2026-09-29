@@ -109,11 +109,13 @@
       },
       donate: {
         items: { bandage: 1 }, alt: { eau: 2 }, label: 'Faire un don à l\'hôpital',
-        thanks: 'Merci. Chaque bandage compte, ici.', moral: 4,
+        thanks: 'Merci. Chaque bandage compte, ici.', moral: 4, alts: [{ medicaments: 1 }, { remede: 1 }], shelledThanks: 'Vous les avez retrouvés… Vous avez sauvé trois vies ce soir. Je n\'ai pas les mots.', shelledMoral: 12,
         reward: { remede: 1 }, giveLine: 'Tenez, un remède que Benny prépare avec les plantes. Pour les vôtres.'
       },
       after: ['Le soldat du rez-de-chaussée va s\'en sortir. Grâce à vous, en partie.', 'Reposez-vous quand vous pouvez. Personne ne le fait jamais.'],
-      afterSteal: ['Vous avez pris les médicaments ? Des gens vont mourir cette nuit. Vous comprenez ça ?', 'Sortez. Je ne veux plus vous voir ici.']
+      afterSteal: ['Vous avez pris les médicaments ? Des gens vont mourir cette nuit. Vous comprenez ça ?', 'Sortez. Je ne veux plus vous voir ici.'],
+      // Après le bombardement de l'aile est
+      shelled: ['Un obus a fait s\'effondrer le fond du sous-sol. Toutes nos fournitures sont sous les gravats… Si quelqu\'un pouvait les dégager.', 'Trois blessés attendent du matériel. Ils ne tiendront pas jusqu\'à demain sans.', 'Ce que vous trouverez là-dessous, rapportez-le-moi. Je vous en supplie.']
     },
     benny: {
       name: 'Benny', title: 'Infirmier',

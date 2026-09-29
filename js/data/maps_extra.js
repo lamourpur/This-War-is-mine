@@ -51,7 +51,7 @@
     name: 'Viktor', title: 'Ancien portier',
     look: { hair: 'short', build: 1.0, h: 1.0, coat: '#3d3b44', pants: '#2a2927', coatLen: 0.35, skin: '#b09a86', hairColor: '#b8b2a8', beard: 'full', brow: 'heavy', top: 'overcoat', shirt: '#6a5f55', hat: 'cap', hatColor: '#2f2d33' },
     pose: 'sit',
-    greet: ['Quarante ans que je tiens cette porte. Les soldats ne savent même pas où sont les clés.', 'Là-haut, ils sont trois, plus l\'officier. Il dort comme une souche après sa bouteille.'],
+    greet: ['Quarante ans que je tiens cette porte. Les soldats ne savent même pas où sont les clés.', 'Là-haut, ils sont trois, plus l\'officier. Il dort comme une souche après sa bouteille.', 'Et dans la suite du fond, au dernier étage, quatre types ont enfermé le directeur. Personne n\'ose y aller.'],
     need: {
       items: { conserve: 1 }, label: 'Lui donner une conserve',
       ask: 'J\'ai les clés des cuisines, en bas. Une conserve, et je vous ouvre la réserve du bar.',
@@ -61,18 +61,41 @@
     after: ['Prenez l\'ascenseur. Enfin… ce qu\'il en reste.', 'Faites attention au lieutenant. Il dort, mais d\'un œil.'],
     afterSteal: ['Quarante ans… et voilà comment ça finit.']
   };
-  C.NPCS.joe = {
-    name: 'Le vieux Joe', title: 'Sans-abri malade',
-    look: { hair: 'messy', build: 0.82, h: 0.96, coat: '#51493f', pants: '#2e2b27', coatLen: 0.35, skin: '#a8927c', hairColor: '#8f877c', beard: 'full', top: 'overcoat', shirt: '#5c554a' },
-    pose: 'lie', cond: { sick: 65 }, blanket: '#4f4a40',
-    greet: ['*tousse* Les gars ne t\'ont pas vu ? Tant mieux pour toi…', 'Ça fait trois nuits que je crache mes poumons.'],
+  // Le directeur de l'hôtel, séquestré par des voyous dans la suite du fond
+  C.NPCS.gabriel = {
+    name: 'Gabriel Roche', title: 'Directeur de l\'hôtel, séquestré',
+    look: { hair: 'short', build: 0.98, h: 1.0, coat: '#3a3a44', pants: '#25252b', coatLen: 0.3, skin: '#c0a48c', hairColor: '#8a8580', beard: 'stubble', glasses: true, top: 'overcoat', shirt: '#b8b2a4' },
+    pose: 'sit', cond: { wound: 30 }, captor: 'voyous',
+    greet: ['Chut… ils sont quatre. Ils veulent la combinaison du coffre de l\'hôtel. Je ne la leur donnerai jamais.', 'Le plus grand dort à côté de moi. Les deux autres font la ronde.', 'Ne restez pas là. S\'ils vous voient, ils vous tueront.'],
+    thanks: 'C\'est fini ? … Dieu merci. Je ne sentais plus mes mains.',
+    giveLine: 'Tenez. La réserve que j\'avais cachée sous le bar avant qu\'ils arrivent. Elle est à vous.',
+    rescued: ['Je vais rejoindre ma sœur, de l\'autre côté du fleuve. Cet hôtel n\'est plus à moi.', 'Vous m\'avez sauvé la vie. Je ne l\'oublierai pas.'],
+    reward: { conserve: 3, alcool: 2, cafe: 1, cigarettes: 2 },
+    freedNote: ' des voyous qui le retenaient dans la suite du dernier étage.',
+    abandonNote: ' a laissé le directeur de l\'hôtel aux mains de ses ravisseurs. Personne n\'en parle.',
+    rescueJournal: 'Gabriel est libre. Il m\'a donné ce qu\'il avait caché sous le bar :',
+    abandonJournal: 'J\'ai laissé l\'homme attaché dans la suite du fond. Je l\'entends encore.'
+  };
+  // Grisha : sans-abri qui a faim. Il montre sa cachette si on le nourrit ; si on
+  // ne revient pas la nuit suivante, il est mort (et quelqu'un d'autre a pris sa place).
+  C.NPCS.grisha = {
+    name: 'Grisha', title: 'Sans-abri affamé',
+    look: { hair: 'messy', build: 0.78, h: 0.96, coat: '#51493f', pants: '#2e2b27', coatLen: 0.35, skin: '#a8927c', hairColor: '#8f877c', beard: 'full', top: 'overcoat', shirt: '#5c554a' },
+    pose: 'sit',
+    greet: ['Tu as de quoi manger ? N\'importe quoi… un légume, une boîte. Je te montrerai où j\'ai planqué mes affaires.', 'Trois jours que je n\'ai rien avalé. Les gars d\'ici ne partagent pas.'],
     need: {
-      items: { medicaments: 1 }, label: 'Lui donner des médicaments',
-      ask: 'Si t\'avais un cachet… n\'importe quoi… Je te dirai où les gars cachent leur réserve.',
-      thanks: 'Merci… Écoute : sous l\'escalier de la cave, derrière les planches, il y a leur caisse. Prends-en un peu. Pas tout.',
-      reward: { conserve: 2, bois: 3 }, moral: 7
+      items: { conserve: 1 }, alts: [{ legumes: 1 }, { viande: 1 }], label: 'Lui donner à manger',
+      ask: 'À manger… une conserve, des légumes, même de la viande crue. Et je te montre ma cachette.',
+      thanks: 'Merci… Merci. Écoute : sous le plancher, là, à gauche. C\'est tout ce qui me reste de… avant. Prends. Mais viens me revoir, j\'aurai peut-être besoin d\'autre chose.',
+      opens: ['cachette_grisha'], openNote: ', qui lui a montré sa cachette', moral: 6
     },
-    after: ['Je respire mieux. Grâce à toi.', 'Les gars ne sauront pas que c\'est moi qui t\'ai parlé.']
+    after: ['Je tiens debout grâce à toi.', 'Les gars ne sauront pas que c\'est moi qui t\'ai parlé.']
+  };
+  C.NPCS.squat_inconnu = {
+    name: 'Un inconnu', title: 'Sans-abri',
+    look: { hair: 'short', build: 0.95, h: 1.0, coat: '#3f3a34', pants: '#2a2825', coatLen: 0.3, skin: '#b09a84', hairColor: '#3a332b', beard: 'stubble', brow: 'heavy', top: 'overcoat', shirt: '#4c463c' },
+    pose: 'stand', noRob: true,
+    greet: ['Je l\'ai trouvé comme ça ! Cherche pas d\'histoires !', 'Il était déjà froid quand je suis arrivé. Je n\'y suis pour rien, je te le jure.', 'Ne me regarde pas comme ça.']
   };
   C.NPCS.ed = {
     name: 'Ed Morrow', title: 'Père de famille',

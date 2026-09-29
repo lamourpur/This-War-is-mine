@@ -77,6 +77,21 @@
 
   // Plans : voir lieux.js
 
+  // Le groupe des tireurs (chantier) : un tireur d'élite au fusil à lunette et son guetteur
+  C.GUARD_TYPES.tireur_elite = {
+    name: 'Tireur d\'élite', noun: 'soldat', cat: 'mil', hp: 100, weapon: 'fusil_lunette', tool: 'rifle', ammo: 30,
+    dmg: [40, 60], acc: 0.8, range: 820, sight: 430, walk: 38, run: 88,
+    look: { hair: 'buzz', build: 0.98, h: 1.03, coat: '#4a4e3e', pants: '#383b2d', coatLen: 0.18, skin: '#a58f78', hairColor: '#2a241f', beard: 'stubble', brow: 'heavy', top: 'work', shirt: '#565a46', hat: 'cap', hatColor: '#3f4334', scarf: '#5a5c48', bag: true },
+    loot: { fusil_lunette: 1, munitions: 8, cigarettes: 2 },
+    talk: [],
+    say: {
+      idle: ['…', 'Rien ne bouge dans la rue.', 'Il fait trop froid pour rester couché.', 'Encore trois heures avant la relève.'],
+      suspect: ['Tu as entendu ?', 'Là, en bas… tu as vu ?'], greet: ['Halte.'], warn: ['Plus un geste !'], warn2: ['Je te vois dans ma lunette !'],
+      attack: ['Contact ! Tirez !', 'Tu es dans mon viseur !'], lost: ['Il a disparu…'], hurt: ['Aaah ! Il m\'a eu !'],
+      surrender: ['Ne tire pas ! Je te donne mon fusil, tout ce que tu veux !'], spared: ['Tu ne me reverras pas… promis.']
+    }
+  };
+
   // Le geôlier de la bande (supermarché) : garde le garçon ligoté dans la réserve
   C.GUARD_TYPES.geolier = {
     name: 'Geôlier', noun: 'bandit', cat: 'bandit', hp: 110, weapon: null, tool: 'knife', mdmg: [16, 28], ammo: 0,

@@ -925,13 +925,15 @@
     m.desc = d.title + (angry ? ' — vous a vu voler.' : ns.helped ? ' — vous êtes venu en aide.' : '');
     if (!d.silent) m.entries.push(E('Parler', '', null, go('npc', { what: 'talk' })));
     if (d.need && !ns.helped) {
-      var has = G().has(d.need.items);
-      m.entries.push(E(d.need.label, C.itemsText(d.need.items), has ? null : 'Il faut : ' + C.itemsText(d.need.items) + ' (dans le sac)', go('npc', { what: 'help' }), Object.keys(d.need.items)[0]));
+      var pay = C.Explore.needPay(d.need), all = [d.need.items].concat(d.need.alts || []);
+      m.entries.push(E(d.need.label, C.itemsText(pay || d.need.items) + (d.need.alts && !pay ? ' (ou ' + d.need.alts.map(C.itemsText).join(', ') + ')' : ''), pay ? null : 'Il faut : ' + all.map(C.itemsText).join(' ou ') + ' (dans le sac)', go('npc', { what: 'help' }), Object.keys(pay || d.need.items)[0]));
     }
     if (d.trade) m.entries.push(E('Échanger', angry ? 'refuse' : 'troc', angry ? 'Il ne veut plus traiter avec vous.' : null, go('npc', { what: 'trade' })));
     if (d.donate) {
-      var can = G().has(d.donate.items) || (d.donate.alt && G().has(d.donate.alt));
-      m.entries.push(E(d.donate.label, C.itemsText(d.donate.items) + (d.donate.alt ? ' ou ' + C.itemsText(d.donate.alt) : ''), can ? null : 'Rien à donner dans le sac', go('npc', { what: 'donate' }), Object.keys(d.donate.items)[0]));
+      var dOpts = [d.donate.items].concat(d.donate.alt ? [d.donate.alt] : [], d.donate.alts || []);
+      var shelled = !!(G().st.locations[C.Explore.loc] || {}).shelled && d.donate.alts;
+      var can = dOpts.some(function (o2) { return G().has(o2); });
+      m.entries.push(E(d.donate.label, dOpts.slice(0, 2).map(C.itemsText).join(' ou ') + (dOpts.length > 2 ? '…' : '') + (shelled ? ' · <span class="ok">surtout des médicaments</span>' : ''), can ? null : 'Rien à donner dans le sac', go('npc', { what: 'donate' }), Object.keys(d.donate.items)[0]));
     }
     // Braquage (arme en main, mode combat)
     if (C.Explore.canRob(o)) {
@@ -1012,7 +1014,7 @@
           break;
         }
         if (o.locked) {
-          m.desc = 'Verrouillé. Il faut le forcer ou le crocheter.';
+          m.desc = (o.tools || []).length ? 'Verrouillé. Il faut le forcer ou le crocheter.' : (o.lockedNote || 'Impossible à ouvrir pour l\'instant.');
           (o.tools || []).forEach(function (t) {
             m.entries.push(E('Ouvrir : ' + C.ITEMS[t].name.toLowerCase(), costSub(null, t === 'passe_partout' ? 45 : 30), G().count(t) ? null : 'Il faut : ' + C.ITEMS[t].name, go('unlock', { tool: t })));
           });

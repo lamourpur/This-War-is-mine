@@ -247,7 +247,7 @@
             return loot(ctx, 'Ils ne se laissent pas impressionner. L\'un d\'eux passe par une fenêtre et repart avec : ');
           } },
         { label: 'Tirer un coup en l\'air', req: { munitions: 1 },
-          reqFn: function () { return G().count('munitions') > 0 && ['pistolet', 'pistolet_silencieux', 'fusil', 'fusil_pompe', 'fusil_assaut'].some(function (x) { return G().count(x) > 0; }); }, reqText: 'une arme à feu et 1 munition',
+          reqFn: function () { return G().count('munitions') > 0 && ['pistolet', 'pistolet_silencieux', 'fusil', 'fusil_pompe', 'fusil_assaut', 'fusil_lunette'].some(function (x) { return G().count(x) > 0; }); }, reqText: 'une arme à feu et 1 munition',
           run: function () {
             G().removeItems({ munitions: 1 });
             if (C.Audio.ready) C.Audio.sfx.gun();

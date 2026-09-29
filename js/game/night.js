@@ -62,7 +62,7 @@
     var d = 0;
     var avail = {};
     for (var k in st.inventory) avail[k] = st.inventory[k] - ((reservedItems && reservedItems[k]) || 0);
-    var weapons = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux', 'hachette', 'couteau'].filter(function (w) { return avail[w] > 0; });
+    var weapons = ['fusil_lunette', 'fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux', 'hachette', 'couteau'].filter(function (w) { return avail[w] > 0; });
     var ammo = avail.munitions || 0;
     var pool = [];
     weapons.forEach(function (w) { for (var i = 0; i < avail[w]; i++) pool.push(w); });

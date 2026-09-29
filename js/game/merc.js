@@ -75,7 +75,7 @@
     var M = C.Market, sh = M && M.current(st);
     var rare;
     if (sh) {
-      var wanted = M.wanted(st).filter(function (k) { return k !== 'fusil' && k !== 'fusil_pompe' && k !== 'fusil_assaut' && k !== 'pistolet' && k !== 'pistolet_silencieux' && k !== 'repas'; });
+      var wanted = M.wanted(st).filter(function (k) { return k !== 'fusil' && k !== 'fusil_pompe' && k !== 'fusil_assaut' && k !== 'fusil_lunette' && k !== 'pistolet' && k !== 'pistolet_silencieux' && k !== 'repas'; });
       var id = R.pick(wanted);
       var qty = id === 'munitions' ? 6 : id === 'bois' || id === 'composants' ? 5 : val(id) >= 8 ? 1 : 2;
       rare = [id, qty, true];

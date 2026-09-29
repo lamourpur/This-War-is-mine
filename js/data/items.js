@@ -80,6 +80,7 @@
     fusil_pompe: { name: 'Fusil à pompe',  cat: 'armes', w: 3, v: 60, ico: '╤', weapon: 4.5, ammo: true, desc: 'Dévastateur de près, inutile de loin. Très bruyant. Nécessite des munitions.' },
     fusil_assaut: { name: 'Fusil d\'assaut', cat: 'armes', w: 3, v: 90, ico: '╦', weapon: 5, ammo: true, desc: 'Arme militaire : tire vite et loin. Rare. Nécessite des munitions.' },
     pistolet_silencieux: { name: 'Pistolet silencieux', cat: 'armes', w: 2, v: 48, ico: '⌐', weapon: 3, ammo: true, desc: 'Un pistolet muni d\'un silencieux artisanal : on l\'entend à peine, mais il est un peu moins précis. Nécessite des munitions.' },
+    fusil_lunette: { name: 'Fusil d\'assaut à lunette', cat: 'armes', w: 3, v: 150, ico: '╬', weapon: 6, ammo: true, desc: 'Le fusil des tireurs d\'élite : lunette, précision et portée hors du commun. L\'arme la plus rare de la ville. Nécessite des munitions.' },
     munitions:  { name: 'Munitions',      cat: 'armes', w: 1, v: 3,  ico: '⁞', desc: 'Cartouches et balles.' },
     casque:     { name: 'Casque militaire', cat: 'armes', w: 2, v: 25, ico: '◓', armor: true, desc: 'Protège la tête : un peu moins de blessures au combat. Se porte avec le gilet.' },
     gilet:      { name: 'Gilet pare-balles', cat: 'armes', w: 3, v: 40, ico: '⛨', armor: true, desc: 'Réduit fortement les blessures lors du pillage.' },
@@ -102,7 +103,7 @@
   // Pluriels des noms donnés au singulier
   var PLURAL = {
     conserve: 'conserves', bandage: 'bandages', filtre: 'filtres', montre: 'montres en or', couteau: 'couteaux',
-    pistolet: 'pistolets', pistolet_silencieux: 'pistolets silencieux', fusil: 'fusils de chasse', fusil_pompe: 'fusils à pompe', fusil_assaut: 'fusils d\'assaut', casque: 'casques militaires', pelle: 'pelles', hachette: 'hachettes', scie: 'scies à métaux',
+    pistolet: 'pistolets', pistolet_silencieux: 'pistolets silencieux', fusil: 'fusils de chasse', fusil_pompe: 'fusils à pompe', fusil_assaut: 'fusils d\'assaut', fusil_lunette: 'fusils d\'assaut à lunette', casque: 'casques militaires', pelle: 'pelles', hachette: 'hachettes', scie: 'scies à métaux',
     pied_de_biche: 'pieds-de-biche', gilet: 'gilets pare-balles', remede: 'remèdes aux plantes', repas: 'repas chauds'
   };
   // « 3 bois », « 1 livre », « 2 livres », « 2 conserves »
