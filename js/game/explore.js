@@ -195,6 +195,16 @@
     if (st.minute >= END) E.finish('time');
   };
 
+  // « Rentrer » : le pilleur court jusqu'à la sortie (comme dans le jeu d'origine)
+  E.goHome = function () {
+    var s = E.s, ex = G().st.objects.filter(function (o) { return o.kind === 'exit'; })[0];
+    if (!E.active || !s || !ex) return;
+    C.Actions.start(s, ex, 'leave');
+    s.run = true;
+    if (C.Render.camFollow) C.Render.cam.follow = s.id;
+    E.say(s, 'On rentre. Vite.', 2.5);
+  };
+
   // Temps restant (0..1) pour le HUD
   E.progress = function () { return U.clamp((G().st.minute - START) / (END - START), 0, 1); };
 

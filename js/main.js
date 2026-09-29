@@ -181,6 +181,30 @@
   };
 
   // ------------------------------------------------------------ boucle
+  // Défilement de la caméra, comme dans le jeu d'origine : souris au bord de
+  // l'écran, ou flèches / Q-D maintenues. Seulement si la vue peut bouger
+  // (grand lieu, ou refuge zoomé).
+  var EDGE = 26, panKeys = {}, mouseAt = null;
+  Main.panKeys = panKeys;
+  function camScroll(dt) {
+    var R = C.Render;
+    if (!R.cam || C.UI.modalOpen || C.UI.contextOpen()) return;
+    if (!C.WORLD.view && R.cam.z <= 1.001) return;
+    var vx = 0, vy = 0, sp = 950;
+    if (panKeys.left) vx += 1; if (panKeys.right) vx -= 1;
+    if (panKeys.up) vy += 1; if (panKeys.down) vy -= 1;
+    if (mouseAt && Main.settings.edgeScroll !== false && document.hasFocus()) {
+      var W = window.innerWidth, H = window.innerHeight;
+      // Plus on est près du bord, plus ça va vite
+      if (mouseAt.x <= EDGE) vx += 1 - mouseAt.x / (EDGE * 2);
+      else if (mouseAt.x >= W - EDGE) vx -= 1 - (W - mouseAt.x) / (EDGE * 2);
+      if (mouseAt.y <= EDGE * 0.6) vy += 0.7;
+      else if (mouseAt.y >= H - EDGE * 0.6) vy -= 0.7;
+    }
+    if (!vx && !vy) return;
+    R.panBy(vx * sp * dt, vy * sp * 0.7 * dt);
+  }
+
   function loop(ts) {
     var t = ts / 1000;
     var dt = Math.min(0.1, lastT ? t - lastT : 0.016);
@@ -221,6 +245,7 @@
     }
 
     var inGame = Main.mode === 'game' && st;
+    if (inGame) camScroll(dt);
     // Guitare : on la prend (ou la repose) → le décor change
     var guitarOn = !!(inGame && st.phase !== 'explore' && st.survivors.some(function (s) { return s.alive && s.act && s.act.kind === 'guitar' && s.act.phase === 'work'; }));
     if (guitarOn !== !!Main.guitarOn) { Main.guitarOn = guitarOn; if (inGame) C.Game.markDirty(); }
@@ -318,6 +343,9 @@
       drag.x = e.clientX; drag.y = e.clientY;
       if (drag.moved) C.Render.panBy(dx, dy);
     });
+    window.addEventListener('mousemove', function (e) { mouseAt = { x: e.clientX, y: e.clientY }; });
+    document.addEventListener('mouseleave', function () { mouseAt = null; });
+    window.addEventListener('blur', function () { mouseAt = null; for (var k in panKeys) panKeys[k] = false; });
     window.addEventListener('mouseup', function () { if (drag && drag.moved) Main.dragJustEnded = true; drag = null; setTimeout(function () { Main.dragJustEnded = false; }, 0); });
 
     cv.addEventListener('mousedown', function (e) {
@@ -375,6 +403,10 @@
       C.UI.closeContext();
     });
 
+    window.addEventListener('keyup', function (e) {
+      var k = { ArrowLeft: 'left', q: 'left', Q: 'left', ArrowRight: 'right', d: 'right', D: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.key];
+      if (k) panKeys[k] = false;
+    });
     window.addEventListener('keydown', function (e) {
       if (Main.mode !== 'game') {
         if (e.key === 'Escape' && C.UI.topModal()) closeTopIfAllowed();
@@ -411,10 +443,10 @@
           break;
         case 'a': case 'A': if (!C.UI.modalOpen && st.phase === 'explore') C.Combat.cycleWeapon(); break;
         // Flèches (ou Q / D) : faire défiler la vue ; F : revenir sur le pilleur
-        case 'ArrowLeft': case 'q': case 'Q': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(260, 0); } break;
-        case 'ArrowRight': case 'd': case 'D': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(-260, 0); } break;
-        case 'ArrowUp': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(0, 180); } break;
-        case 'ArrowDown': if (!C.UI.modalOpen) { e.preventDefault(); C.Render.panBy(0, -180); } break;
+        case 'ArrowLeft': case 'q': case 'Q': if (!C.UI.modalOpen) { e.preventDefault(); panKeys.left = true; } break;
+        case 'ArrowRight': case 'd': case 'D': if (!C.UI.modalOpen) { e.preventDefault(); panKeys.right = true; } break;
+        case 'ArrowUp': if (!C.UI.modalOpen) { e.preventDefault(); panKeys.up = true; } break;
+        case 'ArrowDown': if (!C.UI.modalOpen) { e.preventDefault(); panKeys.down = true; } break;
         case 'f': case 'F': if (!C.UI.modalOpen) { var fs = st.phase === 'explore' ? C.Explore.s : C.UI.selectedSurv && C.UI.selectedSurv(); if (fs) C.Render.camFollow(fs); } break;
       }
     });

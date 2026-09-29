@@ -915,7 +915,7 @@
     if (o.kind === 'exit') {
       m.title = 'Sortie';
       m.desc = 'Rentrer au refuge avec ce que contient le sac. La nuit se termine pour ce survivant.';
-      m.entries.push(E('Rentrer au refuge', '', null, go('leave')));
+      m.entries.push(E('Rentrer au refuge', 'en courant', null, function () { C.Explore.goHome(); }));
       return m;
     }
     var d = C.NPCS[o.npc], ns = C.Explore.npcState(o), angry = G().st.locations[C.Explore.loc].angry;

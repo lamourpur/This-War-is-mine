@@ -559,8 +559,7 @@
       });
       document.addEventListener('click', function () { wl.classList.add('hidden'); });
       h.querySelector('.xh-home').addEventListener('click', function () {
-        var s = C.Explore.s, ex = G().st.objects.filter(function (o) { return o.kind === 'exit'; })[0];
-        if (s && ex) C.Actions.start(s, ex, 'leave');
+        C.Explore.goHome();
       });
       $('hud').appendChild(h);
     }

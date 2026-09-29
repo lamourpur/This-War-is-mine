@@ -195,10 +195,10 @@
         'Choisissez le lieu sur la carte : ce qu\'on en sait s\'affiche. Puis préparez le <b>sac</b> par glisser-déposer : chaque case contient une pile d\'un seul objet.'
       ]) + sec('search', 'Explorer', [
         '<b>Clic</b> : marcher. <b>Double-clic</b> : courir (plus vite, mais on vous entend de loin).',
-        'La caméra suit le pilleur. <b>Molette</b> : zoomer ou reculer jusqu\'à voir tout le lieu. <b>Clic droit glissé</b> ou <b>flèches</b> (Q / D) : déplacer la vue. <b>F</b> ou la flèche au bord de l\'écran : revenir sur lui.',
+        'La caméra suit le pilleur. <b>Souris au bord de l\'écran</b>, <b>flèches</b> ou <b>Q / D</b> maintenues, <b>clic droit glissé</b> : faire défiler la vue. <b>Molette</b> : zoomer ou reculer jusqu\'à voir tout le lieu. <b>F</b> ou la flèche au bord de l\'écran : revenir sur lui.',
         'Fouiller un meuble ouvre la fouille : glissez les objets vers le sac. Serrures : pied-de-biche, passe-partout ou scie.',
         '<b>Regarder par la serrure</b> avant d\'entrer : on voit qui est dans la pièce.',
-        'La cloche sonne à 4 h ; à 5 h, on rentre de force. <b>Rentrer</b> : bouton du bandeau.'
+        'La cloche sonne à 4 h ; à 5 h, on rentre de force. <b>Rentrer</b> (bouton du bandeau) : le pilleur court jusqu\'à la sortie.'
       ]) + sec('speech', 'Les gens', [
         'On croise des civils : les aider, échanger, faire un don… ou les voler, voire les braquer arme en main. Chaque vol a une victime, et le groupe le sait.'
       ]);
