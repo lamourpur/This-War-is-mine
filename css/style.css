@@ -1049,12 +1049,18 @@ body.skipping #tb-clock { color: var(--amber); }
 .trade-panel .trade-say { text-align: center; }
 @media (max-width: 900px) { .trade2 { grid-template-columns: 1fr; } }
 
-/* ---------- second écran de la nuit : le lieu */
-.loc-screen { width: min(1320px, 96vw); }
-.loc-wrap { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 18px; align-items: start; }
-.loc-side { display: flex; flex-direction: column; gap: 6px; }
-.loc-side .loc-photo { height: 250px; margin: 0; }
+/* ---------- second écran de la nuit : le lieu (plein écran, la carte en grand) */
+.panel.loc-screen { width: 98vw; height: 97vh; max-height: 97vh; }
+.loc-screen .panel-head { padding: 12px 24px 8px; }
+.loc-screen .panel-head h2 { font-size: 40px; }
+.loc-screen .panel-body { flex: 1; min-height: 0; padding: 12px 20px; overflow: hidden; }
+.loc-screen .panel-foot { padding: 10px 24px 12px; }
+.loc-wrap { display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 420px); gap: 16px; height: 100%; }
+.loc-wrap .cm-box { margin: 0; min-height: 0; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; container-type: size; }
+.loc-wrap .city-map { width: min(100cqw, 100cqh * 1000 / 540); height: auto; }
+.loc-side { display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; }
+.loc-side .loc-photo { height: clamp(180px, 30vh, 300px); margin: 0; flex: none; }
 .loc-facts { margin: 6px 0 0; font-size: 14.5px; color: var(--bone-2); }
-.loc-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 250px; border: 1px dashed #4a443a; color: #8a8070; text-align: center; font-size: 15px; }
+.loc-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; flex: 1; min-height: 250px; border: 1px dashed #4a443a; color: #8a8070; text-align: center; font-size: 15px; }
 .loc-empty svg { width: 36px; height: 36px; opacity: .6; }
-@media (max-width: 900px) { .loc-wrap { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .loc-wrap { grid-template-columns: 1fr; height: auto; } .loc-screen .panel-body { overflow-y: auto; } }
