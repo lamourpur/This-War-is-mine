@@ -23,7 +23,7 @@
     st.survivors.forEach(function (s) {
       if (s.alive && s.away) {
         s.x = 240; s.f = 1; s.y = C.FLOORS[1].y;
-        var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution', accouchement: 'de chez Sara', incendie: 'de l\'immeuble en feu', camion: 'du camion des secours' }[s.away] || '';
+        var where = { voisin: 'de chez le voisin', colis: 'avec un colis humanitaire', decombres: 'de l\'immeuble effondré', enfant: 'du centre de réfugiés', pain: 'de la distribution', accouchement: 'de chez Sara', incendie: 'de l\'immeuble en feu', aide_larguee: 'du conteneur largué', camion: 'du camion des secours' }[s.away] || '';
         var fe = s.look && s.look.female ? 'e' : '', hurt = false;
         if (s.awayRisk && C.R.chance(s.awayRisk)) {
           s.wound = Math.min(95, s.wound + C.R.int(15, 30));

@@ -11,6 +11,8 @@
     helped: ['On a fait ce qu\'il fallait.', 'Aider les autres, c\'est encore être humain.', 'Au moins, on a fait quelque chose de bien aujourd\'hui.'],
     helped_cyn: ['On n\'a pas de quoi faire la charité.', 'Très généreux. On verra si ça nous nourrit.'],
     refused: ['On n\'avait pas le choix… si ?', 'Je revois encore son visage.', 'On a fermé la porte. Qu\'est-ce qu\'on est en train de devenir ?'],
+    informed: ['On a vendu quelqu\'un pour de la nourriture.', 'Son nom, on l\'a donné… comme ça. Pour un sac.', 'Qu\'est-ce qu\'on est devenus ?'],
+    informed_cyn: ['Lui ou nous. On a choisi.', 'C\'est la guerre. Chacun sa peau.'],
     refused_cyn: ['Chacun pour soi. C\'est la guerre.', 'On ne peut pas sauver tout le monde.'],
     thriving: ['Le ventre plein, une vraie nuit de sommeil… On oublierait presque la guerre.', 'Je me sens bien, aujourd\'hui. Presque normal.'],
     thriving_cyn: ['Pour une fois, tout va. Autant en profiter.'],

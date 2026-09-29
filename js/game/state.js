@@ -312,7 +312,7 @@
 
     AWAY_TEXT: {
       voisin: 'Parti(e) aider un voisin', colis: 'Parti(e) chercher un colis largué', decombres: 'Parti(e) dégager des blessés',
-      enfant: 'Raccompagne une enfant perdue', pain: 'Fait la queue pour du pain', accouchement: 'Aide Sara à accoucher', incendie: 'Parti(e) éteindre un incendie', camion: 'Parti(e) chercher des vivres au camion'
+      enfant: 'Raccompagne une enfant perdue', pain: 'Fait la queue pour du pain', accouchement: 'Aide Sara à accoucher', incendie: 'Parti(e) éteindre un incendie', aide_larguee: 'Parti(e) porter l\'aide larguée', camion: 'Parti(e) chercher des vivres au camion'
     },
 
     // ------------------------------------------------ journal

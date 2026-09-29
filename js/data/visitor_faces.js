@@ -209,4 +209,16 @@
       figs: [{ hair: 'short', build: 0.88, h: 0.93, coat: '#4e4a44', pants: '#33302c', coatLen: 0.45, skin: '#d8c4b4', hairColor: '#dcd6cc', beard: 'full', top: 'overcoat', shirt: '#6e685e', scarf: '#5e4a3e', hat: 'beanie', hatColor: '#3a352e' }]
     }
   };
+
+  // Valter et la milice (Karol et son lieutenant : même visage que « milice »)
+  C.VISITOR_PEOPLE.valter_1 = {
+    name: 'Valter, le voisin',
+    face: { skin: '#cbaa8e', hair: '#3b3229', hairStyle: 'short', fw: 36, fh: 50, jaw: 0.95, eye: 0.85, iris: '#4a4034', brow: 2.4, nose: 'wide', lips: 0.9, age: 0.4, clothes: 'jacket', cloth: '#6b6558', turn: 0.1 },
+    figs: [{ hair: 'short', build: 1.0, h: 1.0, coat: '#6b6558', pants: '#34312c', coatLen: 0.1, skin: '#cbaa8e', hairColor: '#3b3229', top: 'jacket', shirt: '#7a7266', bag: true }]
+  };
+  ['milice_1', 'milice_2', 'milice_enquete'].forEach(function (id) {
+    var m = C.VISITOR_PEOPLE.milice;
+    C.VISITOR_PEOPLE[id] = { name: id === 'milice_enquete' ? 'Des miliciens' : 'Karol et son lieutenant', face: m.face, figs: m.figs, armed: true };
+  });
+  C.VISITOR_PHOTOS.push('valter_1', 'milice_1', 'milice_2', 'milice_enquete');
 })(window.CQR);

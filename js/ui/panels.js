@@ -542,6 +542,7 @@
     if (dark) { /* pas de ligne collective */ }
     else if (refusedG >= 4 && helpedG < refusedG) lines.push('Trop de portes sont restées fermées. ' + n + ' n\'a pas oublié les pas qui s\'éloignaient dans la rue.');
     else if (helpedG >= 5 && helpedG >= refusedG) lines.push('Ils ont ouvert leur porte quand personne d\'autre ne le faisait. ' + n + ' en garde une fierté discrète.');
+    if (st.stats.betrayed) lines.push('Le groupe a donné ' + (st.stats.betrayed > 1 ? 'des noms' : 'un nom') + ' à la milice pour manger. ' + n + ' entend encore le camion s\'éloigner dans la rue.');
     if (!k && !th && !hp && st.stats.stole > 2) lines.push('Il y a des choses qu\'on a faites pour tenir et dont on ne parlera jamais.');
     return lines.join(' ');
   }

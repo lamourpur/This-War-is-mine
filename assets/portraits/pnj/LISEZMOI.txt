@@ -41,3 +41,7 @@ Pour ajouter ou remplacer un portrait : déposer le fichier ici, puis
 ajouter son identifiant à la liste C.VISITOR_PHOTOS en haut de
 js/data/visitor_faces.js. Sans fichier, le portrait est dessiné par le jeu.
 En jeu, l'état du visiteur s'ajoute par-dessus (blessure, fatigue…).
+
+Ajouts : valter_1.jpg (Valter, le voisin de l'aide larguée) ; milice_1.jpg,
+milice_2.jpg, milice_enquete.jpg (Karol et son lieutenant : même visage que
+milice.jpg, copié sous les identifiants des visites de la milice).

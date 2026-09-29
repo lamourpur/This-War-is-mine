@@ -219,6 +219,7 @@
     }],
     ['Visiteurs et troc', 'door', function () {
       return sec('door', 'On frappe', [
+        'La <b>milice</b> frappe parfois pour obtenir des noms (un voisin, un déserteur, une radio clandestine) en échange de vivres. Dénoncer nourrit le groupe mais pèse sur le moral et sur la mémoire de la rue ; se taire rassure la conscience, pas toujours la milice. Avec l\'histoire de Valter, il faut refuser deux fois pour qu\'elle parte.',
         'Chaque partie a ses <b>événements uniques</b> (chien errant, voleur dans la réserve, appel à l\'aide suspect…), tirés au sort et jamais deux fois : deux parties ne se ressemblent pas.',
         'Chaque jour ou presque, quelqu\'un frappe : voisins qui demandent de l\'aide, réfugiés, marchands, pillards qui menacent.',
         'Envoyer un survivant ouvrir. Personne n\'ouvre ? La personne repart, et on ne saura jamais ce qu\'elle voulait.'
