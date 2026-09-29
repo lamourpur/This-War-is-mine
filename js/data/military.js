@@ -91,7 +91,7 @@
 
   // Jeune femme retenue par le soldat ivre (entrepôt)
   C.NPCS.mila = {
-    name: 'Mila', title: 'Jeune femme',
+    name: 'Molly', title: 'Jeune femme',
     look: { hair: 'long', build: 0.84, h: 0.92, coat: '#5e554c', pants: '#302d29', coatLen: 0.2, skin: '#b19a86', hairColor: '#3b2a20', lips: true, female: true, top: 'cardigan', shirt: '#7c7166' },
     pose: 'sit',
     greet: ['Aidez-moi… je vous en prie.', 'Il dit qu\'il va me donner à manger si… Je ne veux pas.'],

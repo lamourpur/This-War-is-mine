@@ -35,7 +35,7 @@
 
   // ------------------------------------------------------------ personnages
   C.NPCS.irene = {
-    name: 'Irène', title: 'Ancienne réceptionniste',
+    name: 'Irene', title: 'Ancienne réceptionniste',
     look: { hair: 'bun', build: 0.88, h: 0.97, coat: '#5a5048', pants: '#33302c', coatLen: 0.3, skin: '#bca893', hairColor: '#4a3a2e', lips: true, female: true, top: 'cardigan', shirt: '#7e7468', scarf: '#6a4e46' },
     pose: 'stand',
     greet: ['Chut ! Les soldats sont au-dessus. Ils nous laissent le rez-de-chaussée tant qu\'on ne fait pas de bruit.', 'Je travaillais ici, avant. Vingt ans à la réception. Maintenant je garde les clés d\'un hôtel en ruine.', 'Ne montez pas. Ils tirent sur ce qui bouge, là-haut, quand ils ont bu.'],
@@ -45,12 +45,12 @@
       restock: 4,
       say: 'Les soldats me paient en cigarettes et en gnôle. Moi, c\'est de la nourriture qu\'il me faut.'
     },
-    when: [{ 'if': 'npc:gabriel.rescued', lines: ['Monsieur Roche est libre ! On l\'a vu descendre par l\'escalier de service, il pleurait. C\'est vous ?', 'Je n\'oublierai pas. Quand on a vécu vingt ans ici, on sait ce que ça coûte.'], say: 'Le directeur est sauvé, grâce à vous. Pour vous, ce sera moins cher.' },
+    when: [{ 'if': 'npc:gabriel.rescued', lines: ['Monsieur Rogers est libre ! On l\'a vu descendre par l\'escalier de service, il pleurait. C\'est vous ?', 'Je n\'oublierai pas. Quand on a vécu vingt ans ici, on sait ce que ça coûte.'], say: 'Le directeur est sauvé, grâce à vous. Pour vous, ce sera moins cher.' },
       { 'if': 'freed:hotel', lines: ['Les soldats ne descendent plus. Je n\'ose pas monter voir. Vous savez ce qui s\'est passé ?', 'Si l\'armée revient et me demande, je n\'ai rien vu. Vous non plus.'] }],
     afterSteal: ['Vous aussi ? Je croyais que vous étiez différents.', 'Partez avant que je n\'appelle les soldats.']
   };
   C.NPCS.viktor = {
-    name: 'Viktor', title: 'Ancien portier',
+    name: 'Vic', title: 'Ancien portier',
     look: { hair: 'short', build: 1.0, h: 1.0, coat: '#3d3b44', pants: '#2a2927', coatLen: 0.35, skin: '#b09a86', hairColor: '#b8b2a8', beard: 'full', brow: 'heavy', top: 'overcoat', shirt: '#6a5f55', hat: 'cap', hatColor: '#2f2d33' },
     pose: 'sit',
     greet: ['Quarante ans que je tiens cette porte. Les soldats ne savent même pas où sont les clés.', 'Là-haut, ils sont trois, plus l\'officier. Il dort comme une souche après sa bouteille.', 'Et dans la suite du fond, au dernier étage, quatre types ont enfermé le directeur. Personne n\'ose y aller.'],
@@ -67,7 +67,7 @@
   };
   // Le directeur de l'hôtel, séquestré par des voyous dans la suite du fond
   C.NPCS.gabriel = {
-    name: 'Gabriel Roche', title: 'Directeur de l\'hôtel, séquestré',
+    name: 'Gabriel Rogers', title: 'Directeur de l\'hôtel, séquestré',
     look: { hair: 'short', build: 0.98, h: 1.0, coat: '#3a3a44', pants: '#25252b', coatLen: 0.3, skin: '#c0a48c', hairColor: '#8a8580', beard: 'stubble', glasses: true, top: 'overcoat', shirt: '#b8b2a4' },
     pose: 'sit', cond: { wound: 30 }, captor: 'voyous',
     greet: ['Chut… ils sont quatre. Ils veulent la combinaison du coffre de l\'hôtel. Je ne la leur donnerai jamais.', 'Le plus grand dort à côté de moi. Les deux autres font la ronde.', 'Ne restez pas là. S\'ils vous voient, ils vous tueront.'],
@@ -80,10 +80,10 @@
     rescueJournal: 'Gabriel est libre. Il m\'a donné ce qu\'il avait caché sous le bar :',
     abandonJournal: 'J\'ai laissé l\'homme attaché dans la suite du fond. Je l\'entends encore.'
   };
-  // Grisha : sans-abri qui a faim. Il montre sa cachette si on le nourrit ; si on
+  // Otis : sans-abri qui a faim. Il montre sa cachette si on le nourrit ; si on
   // ne revient pas la nuit suivante, il est mort (et quelqu'un d'autre a pris sa place).
   C.NPCS.grisha = {
-    name: 'Grisha', title: 'Sans-abri affamé',
+    name: 'Otis', title: 'Sans-abri affamé',
     look: { hair: 'messy', build: 0.78, h: 0.96, coat: '#51493f', pants: '#2e2b27', coatLen: 0.35, skin: '#a8927c', hairColor: '#8f877c', beard: 'full', top: 'overcoat', shirt: '#5c554a' },
     pose: 'sit',
     greet: ['Tu as de quoi manger ? N\'importe quoi… un légume, une boîte. Je te montrerai où j\'ai planqué mes affaires.', 'Trois jours que je n\'ai rien avalé. Les gars d\'ici ne partagent pas.'],
@@ -105,7 +105,7 @@
     name: 'Ed Morrow', title: 'Père de famille',
     look: { hair: 'short', build: 1.02, h: 1.0, coat: '#4f4a42', pants: '#2c2a26', coatLen: 0.12, skin: '#b19a84', hairColor: '#5b4a3c', beard: 'stubble', brow: 'heavy', top: 'work', shirt: '#655d50', glasses: true },
     pose: 'stand',
-    greet: ['Doucement. Ma fille dort à l\'étage.', 'L\'obus a pris l\'autre moitié de la maison. Les Kowalski étaient dedans.', 'On partirait bien, mais pour aller où ?'],
+    greet: ['Doucement. Ma fille dort à l\'étage.', 'L\'obus a pris l\'autre moitié de la maison. Les Hendricks étaient dedans.', 'On partirait bien, mais pour aller où ?'],
     trade: {
       stock: { legumes: 2, eau: 3, bois: 4, composants: 3, pieces_meca: 1, livres: 2 },
       likes: { medicaments: 1.8, conserve: 1.4, filtre: 1.5, bandage: 1.4 },
@@ -132,7 +132,7 @@
 
   C.OWNERS.hotel_refugies = {
     text: ' a volé les civils réfugiés au rez-de-chaussée de l\'hôtel.', moral: -8, key: 'stole',
-    desc: 'Les affaires d\'Irène et des réfugiés de l\'hôtel.',
+    desc: 'Les affaires d\'Irene et des réfugiés de l\'hôtel.',
     warn: 'Ce sont les réserves des civils qui s\'abritent ici, sous le nez des soldats. Ils n\'ont presque rien.'
   };
   C.OWNERS.squat = {

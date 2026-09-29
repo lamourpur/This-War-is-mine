@@ -1547,18 +1547,25 @@
     else looks = vp ? vp.figs : [{ hair: 'short', build: 1, h: 1, coat: '#4f4a42', pants: '#2c2a26', coatLen: 0.2, skin: '#b89c84', hairColor: '#2a2420', top: 'overcoat', shirt: '#5c5448' }];
     var door = C.Game.st.objects.filter(function (o) { return o.kind === 'frontdoor'; })[0];
     var x0 = (door ? door.x : 172) - 44, y = C.FLOORS[1].y;
+    // Après le troc : il range ses affaires (bulle d'au revoir), puis s'éloigne en marchant
+    var pr = v.done ? Math.min(1, Math.max(0, (st.minute - v.doneAt) / 25)) : 0, walkP = Math.max(0, (pr - 0.4) / 0.6);
     looks.forEach(function (lk, i) {
-      var x = x0 - i * 34;
+      var x = x0 - i * 34 - walkP * 300;
       var fake = { id: 'visiteur_' + v.id + i, look: lk, traits: [], path: [], x: x, y: y, f: 1, anim: i * 1.7, moral: vp && vp.state && vp.state.moral != null ? vp.state.moral : 60, fatigue: vp && vp.state ? vp.state.fatigue || 20 : 20, wound: vp && vp.state ? vp.state.wound || 0 : 0, sick: 0, act: null };
+      if (walkP > 0) fake.path = [{}];
       var P = C.Figure.pose(fake, t + i);
-      if (i === 0 && !v.talking) {
+      if (i === 0 && !v.talking && !v.done) {
         // Frappe à la porte : deux petits coups toutes les trois secondes
         var ph = (t % 3);
         if (ph < 0.9) { var k = Math.abs(Math.sin(ph * Math.PI * 2.2)); P.arms[1] = { a: 1.25 + 0.25 * k, bend: 1.0 - 0.4 * k }; }
       }
       if (vp && vp.hurt) { P.lean = 0.28; P.head = 0.3; P.arms[1] = { a: 0.25, bend: 1.9 }; P.brow = 'sad'; }
       if (vp && vp.armed) { P.tool = 'rifle'; P.arms = [{ a: 0.55, bend: 1.2 }, { a: 0.35, bend: 1.45 }]; }
-      C.Figure.draw(ctx, fake, x, y, 1, { t: t, pose: P });
+      ctx.save();
+      if (walkP > 0.7) ctx.globalAlpha = Math.max(0, 1 - (walkP - 0.7) / 0.3);
+      C.Figure.draw(ctx, fake, x, y, walkP > 0 ? -1 : 1, { t: t, pose: P });
+      ctx.restore();
+      if (i === 0 && v.done && pr < 0.6) drawBubble(ctx, (C.VISITORS[v.id] && C.VISITORS[v.id].bye) || 'Merci. À la prochaine.', x, y - 128, 2000, null);
       if (vp && vp.hurt && i === 0) { ctx.fillStyle = 'rgba(110,22,18,0.55)'; ctx.beginPath(); ctx.ellipse(x + 6, y - 44, 5, 7, 0, 0, Math.PI * 2); ctx.fill(); }
     });
   }

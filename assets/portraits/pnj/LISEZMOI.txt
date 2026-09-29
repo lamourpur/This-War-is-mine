@@ -29,7 +29,7 @@ Personnages rencontrés la nuit (liste C.NPC_PHOTOS, même dossier) :
   lili.jpg    Lili, sa fille               ruth.jpg    Dr Ruth Keller
   benny.jpg   Benny, infirmier             dale.jpg    Dale, soldat blessé
   carol.jpg   Carol, institutrice          hal.jpg     Hal, père de famille
-  tim.jpg     Tim, enfant                  mila.jpg    Mila (entrepôt)
+  tim.jpg     Tim, enfant                  mila.jpg    Molly (entrepôt)
   maddox.jpg  sergent Maddox               holt.jpg    Holt, le soldat ivre
   soldat.jpg  soldats de garde             rick.jpg    Rick, pilleur
   kurt.jpg    Kurt, pilleur                ray.jpg     Ray, pilleur
@@ -42,6 +42,6 @@ ajouter son identifiant à la liste C.VISITOR_PHOTOS en haut de
 js/data/visitor_faces.js. Sans fichier, le portrait est dessiné par le jeu.
 En jeu, l'état du visiteur s'ajoute par-dessus (blessure, fatigue…).
 
-Ajouts : valter_1.jpg (Valter, le voisin de l'aide larguée) ; milice_1.jpg,
-milice_2.jpg, milice_enquete.jpg (Karol et son lieutenant : même visage que
+Ajouts : valter_1.jpg (Warren, le voisin de l'aide larguée) ; milice_1.jpg,
+milice_2.jpg, milice_enquete.jpg (Carl et son lieutenant : même visage que
 milice.jpg, copié sous les identifiants des visites de la milice).

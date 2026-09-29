@@ -11,15 +11,15 @@
   function U() { return C.util; }
 
   C.VISITORS = {
-    // Franko : il repasse tous les 3 à 5 jours (C.Market), jamais tiré au hasard
+    // Sonny : il repasse tous les 3 à 5 jours (C.Market), jamais tiré au hasard
     marchand: {
-      weight: 0, minDay: 2, scheduled: true,
-      title: 'Franko, le marchand',
+      weight: 0, minDay: 2, scheduled: true, bye: 'Bonne chance dehors. Je repasse dans trois jours.',
+      title: 'Sonny, le marchand',
       text: function (ctx) {
         var st = ctx.st, m = st.market || {}, sh = C.Market && C.Market.current(st);
         var t = (m.frankoVisits || 0) <= 1
-          ? 'Un homme sec, un gros sac sur le dos, jette un œil par-dessus votre épaule.<br>« Franko. Je passe de temps en temps dans le quartier. J\'ai de quoi faire affaire, si vous avez de quoi payer. »'
-          : 'Franko est de retour, son gros sac sur le dos.<br>« Alors, toujours vivants ? Bien. J\'ai de la marchandise. »';
+          ? 'Un homme sec, un gros sac sur le dos, jette un œil par-dessus votre épaule.<br>« Sonny. Je passe de temps en temps dans le quartier. J\'ai de quoi faire affaire, si vous avez de quoi payer. »'
+          : 'Sonny est de retour, son gros sac sur le dos.<br>« Alors, toujours vivants ? Bien. J\'ai de la marchandise. »';
         if (sh) t += '<br><br>« ' + ({
           medic: 'Des médicaments ? Introuvables en ce moment. Si vous en avez, je vous les paie au prix fort.',
           vivres: 'La bouffe, c\'est de l\'or en ce moment. Je n\'en ai presque plus. Mais j\'achète.',
@@ -310,7 +310,7 @@
       ]
     },
 
-    // Un colporteur de passage (autre que Franko)
+    // Un colporteur de passage (autre que Sonny)
     colporteur: {
       weight: 2, minDay: 4,
       init: function (st, R) {

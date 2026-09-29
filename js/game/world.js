@@ -137,10 +137,10 @@
       if (C.UI) C.UI.refreshDoor();
     }
     if (st.visitor && !st.visitor.talking && st.minute > st.visitor.until) {
-      var gone = C.VISITORS[st.visitor.id];
-      if (gone && gone.onMissed) gone.onMissed(st, st.visitor.data || {});
+      var gone = C.VISITORS[st.visitor.id], parti = st.visitor.done;
+      if (!parti && gone && gone.onMissed) gone.onMissed(st, st.visitor.data || {});
       st.visitor = null;
-      G().toast('Personne n\'a ouvert. Le visiteur est reparti.', 'info');
+      if (!parti) G().toast('Personne n\'a ouvert. Le visiteur est reparti.', 'info');
       if (C.UI) C.UI.refreshDoor();
     }
 
@@ -156,7 +156,7 @@
 
   // Comme dans This War of Mine : quelqu'un frappe presque chaque jour,
   // parfois deux personnes dans la même journée. Les histoires en cours et
-  // Franko passent en priorité.
+  // Sonny passent en priorité.
   function pickRandomVisitor(st, R, not) {
     var entries = [];
     for (var id in C.VISITORS) {

@@ -131,12 +131,12 @@
       // effacé sans raison connue (vieille sauvegarde) revient.
       if (saved === 'gone' && !(d.kind === 'guard' && !(ls.gone || {})[d.key])) return;
       if (saved === 'gone') { saved = null; returned.push(d); delete ls.map[d.key]; }
-      // Grisha : entrevu puis laissé sans nourriture, il n'a pas passé la nuit
+      // Otis : entrevu puis laissé sans nourriture, il n'a pas passé la nuit
       if (d.npc === 'grisha') {
         var gs = ls.npc.grisha || (ls.npc.grisha = {});
         if (gs.talk && !gs.helped && !gs.dead) {
           gs.dead = true;
-          E.notes.push({ t: 'Grisha, le sans-abri qui demandait à manger, est mort : personne n\'est revenu à temps. Un autre homme a pris sa place.', k: 'bad' });
+          E.notes.push({ t: 'Otis, le sans-abri qui demandait à manger, est mort : personne n\'est revenu à temps. Un autre homme a pris sa place.', k: 'bad' });
           E.effects.push(function () { G().moralAll(-4, { bad: true, key: 'death_neighbor' }); });
         }
         if (gs.dead) o.npc = 'squat_inconnu';
@@ -261,8 +261,8 @@
     C.MAPS[E.loc].objects.forEach(function (d) { if (!present[d.key] && !d.only) ls.map[d.key] = 'gone'; });   // (les objets à condition ne sont pas « disparus » s'ils n'ont pas encore paru)
 
     var bag = reason === 'dead' ? {} : est.inventory;
-    // Mila : libérée, ou laissée au soldat ivre
-    // Otages (Mila, le garçon du supermarché…) : laissés à leurs geôliers
+    // Molly : libérée, ou laissée au soldat ivre
+    // Otages (Molly, le garçon du supermarché…) : laissés à leurs geôliers
     est.objects.forEach(function (o) {
       var d = o.kind === 'npc' && C.NPCS[o.npc];
       if (!d || !d.rescued) return;

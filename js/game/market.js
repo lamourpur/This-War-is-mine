@@ -1,11 +1,11 @@
 /* =========================================================
-   Le marché noir et Franko, le marchand
+   Le marché noir et Sonny, le marchand
    Comme dans This War of Mine :
-   - Franko passe au refuge régulièrement (tous les 3 à 5 jours), avec un
+   - Sonny passe au refuge régulièrement (tous les 3 à 5 jours), avec un
      stock qui s'étoffe au fil de la guerre (armes, gilet… plus tard).
    - Par périodes, certaines choses deviennent introuvables : pénurie de
      médicaments, de vivres, de munitions, de tabac… Elles valent alors bien
-     plus cher, chez Franko comme chez tous ceux avec qui l'on troque, et on
+     plus cher, chez Sonny comme chez tous ceux avec qui l'on troque, et on
      en trouve moins à vendre. Le rapport du matin et la radio préviennent.
    État : st.market = { id, until, next, last, franko }.
    ========================================================= */
@@ -115,11 +115,11 @@
       var up = pickShortage(st, R);
       if (up) m.upcoming = up.id;
     }
-    // Franko : on sait qu'il repasse bientôt
-    if (st.day === m.franko && m.frankoVisits > 0) add('market', 'Franko a fait dire qu\'il repasserait aujourd\'hui avec de la marchandise.', 'info');
+    // Sonny : on sait qu'il repasse bientôt
+    if (st.day === m.franko && m.frankoVisits > 0) add('market', 'Sonny a fait dire qu\'il repasserait aujourd\'hui avec de la marchandise.', 'info');
   };
 
-  // Franko passe-t-il aujourd'hui ? (appelé par World.planVisitor)
+  // Sonny passe-t-il aujourd'hui ? (appelé par World.planVisitor)
   M.frankoDue = function (st) {
     var m = state(st);
     return st.day >= m.franko;
@@ -130,7 +130,7 @@
     m.frankoVisits++;
   };
 
-  // Stock de Franko : il s'étoffe au fil de la guerre ; ce qui manque en
+  // Stock de Sonny : il s'étoffe au fil de la guerre ; ce qui manque en
   // ville (pénurie), il en a peu, et il le vend cher.
   var TIERS = [
     { day: 0, items: ['conserve', 'eau', 'legumes', 'bois', 'composants', 'bandage', 'cafe', 'cigarettes', 'sucre', 'tabac', 'livres', 'herbes', 'engrais', 'pied_de_biche', 'passe_partout', 'couteau', 'pelle'] },

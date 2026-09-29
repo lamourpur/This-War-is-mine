@@ -235,6 +235,10 @@
     var old = el.querySelector('.card-pf'); if (old) old.remove();
     if (v) { var pf = UI.visitorPortrait(v, 44, 52); if (pf) el.insertBefore(pf, el.firstChild); }
     el.classList.toggle('with-face', !!(v && el.querySelector('.card-pf')));
+    if (v) {
+      var fc = UI.visitorFace(v), nm = fc ? fc.name.split(',')[0] : 'Le visiteur';
+      el.querySelector('div:not(.card-pf)').innerHTML = v.done ? '<b>' + U.esc(nm) + ' s\'attarde à la porte</b><span>Cliquez pour reprendre l\'échange</span>' : '<b>On frappe à la porte</b><span>Cliquez pour envoyer quelqu\'un ouvrir</span>';
+    }
   };
   // Portrait d'un visiteur : fiche du survivant (réfugié) ou visage du visiteur
   UI.visitorFace = function (v) {

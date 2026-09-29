@@ -204,7 +204,7 @@
 
   // ============================================================ Maison mitoyenne
   // Deux maisons collées. À l'ouest, les Morrow, toit intact. À l'est, la
-  // moitié des Kowalski, soufflée par un obus : plus de toit, un plancher
+  // moitié des Hendricks, soufflée par un obus : plus de toit, un plancher
   // effondré qu'on escalade par les gravats, un mur de cave à percer.
   C.MAPS.maison_mitoyenne = keepNpcs('maison_mitoyenne', {
     theme: { dirt: 0.3 },
@@ -260,10 +260,10 @@
       { key: 'ed', kind: 'npc', npc: 'ed', f: 0, x: 580, w: 40, h: 90, facing: 1 },
       { key: 'poele', kind: 'stove', f: 0, x: 760, deco: true },
       { key: 'gravats_salon', kind: 'rubble', f: 0, x: 1190, w: 96, h: 42, work: 90, loot: { bois: 3, composants: 2 } },
-      { key: 'salon_kowalski', kind: 'cache', variant: 'commode', label: 'Commode des Kowalski', f: 0, x: 1500, w: 64, h: 60, loot: { livres: 2, bijoux: 1, cigarettes: 1 } },
+      { key: 'salon_kowalski', kind: 'cache', variant: 'commode', label: 'Commode des Hendricks', f: 0, x: 1500, w: 64, h: 60, loot: { livres: 2, bijoux: 1, cigarettes: 1 } },
       { key: 'cave_morrow', kind: 'cache', variant: 'etagere', label: 'Conserves des Morrow', f: 1, x: 560, w: 70, h: 104, owner: 'morrow', loot: { conserve: 2, sucre: 1, engrais: 1 } },
       { key: 'mur_cave', kind: 'rubble', label: 'Mur mitoyen fissuré', f: 1, x: 1080, w: 104, h: 128, block: true, work: 120, loot: { bois: 2, composants: 3 } },
-      { key: 'cave_kowalski', kind: 'cache', variant: 'coffre', label: 'Malle des Kowalski', f: 1, x: 1400, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_elec: 2, medicaments: 1, munitions: 4, alcool: 1 } },
+      { key: 'cave_kowalski', kind: 'cache', variant: 'coffre', label: 'Malle des Hendricks', f: 1, x: 1400, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_elec: 2, medicaments: 1, munitions: 4, alcool: 1 } },
       { key: 'lit_nina', kind: 'bed', f: 2, x: 560, deco: true },
       { key: 'nina', kind: 'npc', npc: 'nina', f: 2, x: 560, w: 90, h: 44, facing: 1, onBed: true },
       { key: 'armoire_nina', kind: 'furniture', variant: 'armoire', f: 2, x: 700, w: 58, h: 112, work: 60, owner: 'morrow', loot: { bois: 3 } },
@@ -1113,8 +1113,8 @@
       { key: 'caisse_cachee', kind: 'cache', variant: 'caisse', label: 'Caisse cachée des squatteurs', f: 1, x: 1450, w: 78, h: 48, owner: 'squat', loot: { conserve: 2, medicaments: 1, munitions: 4 } },
       // Dortoir
       { key: 'grisha', kind: 'npc', npc: 'grisha', f: 2, x: 700, w: 50, h: 70, facing: 1 },
-      { key: 'corps_grisha', kind: 'cache', variant: 'linceul', label: 'Corps de Grisha', only: 'grisha_dead', f: 2, x: 640, w: 90, h: 24, loot: { tabac: 1, cigarettes: 1 } },
-      { key: 'cachette_grisha', kind: 'cache', variant: 'caisse', label: 'Cachette sous le plancher', f: 2, x: 560, w: 70, h: 30, locked: true, tools: [], lockedNote: 'Des planches clouées. Grisha sait comment les soulever.', loot: { bijoux: 2, alcool: 2 } },
+      { key: 'corps_grisha', kind: 'cache', variant: 'linceul', label: 'Corps de Otis', only: 'grisha_dead', f: 2, x: 640, w: 90, h: 24, loot: { tabac: 1, cigarettes: 1 } },
+      { key: 'cachette_grisha', kind: 'cache', variant: 'caisse', label: 'Cachette sous le plancher', f: 2, x: 560, w: 70, h: 30, locked: true, tools: [], lockedNote: 'Des planches clouées. Otis sait comment les soulever.', loot: { bijoux: 2, alcool: 2 } },
       { key: 'squatteur_dortoir', kind: 'guard', type: 'squatteur', name: 'Marv', f: 2, x: 1150, facing: 1, attitude: 'neutral', group: 'squat', sleep: true },
       { key: 'matelas', kind: 'cache', variant: 'valise', label: 'Affaires sous un matelas', f: 2, x: 1480, w: 62, h: 36, owner: 'squat', loot: { bandage: 1, tabac: 2, bijoux: 1 } },
       // Toit
@@ -1400,7 +1400,7 @@
   // journaux, carnets (kind 'note' : on les lit ; opens = ce qu'on y apprend),
   // corps sous un drap (cache 'linceul' : on fouille les poches).
   C.NPCS.vesna = {
-    name: 'Mme Vesna', title: 'Voisine du 1er, seule avec son chat',
+    name: 'Mme Hart', title: 'Voisine du 1er, seule avec son chat',
     look: { hair: 'bun', build: 0.8, h: 0.88, coat: '#5b5047', pants: '#34302b', coatLen: 0.45, skin: '#b9a693', hairColor: '#d0cac0', female: true, lips: true, top: 'cardigan', shirt: '#7d6f63', glasses: true },
     pose: 'sit',
     greet: ['Vous êtes du 3e ? Non… Entrez, entrez, il fait froid dans l\'escalier.', 'Mon chat, Miso, c\'est tout ce qui me reste. Il chasse les rats, lui, au moins.', 'Je ne peux plus descendre. Mes jambes.'],
@@ -1415,11 +1415,11 @@
   };
   C.OWNERS.vesna = {
     text: ' a volé une vieille dame seule dans son appartement.', moral: -10, key: 'stole_old',
-    desc: 'Les affaires de Mme Vesna.', warn: 'Mme Vesna vit seule et ne peut plus descendre. C\'est tout ce qu\'elle a.',
-    furn: 'Un meuble de Mme Vesna. Le démonter, c\'est la voler.'
+    desc: 'Les affaires de Mme Hart.', warn: 'Mme Hart vit seule et ne peut plus descendre. C\'est tout ce qu\'elle a.',
+    furn: 'Un meuble de Mme Hart. Le démonter, c\'est la voler.'
   };
   C.NPCS.petra = {
-    name: 'Petra', title: 'Fille du boulanger',
+    name: 'Penny', title: 'Fille du boulanger',
     look: { hair: 'shoulder', build: 0.92, h: 0.96, coat: '#6b5f52', pants: '#33302b', coatLen: 0.2, skin: '#b59d86', hairColor: '#5a4332', female: true, lips: true, top: 'cardigan', shirt: '#8b7d6c', scarf: '#8a7a5e' },
     pose: 'stand',
     greet: ['Mon père est mort quand le plafond s\'est effondré. Je n\'ai pas pu le sortir de là.', 'Le four marche encore. Il me manque du bois.'],
@@ -1434,7 +1434,7 @@
   };
   C.OWNERS.petra = {
     text: ' a volé la fille du boulanger.', moral: -8, key: 'stole',
-    desc: 'Les affaires de Petra.', warn: 'Petra a perdu son père dans l\'effondrement. C\'est tout ce qui lui reste.'
+    desc: 'Les affaires de Penny.', warn: 'Penny a perdu son père dans l\'effondrement. C\'est tout ce qui lui reste.'
   };
   C.NPCS.nico = {
     name: 'Nico', title: 'Gamin caché dans la fosse',
@@ -1465,7 +1465,7 @@
     ],
     hopital: [
       NOTE({ key: 'registre', label: 'Registre des admissions', book: true, f: 3, x: 1000, title: 'Registre des admissions',
-        text: 'Marko P., 34 ans. Éclats, jambe gauche. Amputé. Sorti.\nJana S., 7 ans. Brûlures. Décédée.\nInconnu, env. 50 ans. Balle, thorax. Décédé.\nLuka M., 16 ans. Éclats. Sorti.\nInconnue, env. 30 ans. Enceinte. Tireur, carrefour. Décédée.\n… La page continue. L\'écriture devient de plus en plus lâche.',
+        text: 'Mark P., 34 ans. Éclats, jambe gauche. Amputé. Sorti.\nJana S., 7 ans. Brûlures. Décédée.\nInconnu, env. 50 ans. Balle, thorax. Décédé.\nLuka M., 16 ans. Éclats. Sorti.\nInconnue, env. 30 ans. Enceinte. Tireur, carrefour. Décédée.\n… La page continue. L\'écriture devient de plus en plus lâche.',
         journal: 'Le registre de l\'hôpital. Trop de lignes qui finissent par « décédé ».' }),
       BODY({ key: 'corps_morgue1', f: 1, x: 1350, loot: { cigarettes: 1 } }),
       BODY({ key: 'corps_morgue2', f: 1, x: 1560, color: '#a8a08c', loot: { montre: 1 } })
@@ -1492,7 +1492,7 @@
     ],
     eglise: [
       NOTE({ key: 'registre_refugies', label: 'Cahier du père Daniel', book: true, f: 4, x: 1915, title: 'Cahier du père Daniel',
-        text: 'Onze noms, avec pour chacun ce qu\'il lui faut : lait pour le bébé de Rosa, sirop pour Lili, une couverture pour le vieux Tomasz.\nTrois noms sont barrés d\'une petite croix.' })
+        text: 'Onze noms, avec pour chacun ce qu\'il lui faut : lait pour le bébé de Rosa, sirop pour Lili, une couverture pour le vieux Tommy.\nTrois noms sont barrés d\'une petite croix.' })
     ],
     chantier: [
       NOTE({ key: 'plan_chantier', label: 'Panneau du chantier', wall: true, dy: 110, f: 0, x: 300, title: 'Panneau du chantier',
@@ -1500,17 +1500,17 @@
     ],
     immeuble: [
       NOTE({ key: 'mot_voisin', label: 'Mot glissé sous la porte', f: 4, x: 1150, title: 'Un mot',
-        text: 'À qui trouvera ce mot : Mme Vesna, au 1er, ne peut plus descendre. Montez-lui de l\'eau si vous pouvez. Elle a un chat. — Le voisin du 3e.',
-        journal: 'Un voisin demande qu\'on monte de l\'eau à Mme Vesna, au 1er.' }),
+        text: 'À qui trouvera ce mot : Mme Hart, au 1er, ne peut plus descendre. Montez-lui de l\'eau si vous pouvez. Elle a un chat. — Le voisin du 3e.',
+        journal: 'Un voisin demande qu\'on monte de l\'eau à Mme Hart, au 1er.' }),
       { key: 'vesna', kind: 'npc', npc: 'vesna', f: 2, x: 555, w: 50, h: 70, facing: 1 }
     ],
     hotel: [
       NOTE({ key: 'livre_or', label: 'Livre d\'or', book: true, f: 0, x: 860, title: 'Livre d\'or de l\'Hôtel Europa',
-        text: 'Dernière page : « Merci pour ce séjour merveilleux. La chambre donnait sur le fleuve. Nous reviendrons au printemps. — Famille Novak, 2 mars. »' })
+        text: 'Dernière page : « Merci pour ce séjour merveilleux. La chambre donnait sur le fleuve. Nous reviendrons au printemps. — Famille Sanders, 2 mars. »' })
     ],
     maison_mitoyenne: [
       NOTE({ key: 'photo_kowalski', label: 'Photo dans un cadre brisé', wall: true, dy: 96, f: 0, x: 1320, title: 'Une photo',
-        text: 'Les Kowalski, devant cette maison, en été. Le père tient une pastèque, les enfants rient. Au dos : « Août. Le plus beau. »' })
+        text: 'Les Hendricks, devant cette maison, en été. Le père tient une pastèque, les enfants rient. Au dos : « Août. Le plus beau. »' })
     ],
     boulangerie: [
       NOTE({ key: 'recette', label: 'Recette épinglée près du four', wall: true, dy: 110, f: 0, x: 1230, title: 'Recette',

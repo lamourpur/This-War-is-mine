@@ -113,7 +113,7 @@
   ]);
 
   C.NPCS.lukas = {
-    name: 'Lukas', title: 'Garçon de caisse, retenu par la bande',
+    name: 'Luke', title: 'Garçon de caisse, retenu par la bande',
     look: { hair: 'messy', build: 0.78, h: 0.86, coat: '#56504a', pants: '#2f2c28', coatLen: 0.05, skin: '#b8a18c', hairColor: '#5a4330', top: 'hoodie', shirt: '#6a6258' },
     pose: 'sit', cond: { wound: 25 }, captor: 'geolier',
     greet: ['Pitié… ils m\'ont attaché ici il y a quatre jours.', 'Le gros qui me garde… quand il boit, il s\'endort. Mais il ne boit plus.', 'Ils croient que mon père a de l\'or. Mon père est mort.'],
@@ -123,13 +123,13 @@
     reward: { conserve: 2, medicaments: 1, cafe: 1 },
     freedNote: ' des bandits qui le retenaient dans la réserve.',
     abandonNote: ' a laissé le garçon ligoté dans la réserve. Personne n\'en parle.',
-    rescueJournal: 'Lukas est libre. Il a sorti de derrière les cartons ce qu\'il avait caché :',
+    rescueJournal: 'Luke est libre. Il a sorti de derrière les cartons ce qu\'il avait caché :',
     abandonJournal: 'J\'ai laissé le garçon attaché dans la réserve. Je l\'entends encore.'
   };
 
-  // Carrefour : la vieille Zora tient l'abri du métro
+  // Carrefour : la vieille Dora tient l'abri du métro
   C.NPCS.zora = {
-    name: 'Zora', title: 'Réfugiée du métro',
+    name: 'Dora', title: 'Réfugiée du métro',
     look: { hair: 'scarf', build: 0.86, h: 0.9, coat: '#4f463e', pants: '#2f2b27', coatLen: 0.45, skin: '#b09880', hairColor: '#8a8278', female: true, lips: true, top: 'overcoat', shirt: '#6a5c50', scarf: '#6b3e34' },
     pose: 'sit',
     greet: ['Doucement… les petits dorment dans la rame.', 'Il tire sur tout ce qui traverse la rue, depuis l\'immeuble d\'en face. On ne remonte plus.', 'On est onze ici. Il y a de l\'eau, il suinte des murs.'],

@@ -17,7 +17,7 @@
   function G() { return C.Game; }
   function R() { return C.R; }
 
-  var BANDS = ['Les Corbeaux', 'Les Loups du port', 'Les gars de Dutch', 'Les Rats de cave', 'Les frères Kowal'];
+  var BANDS = ['Les Corbeaux', 'Les Loups du port', 'Les gars de Dutch', 'Les Rats de cave', 'Les frères Mason'];
 
   T.get = function (st) {
     if (!st.threat) st.threat = { heat: 0, level: 0, band: null, unguarded: 0, guarded: 0, warn: 0, siege: 0, siegeFrom: 0, siegeHits: 0, tribute: 0, paid: 0, weakUntil: 0, nextEmissary: 7 };

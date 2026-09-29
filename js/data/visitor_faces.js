@@ -41,7 +41,7 @@
 
   C.VISITOR_PEOPLE = {
     marchand: {
-      name: 'Franko, le marchand',
+      name: 'Sonny, le marchand',
       face: { skin: '#c4a283', hair: '#2e2823', hairStyle: 'short', hat: 'cap', hatColor: '#34322e', fw: 33, fh: 51, jaw: 0.8, eye: 0.82, iris: '#3b3226', brow: 2.6, nose: 'long', lips: 0.8, age: 0.5, beard: 'stubble', clothes: 'overcoat', cloth: '#4a4238', squint: true, turn: 0.18 },
       figs: [{ hair: 'short', build: 0.92, h: 1.0, coat: '#4a4238', pants: '#2c2a26', coatLen: 0.3, skin: '#c4a283', hairColor: '#2e2823', beard: 'stubble', top: 'overcoat', shirt: '#5c5448', hat: 'cap', hatColor: '#34322e', bag: true }]
     },
@@ -210,15 +210,15 @@
     }
   };
 
-  // Valter et la milice (Karol et son lieutenant : même visage que « milice »)
+  // Warren et la milice (Carl et son lieutenant : même visage que « milice »)
   C.VISITOR_PEOPLE.valter_1 = {
-    name: 'Valter, le voisin',
+    name: 'Warren, le voisin',
     face: { skin: '#cbaa8e', hair: '#3b3229', hairStyle: 'short', fw: 36, fh: 50, jaw: 0.95, eye: 0.85, iris: '#4a4034', brow: 2.4, nose: 'wide', lips: 0.9, age: 0.4, clothes: 'jacket', cloth: '#6b6558', turn: 0.1 },
     figs: [{ hair: 'short', build: 1.0, h: 1.0, coat: '#6b6558', pants: '#34312c', coatLen: 0.1, skin: '#cbaa8e', hairColor: '#3b3229', top: 'jacket', shirt: '#7a7266', bag: true }]
   };
   ['milice_1', 'milice_2', 'milice_enquete'].forEach(function (id) {
     var m = C.VISITOR_PEOPLE.milice;
-    C.VISITOR_PEOPLE[id] = { name: id === 'milice_enquete' ? 'Des miliciens' : 'Karol et son lieutenant', face: m.face, figs: m.figs, armed: true };
+    C.VISITOR_PEOPLE[id] = { name: id === 'milice_enquete' ? 'Des miliciens' : 'Carl et son lieutenant', face: m.face, figs: m.figs, armed: true };
   });
   C.VISITOR_PHOTOS.push('valter_1', 'milice_1', 'milice_2', 'milice_enquete');
 })(window.CQR);

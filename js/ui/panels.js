@@ -298,14 +298,16 @@
     var def = C.VISITORS[v.id];
     v.talking = true;
     var ctx = { st: st, v: v, s: s };
-    var p = UI.panel(def.title, first(s) + ' entrouvre la porte…', { small: true, noClose: true });
-    p.body.innerHTML = '<div class="visit-head"><div class="visit-face"></div><div class="dialog-text quote">' + def.text(ctx) + '</div></div>';
+    var p = UI.panel(def.title, first(s) + (v.done ? ' rouvre la porte…' : ' entrouvre la porte…'), { small: true, noClose: true });
+    // Le marchand s'est attardé après le troc : on peut reprendre l'échange ou refermer
+    var redo = !!v.done, choices = redo ? def.choices.filter(function (c) { return c.trade; }).concat([{ label: 'Refermer la porte', run: function () { return null; } }]) : def.choices;
+    p.body.innerHTML = '<div class="visit-head"><div class="visit-face"></div><div class="dialog-text quote">' + (redo ? '<i>Il n\'a pas encore tourné les talons, son sac sur l\'épaule.</i><br>« Un dernier échange ? »' : def.text(ctx)) + '</div></div>';
     // Portrait de la personne sur le pas de la porte
     var face = UI.visitorFace(v), fbox = p.body.querySelector('.visit-face');
     if (face) { fbox.appendChild(UI.portrait(face.s, 120, 144)); fbox.appendChild(U.el('span', 'visit-name', U.esc(face.name))); }
     else fbox.remove();
     var ch = U.el('div', 'choices');
-    def.choices.forEach(function (c, i) {
+    choices.forEach(function (c, i) {
       var label = typeof c.label === 'function' ? c.label(ctx) : c.label;
       var ok = true, reqTxt = '';
       if (c.req) { ok = G().has(c.req); reqTxt = 'Nécessite : ' + U.costText(c.req); }
@@ -316,8 +318,8 @@
         UI.closeModal();
         if (c.trade) {
           var tf = UI.visitorFace(v), sh = C.Market && C.Market.current(G().st);
-          C.TradeUI.open(s, v.data.stock, function () { finishVisitor(); }, {
-            name: v.id === 'marchand' ? 'Franko' : (tf && tf.name) || null, face: tf,
+          C.TradeUI.open(s, v.data.stock, function () { tradeDone(); }, {
+            name: v.id === 'marchand' ? 'Sonny' : (tf && tf.name) || null, face: tf,
             faceLine: v.id === 'marchand' ? (sh ? 'Ce qui manque en ville, je le paie cher. Et je le vends cher.' : 'Voyons ce que vous avez. Pas de crédit.') : null
           });
           return;
@@ -325,12 +327,19 @@
         var res = c.run(ctx);
         finishVisitor();
         if (res) { G().log(res, 'info'); UI.dialog(def.title, '<p class="dialog-text quote">' + res + '</p>', [{ label: 'Continuer' }]); }
-        if (!c.trade) { var cl = String(typeof c.label === 'function' ? c.label(ctx) : c.label); C.Surv.bio(s, 'On a frappé à la porte : ' + def.title.charAt(0).toLowerCase() + def.title.slice(1) + '. Nous avons choisi : ' + cl.charAt(0).toLowerCase() + cl.slice(1) + '.'); }
+        if (!c.trade && !redo) { var cl = String(typeof c.label === 'function' ? c.label(ctx) : c.label); C.Surv.bio(s, 'On a frappé à la porte : ' + def.title.charAt(0).toLowerCase() + def.title.slice(1) + '. Nous avons choisi : ' + cl.charAt(0).toLowerCase() + cl.slice(1) + '.'); }
       });
       ch.appendChild(b);
     });
     p.body.appendChild(ch);
     UI.modal(p);
+    // Après l'échange, le marchand ne disparaît pas d'un coup : il range ses affaires,
+    // dit au revoir, puis s'éloigne dans la rue (on peut le rappeler entre-temps)
+    function tradeDone() {
+      if (!st.visitor) return;
+      v.talking = false; v.done = true; v.doneAt = st.minute; v.until = st.minute + 25;
+      UI.refreshDoor(); UI.buildCards();
+    }
     function finishVisitor() {
       st.visitor = null;
       UI.refreshDoor();

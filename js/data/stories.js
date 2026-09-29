@@ -379,9 +379,9 @@
     ]
   };
 
-  // =========================================================== Valter et la milice
+  // =========================================================== Warren et la milice
   // Comme dans le jeu d'origine : un voisin propose de récupérer un colis largué
-  // que les rebelles ont raté. Quelques jours plus tard, la milice (Karol et son
+  // que les rebelles ont raté. Quelques jours plus tard, la milice (Carl et son
   // lieutenant) frappe à la porte et demande qui a fait le coup, en échange de
   // vivres. Il faut refuser deux fois pour qu'ils repartent.
   var TIP = { conserve: 3, cafe: 2, cigarettes: 3 };
@@ -391,14 +391,14 @@
     G().moralAll(-9, { bad: true, key: 'informed' });
     Story.news(ctx.st, 1, newsText, -3, 'informed');
     ctx.st.flags.guardedUntil = Math.max(ctx.st.flags.guardedUntil || 0, ctx.st.day + 3);
-    return 'Karol note le nom sans lever les yeux et vous tend un sac : ' + C.itemsText(TIP) + '. « Le quartier vous remercie. » Personne ne mange avec plaisir, ce soir-là.';
+    return 'Carl note le nom sans lever les yeux et vous tend un sac : ' + C.itemsText(TIP) + '. « Le quartier vous remercie. » Personne ne mange avec plaisir, ce soir-là.';
   }
   V.valter_1 = {
     weight: 2, minDay: 5, once: 'valter',
     canAppear: function (st) { return !Story.started(st, 'valter') && G().present().length >= 2; },
     title: 'Un voisin a du nouveau',
     text: function () {
-      return 'Un homme à lunettes, Valter, habite un peu plus bas dans la rue.<br>« J\'ai vu que vous logiez dans cette maison. Cette nuit, un avion a largué de l\'aide humanitaire. Les rebelles ont confisqué presque tout, mais il y a un conteneur qu\'ils ont raté, tombé en zone de tir. Sous le couvert de la nuit, on peut l\'atteindre. Je vous montre où il est si vous m\'aidez à porter. Marché conclu ? »<br><br><i>C\'est du vol, aux yeux de la milice. Le survivant envoyé sera absent jusqu\'au soir.</i>';
+      return 'Un homme à lunettes, Warren, habite un peu plus bas dans la rue.<br>« J\'ai vu que vous logiez dans cette maison. Cette nuit, un avion a largué de l\'aide humanitaire. Les rebelles ont confisqué presque tout, mais il y a un conteneur qu\'ils ont raté, tombé en zone de tir. Sous le couvert de la nuit, on peut l\'atteindre. Je vous montre où il est si vous m\'aidez à porter. Marché conclu ? »<br><br><i>C\'est du vol, aux yeux de la milice. Le survivant envoyé sera absent jusqu\'au soir.</i>';
     },
     choices: [
       { label: function (ctx) { return 'Envoyer ' + first(ctx.s) + ' avec lui'; }, run: function (ctx) {
@@ -406,30 +406,30 @@
           G().sendAway(ctx.s, 'aide_larguee', R().chance(0.85) ? { legumes: R().int(2, 4), cafe: 1, eau: R().int(1, 3), conserve: 1 } : { legumes: 2, eau: 1 }, 0.3);
           ctx.st.stats.helped++;
           Story.next(ctx.st, 'milice_1', R().int(2, 4));
-          return first(ctx.s) + ' suit Valter dans la nuit qui tombe, un sac vide sur l\'épaule.';
+          return first(ctx.s) + ' suit Warren dans la nuit qui tombe, un sac vide sur l\'épaule.';
         } },
       { label: 'Refuser : ça sent le piège', run: function (ctx) {
           Story.state(ctx.st, 'valter').choice = 'refus';
           ctx.st.stats.refused++; G().moralAll(-2, {});
-          return 'Valter hausse les épaules. « Comme vous voudrez. Je trouverai quelqu\'un d\'autre. »';
+          return 'Warren hausse les épaules. « Comme vous voudrez. Je trouverai quelqu\'un d\'autre. »';
         } }
     ]
   };
   V.milice_1 = {
     story: true, title: 'La milice enquête',
     text: function () {
-      return 'Deux hommes en brassard, le fusil en bandoulière. Le plus âgé, Karol, ne sourit pas.<br>« Un conteneur destiné à la milice a disparu cette nuit. Un voisin l\'a vu porter par deux personnes : un homme à lunettes, Valter, de la rue d\'à côté, et quelqu\'un de cette maison. Confirmez-nous que c\'était lui, et on oublie le reste. Il y a de quoi manger pour vous. »';
+      return 'Deux hommes en brassard, le fusil en bandoulière. Le plus âgé, Carl, ne sourit pas.<br>« Un conteneur destiné à la milice a disparu cette nuit. Un voisin l\'a vu porter par deux personnes : un homme à lunettes, Warren, de la rue d\'à côté, et quelqu\'un de cette maison. Confirmez-nous que c\'était lui, et on oublie le reste. Il y a de quoi manger pour vous. »';
     },
     choices: [
-      { label: 'Confirmer : c\'était Valter', run: function (ctx) {
+      { label: 'Confirmer : c\'était Warren', run: function (ctx) {
           Story.state(ctx.st, 'valter').choice = 'denonce';
-          return betray(ctx, 'Valter', 'On a emmené Valter dans un camion de la milice, ce matin, les mains attachées. Sa femme criait dans la rue. On dit qu\'un voisin l\'a dénoncé.');
+          return betray(ctx, 'Warren', 'On a emmené Warren dans un camion de la milice, ce matin, les mains attachées. Sa femme criait dans la rue. On dit qu\'un voisin l\'a dénoncé.');
         } },
       { label: 'Dire qu\'on ne sait rien', run: function (ctx) {
           Story.state(ctx.st, 'valter').choice = 'refus1';
           G().moralAll(5, { good: true, key: 'helped' });
           Story.next(ctx.st, 'milice_2', 1);
-          return 'Karol vous regarde longtemps. « On repassera. Réfléchissez bien : la faim, ça fait changer d\'avis. »';
+          return 'Carl vous regarde longtemps. « On repassera. Réfléchissez bien : la faim, ça fait changer d\'avis. »';
         } }
     ],
     onMissed: function (st) { Story.state(st, 'valter').choice = 'sourd'; }
@@ -437,19 +437,19 @@
   V.milice_2 = {
     story: true, title: 'La milice revient',
     text: function () {
-      return 'Karol est de retour, avec un lieutenant cette fois. Il laisse ostensiblement une main sur la crosse.<br>« Je vous repose la question. Valter. C\'est lui, oui ou non ? Nous avons des façons de savoir, mais autant que ça vienne de vous. »';
+      return 'Carl est de retour, avec un lieutenant cette fois. Il laisse ostensiblement une main sur la crosse.<br>« Je vous repose la question. Warren. C\'est lui, oui ou non ? Nous avons des façons de savoir, mais autant que ça vienne de vous. »';
     },
     choices: [
-      { label: 'Confirmer : c\'était Valter', run: function (ctx) {
+      { label: 'Confirmer : c\'était Warren', run: function (ctx) {
           Story.state(ctx.st, 'valter').choice = 'denonce';
-          return betray(ctx, 'Valter', 'On a emmené Valter dans un camion de la milice, ce matin, les mains attachées. On dit qu\'un voisin l\'a dénoncé après avoir résisté deux fois.');
+          return betray(ctx, 'Warren', 'On a emmené Warren dans un camion de la milice, ce matin, les mains attachées. On dit qu\'un voisin l\'a dénoncé après avoir résisté deux fois.');
         } },
       { label: 'Refuser encore', run: function (ctx) {
           Story.state(ctx.st, 'valter').choice = 'refus2';
           G().moralAll(7, { good: true, key: 'helped' });
           ctx.st.raidBonus = (ctx.st.raidBonus || 0) + 0.1;
-          Story.thanks(ctx.st, 3, 'Valter est venu jusqu\'à votre porte, la tête basse. « La milice est passée chez moi aussi. Ils n\'ont rien pu prouver. Vous m\'avez couvert, et je ne l\'oublierai pas »', { alcool: 1, conserve: 2, legumes: 2 }, 6);
-          return 'Karol crache par terre. « Vous le regretterez. » Ils repartent, mais ils n\'ont rien prouvé. (Ils vous garderont peut-être à l\'œil cette nuit.)';
+          Story.thanks(ctx.st, 3, 'Warren est venu jusqu\'à votre porte, la tête basse. « La milice est passée chez moi aussi. Ils n\'ont rien pu prouver. Vous m\'avez couvert, et je ne l\'oublierai pas »', { alcool: 1, conserve: 2, legumes: 2 }, 6);
+          return 'Carl crache par terre. « Vous le regretterez. » Ils repartent, mais ils n\'ont rien prouvé. (Ils vous garderont peut-être à l\'œil cette nuit.)';
         } }
     ],
     onMissed: function (st) { Story.state(st, 'valter').choice = 'sourd'; }

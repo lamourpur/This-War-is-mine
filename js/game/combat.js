@@ -961,7 +961,7 @@
     return K.MELEE[w].tool || 'fists';
   };
 
-  // Mila est libre quand le soldat ivre n'est plus là (mort, parti ou à genoux)
+  // Molly est libre quand le soldat ivre n'est plus là (mort, parti ou à genoux)
   K.freed = function (group) {
     return !K.guards().some(function (g) { return g.group === group && !g.dead && g.state !== 'surrender'; });
   };
