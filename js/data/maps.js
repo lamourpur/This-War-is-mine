@@ -119,6 +119,7 @@
         thanks: 'Merci. Chaque bandage compte, ici.', moral: 4, alts: [{ medicaments: 1 }, { remede: 1 }], shelledThanks: 'Vous les avez retrouvés… Vous avez sauvé trois vies ce soir. Je n\'ai pas les mots.', shelledMoral: 12,
         reward: { remede: 1 }, giveLine: 'Tenez, un remède que Benny prépare avec les plantes. Pour les vôtres.'
       },
+      when: [{ 'if': 'npc:dale.helped', lines: ['Dale a enfin dormi. Il a pu fumer, ça l\'a calmé. Les autres blessés le regardent comme un miracle.', 'On a pu désinfecter les plaies cette nuit. Ça sauvera des jambes. Reposez-vous quand vous pouvez.'] }],
       after: ['On a pu désinfecter les plaies cette nuit. Ça sauvera des jambes. Grâce à vous, en partie.', 'Reposez-vous quand vous pouvez. Personne ne le fait jamais.'],
       afterSteal: ['Vous avez pris les médicaments ? Des gens vont mourir cette nuit. Vous comprenez ça ?', 'Sortez. Je ne veux plus vous voir ici.'],
       // Après le bombardement de l'aile est

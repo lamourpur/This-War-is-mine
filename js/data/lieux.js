@@ -1403,14 +1403,14 @@
     name: 'Mme Hart', title: 'Voisine du 1er, seule avec son chat',
     look: { hair: 'bun', build: 0.8, h: 0.88, coat: '#5b5047', pants: '#34302b', coatLen: 0.45, skin: '#b9a693', hairColor: '#d0cac0', female: true, lips: true, top: 'cardigan', shirt: '#7d6f63', glasses: true },
     pose: 'sit',
-    greet: ['Vous êtes du 3e ? Non… Entrez, entrez, il fait froid dans l\'escalier.', 'Mon chat, Miso, c\'est tout ce qui me reste. Il chasse les rats, lui, au moins.', 'Je ne peux plus descendre. Mes jambes.'],
+    greet: ['Vous êtes du 3e ? Non… Entrez, entrez, il fait froid dans l\'escalier.', 'Mon chat, Biscuit, c\'est tout ce qui me reste. Il chasse les rats, lui, au moins.', 'Je ne peux plus descendre. Mes jambes.'],
     need: {
       items: { eau: 2 }, label: 'Lui monter de l\'eau',
       ask: 'De l\'eau… Si vous pouviez me laisser un peu d\'eau. Je n\'ai plus rien depuis mardi.',
       thanks: 'Que Dieu vous garde. Tenez, la broche de mon mari. Elle ne me sert plus, et vous, vous pourrez l\'échanger.',
       reward: { bijoux: 1 }, moral: 7
     },
-    after: ['Revenez me voir. On ne parle plus à personne, ici.', 'Miso vous aime bien. Il n\'aime personne, d\'habitude.'],
+    after: ['Revenez me voir. On ne parle plus à personne, ici.', 'Biscuit vous aime bien. Il n\'aime personne, d\'habitude.'],
     afterSteal: ['Même vous… Allez-vous-en.']
   };
   C.OWNERS.vesna = {
@@ -1447,6 +1447,7 @@
       thanks: 'Merci ! Tenez, c\'est tout ce que j\'ai trouvé. Si vous voyez mon papa… il a une veste rouge.',
       reward: { pieces_meca: 2, composants: 1 }, moral: 6
     },
+    when: [{ 'if': 'freed:ray', lines: ['Ray est plus là-haut. Il me donnait du pain, des fois… Vous savez où il est ?', 'Il fait plus calme, mais j\'ai peur quand même. Papa n\'est toujours pas revenu.'] }],
     after: ['Papa va revenir. Il l\'a promis.', 'Faites attention en haut. Des fois, y a des hommes avec des fusils qui passent.']
   };
 
@@ -1455,11 +1456,11 @@
   var EXTRA = {
     maison_abandonnee: [
       NOTE({ key: 'lettre_famille', label: 'Lettre sur la table de nuit', f: 2, x: 1010, title: 'Lettre inachevée',
-        text: 'Chère maman,\nNous partons demain à l\'aube, par la route du sud, avec les Kovač. Papa ne voulait pas laisser la maison, mais les obus tombent maintenant jusqu\'au marché.\nJ\'ai rangé la valise de grand-mère au grenier, derrière les planches. Si tu reviens avant nous, prends-la.\nNous t\'embrassons fort. Ana.',
+        text: 'Chère maman,\nNous partons demain à l\'aube, par la route du sud, avec les Turner. Papa ne voulait pas laisser la maison, mais les obus tombent maintenant jusqu\'au marché.\nJ\'ai rangé la valise de grand-mère au grenier, derrière les planches. Si tu reviens avant nous, prends-la.\nNous t\'embrassons fort. Ana.',
         journal: 'Une lettre d\'une famille partie vers le sud. Ils comptaient revenir.' })
     ],
     villa: [
-      NOTE({ key: 'journal_industriel', label: 'Journal relié de cuir', book: true, f: 2, x: 1180, title: 'Journal de M. Lindqvist',
+      NOTE({ key: 'journal_industriel', label: 'Journal relié de cuir', book: true, f: 2, x: 1180, title: 'Journal de M. Whitmore',
         text: '12 octobre. J\'ai mis l\'argenterie et le fusil de chasse dans le coffre de la cave. Combinaison : la date de naissance d\'Elsa. 0 – 7 – 1 – 4.\n3 novembre. Les voisins sont partis. Les coups de feu se rapprochent chaque nuit.\n9 novembre. Si quelqu\'un lit ceci, c\'est que je ne suis pas revenu. Prenez soin de la maison.',
         opens: ['coffre_fort'], say: '0-7-1-4… La combinaison du coffre de la cave !', journal: 'Dans le journal de l\'industriel, la combinaison de son coffre-fort.' })
     ],
