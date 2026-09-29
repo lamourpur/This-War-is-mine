@@ -119,16 +119,16 @@
     // ---------------- Températures de la nuit
     var nightOut = st.weather.out - 3;
     var holes = st.objects.filter(function (o) { return o.kind === 'hole' && !o.boarded; }).length;
-    var heat = 0, burned = 0;
+    var heat = 0, heatMax = 0, burned = 0;
     st.objects.forEach(function (o) {
       if (o.kind === 'heater' && o.fuel > 0) {
         var frac = Math.min(1, o.fuel / 600);
-        heat = Math.max(heat, [0, 12, 17, 22][o.level] * frac);
+        heat = Math.max(heat, [0, 12, 17, 22][o.level] * frac); heatMax = Math.max(heatMax, [0, 12, 17, 22][o.level]);
         o.fuel = Math.max(0, o.fuel - 600);
         burned++;
       }
     });
-    var nightTemp = Math.round(nightOut + 6 - holes * 1.8 + heat);
+    var nightTemp = Math.round(C.World.heated(nightOut + 6 - holes * 1.8, heat, heatMax));
     st.nightTemp = nightTemp;
 
     // ---------------- Sommeil

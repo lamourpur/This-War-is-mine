@@ -219,7 +219,7 @@
       var riskTxt = risk < 0.15 ? 'faible' : risk < 0.3 ? 'réel' : risk < 0.5 ? 'élevé' : 'très élevé';
       var holes = st.objects.filter(function (o) { return o.kind === 'hole' && !o.boarded; }).length;
       var heaterFuel = 0; st.objects.forEach(function (o) { if (o.kind === 'heater') heaterFuel = Math.max(heaterFuel, o.fuel || 0); });
-      var estTemp = Math.round(st.weather.out - 3 + 6 - holes * 1.8 + (heaterFuel > 0 ? C.World.heaterOutput(st) * Math.min(1, heaterFuel / 600) : 0));
+      var estTemp = Math.round(C.World.heated(st.weather.out - 3 + 6 - holes * 1.8, heaterFuel > 0 ? C.World.heaterOutput(st) * Math.min(1, heaterFuel / 600) : 0, C.World.heaterOutput(st)));
       var hungry = present.filter(function (s) { return s.hunger >= 45; }).map(function (s) { return s.name.split(' ')[0] + (s.hunger >= 100 ? ' (meurt de faim)' : ''); });
       function tile(cls, icon, big, small) { return '<div class="ni ' + cls + '">' + C.Icon(icon) + '<div><b>' + big + '</b>' + small + '</div></div>'; }
       info.innerHTML =

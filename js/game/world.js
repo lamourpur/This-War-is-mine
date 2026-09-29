@@ -84,10 +84,19 @@
     return out;
   };
 
-  // Température intérieure : extérieur + isolation − trous + chauffage
+  // Le chauffage réchauffe la pièce jusqu'à une température de confort, pas au-delà :
+  // poêle 17 °C, chauffage amélioré 20 °C, chauffage complet 22 °C. `output` = ce qu'il
+  // peut ajouter (12 / 17 / 22) ; s'il fait déjà chaud, il n'ajoute rien.
+  World.heated = function (base, output, full) {
+    if (output <= 0) return base;
+    var f = full || output;
+    var target = f >= 22 ? 22 : f >= 17 ? 20 : 17;
+    return base + Math.min(output, Math.max(0, target - base));
+  };
+  // Température intérieure : extérieur + isolation − trous, puis chauffage
   World.shelterTemp = function (st) {
     var holes = st.objects.filter(function (o) { return o.kind === 'hole' && !o.boarded; }).length;
-    return Math.round(st.weather.out + 6 - holes * 1.8 + World.heaterOutput(st));
+    return Math.round(World.heated(st.weather.out + 6 - holes * 1.8, World.heaterOutput(st)));
   };
 
   World.tempLabel = function (t) {
