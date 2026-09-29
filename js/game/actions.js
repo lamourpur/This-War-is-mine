@@ -96,10 +96,7 @@
       done: function (s, o, p) {
         if (o.kind === 'door') o.open = true; else o.locked = false;
         var msg = first(s) + ' a ouvert : ' + G().objName(o).toLowerCase() + '.';
-        if (p.tool === 'passe_partout' && C.R.chance(0.3)) {
-          G().removeItems({ passe_partout: 1 });
-          msg += ' Le passe-partout s\'est brisé.';
-        }
+        if (G().wear(p.tool, 1, s)) msg += ' ' + (p.tool === 'passe_partout' ? 'Le passe-partout s\'est brisé dans la serrure.' : 'L\'outil n\'a pas survécu.');
         G().markDirty();
         return msg;
       }
@@ -146,6 +143,7 @@
       dur: function (s, o) { return o.work * (G().count('pelle') > 0 ? 0.5 : 1); },
       done: function (s, o) {
         G().removeObject(o);
+        if (G().count('pelle') > 0) G().wear('pelle', 1, s);
         // En exploration, ce qu'on trouve reste en tas : on choisit ce qu'on met dans le sac
         if (C.Explore && C.Explore.active) { leavePile(s, o); return first(s) + ' a déblayé les gravats' + (o.block ? ' — le passage est libre !' : '.'); }
         G().addItems(o.loot || {});
@@ -181,14 +179,14 @@
     pry: {
       work: true, label: 'Force la trappe', sound: 'search', fatigue: 4,
       dur: function () { return G().count('pied_de_biche') > 0 ? 30 : 90; },
-      done: function (s, o) { G().markDirty(); return C.Cellar.open(G().st, s, o); }
+      done: function (s, o) { G().markDirty(); if (G().count('pied_de_biche') > 0) G().wear('pied_de_biche', 1, s); return C.Cellar.open(G().st, s, o); }
     },
 
     cut: {
       work: true, label: 'Scie la grille', sound: 'saw', fatigue: 4,
       check: function () { if (G().count('scie') < 1) return 'Il faut une scie à métaux.'; },
       dur: function () { return 90; },
-      done: function (s, o) { G().removeObject(o); return first(s) + ' a découpé la grille. Une nouvelle pièce est accessible.'; }
+      done: function (s, o) { G().removeObject(o); var br = G().wear('scie', 1, s); return first(s) + ' a découpé la grille. Une nouvelle pièce est accessible.' + (br ? ' La lame de la scie a cédé.' : ''); }
     },
 
     dismantle: {
@@ -196,6 +194,7 @@
       dur: function (s, o, p) { return (p && p.scrap ? p.scrap.work : o.work) * (G().count('hachette') > 0 ? 0.6 : 1); },
       done: function (s, o, p) {
         G().removeObject(o);
+        if (G().count('hachette') > 0) G().wear('hachette', 1, s);
         // Contenant vide du refuge : recyclé en matériaux, la place est libre
         if (p && p.scrap) {
           G().addItems(p.scrap.loot);
@@ -303,6 +302,7 @@
 
     cook: {
       work: true, excl: true, label: 'Cuisine', sound: 'cook', fatigue: 2,
+      labelFn: function (s, o) { return o && o.kind === 'gunbench' ? 'Travaille à l\'atelier' : o && o.kind === 'herbshop' ? 'Prépare des remèdes' : 'Cuisine'; },
       cost: function (s, o, p) { return findStation(o.kind, p.rid).cost; },
       dur: function (s, o, p) { return findStation(o.kind, p.rid).time; },
       done: function (s, o, p) {
@@ -312,8 +312,13 @@
           if (o.level >= 2) give.repas += 1;
           if (G().hasTrait(s, 'cuisinier')) give.repas += 1;
         }
+        if (r.maintain) {
+          var fixed = Object.keys(G().st.flags.wear || {}).filter(function (k) { return G().st.flags.wear[k] > 0 && G().count(k) > 0; });
+          G().st.flags.wear = {};
+          return first(s) + ' a remis les outils en état' + (fixed.length ? ' (' + fixed.map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ') + ')' : '') + '.';
+        }
         G().addItems(give);
-        return first(s) + ' a préparé : ' + itemsText(give) + '.';
+        return first(s) + (o.kind === 'gunbench' ? ' a fabriqué : ' : ' a préparé : ') + itemsText(give) + '.';
       }
     },
 
@@ -445,30 +450,45 @@
     // ---- actions sociales (vers un autre survivant)
     talk: {
       toSurv: true, label: 'Parle', fatigue: 0.5,
-      label2: function (s, o, p) { var b = G().surv(p.sid); return (p.mode === 'comfort' ? 'réconforte ' : 'avec ') + (b ? first(b) : '…'); },
+      label2: function (s, o, p) { var b = G().surv(p.sid); return (p.mode === 'comfort' ? 'réconforte ' : p.mode === 'read' ? 'lit à ' : 'avec ') + (b ? first(b) : '…'); },
       check: function (s, o, p) {
         var b = G().surv(p.sid);
         if (!b || !b.alive || b.away || b === s) return 'Personne à qui parler.';
         if (b.act && b.act.phase === 'work' && (b.act.kind === 'sleep' || b.act.kind === 'sleepfloor')) return first(b) + ' dort.';
         if (b.act && (b.act.kind === 'talk' || b.act.kind === 'listen' || b.act.kind === 'care') && !(b.act.p && b.act.p.sid === s.id)) return first(b) + ' est déjà en pleine conversation.';
-        if (p.mode === 'comfort') {
+        if (p.mode === 'read') {
+          if (G().count('livres') < 1) return 'Il n\'y a aucun livre dans la réserve.';
+          if (b.readToDay === st().day) return 'On a déjà fait la lecture à ' + first(b) + ' aujourd\'hui.';
+          if (b.moral >= 70) return first(b) + ' n\'en a pas besoin pour l\'instant.';
+        } else if (p.mode === 'comfort') {
           if (s.moral < 35) return first(s) + ' est trop mal pour réconforter qui que ce soit.';
           if (b.comfortedToday) return first(b) + ' a déjà été réconforté(e) aujourd\'hui.';
           if (b.moral >= 60) return first(b) + ' n\'a pas besoin d\'être réconforté(e).';
         } else if (s.talkedToday && s.talkedToday[b.id]) return first(s) + ' et ' + first(b) + ' ont déjà discuté aujourd\'hui.';
       },
-      dur: function (s, o, p) { return p.mode === 'comfort' ? 45 : 30; },
+      dur: function (s, o, p) { return p.mode === 'read' ? 60 : p.mode === 'comfort' ? 45 : 30; },
       begin: function (s, o, p) {
         var b = G().surv(p.sid);
         Actions.cancel(b, true); b.path = [];
         b.act = { kind: 'listen', uid: null, p: { sid: s.id }, prog: 0, dur: 0, phase: 'work' };
         s.facing = b.x >= s.x ? 1 : -1; b.facing = -s.facing;
-        C.Mood.sayKey(s, p.mode === 'comfort' ? 'comfort_open' : 'talk_open');
+        C.Mood.sayKey(s, p.mode === 'comfort' ? 'comfort_open' : p.mode === 'read' ? 'read_open' : 'talk_open');
       },
       done: function (s, o, p) {
         var b = G().surv(p.sid);
         if (!b || !b.alive) return null;
         var n1 = first(s), n2 = first(b);
+        if (p.mode === 'read') {
+          // Lire à voix haute : une histoire pour oublier un moment (le livre n'est pas usé)
+          var rg = 12 + (G().hasTrait(b, 'lecteur') ? 6 : 0) + (G().hasTrait(s, 'lecteur') ? 3 : 0) + (b.moral < 25 ? 4 : 0);
+          if (G().hasTrait(b, 'cynique')) rg *= 0.75;
+          b.moral = Math.min(100, b.moral + rg);
+          b.readToDay = st().day; b.brokenDays = 0;
+          s.moral = Math.min(100, s.moral + (G().hasTrait(s, 'lecteur') ? 5 : 3));
+          C.Mood.think(b, 'readto', { n: n1 });
+          C.Mood.sayKey(b, 'read_reply');
+          return n1 + ' a lu à voix haute pour ' + n2 + '. Pendant une heure, la guerre était ailleurs.';
+        }
         if (p.mode === 'comfort') {
           var gain = 14 * (G().hasTrait(s, 'empathique') ? 1.5 : 1) + (s.moral >= 70 ? 3 : 0);
           if (G().hasTrait(b, 'cynique')) gain *= 0.7;
@@ -527,6 +547,39 @@
         b.moral = Math.min(100, b.moral + 3);
         C.Mood.think(b, 'cared', { n: first(s) });
         return first(s) + ' a soigné ' + first(b) + (k > 1.5 ? ', avec des gestes sûrs.' : '.');
+      }
+    },
+
+    // ---- les morts
+    bury: {
+      work: true, label: 'Enterre', fatigue: 6, sound: 'search',
+      dur: function (s) { return G().count('pelle') > 0 ? 90 : 160; },
+      done: function (s, o) {
+        var n = (o.name || '').split(' ')[0], fe = o.female ? 'e' : '';
+        G().removeObject(o);
+        G().spawnObject({ kind: 'memorial', sid: o.sid, name: o.name, female: o.female, day: st().day, f: o.f, x: o.x, w: 34, h: 44 });
+        G().alive().forEach(function (b) {
+          if (b.away) return;
+          b.moral = Math.min(100, b.moral + 4);
+          C.Mood.think(b, 'buried', { n: n });
+          C.Surv.bio(b, 'Nous avons enterré ' + n + ' dans la cour, sous le vieux tilleul. ' + (b === s ? 'C\'est moi qui ai creusé.' : 'Personne n\'a su quoi dire.'));
+        });
+        if (G().count('pelle') > 0 && C.Game.wear) C.Game.wear('pelle', 2, s);
+        return first(s) + ' a enterré ' + n + ' dans la cour. Le refuge respire un peu mieux.';
+      }
+    },
+    mourn: {
+      excl: true, label: 'Se recueille', fatigue: -1,
+      check: function (s, o) { if (s.mournDay === st().day) return first(s) + ' s\'est déjà recueilli' + (s.look && s.look.female ? 'e' : '') + ' aujourd\'hui.'; },
+      dur: function () { return 20; },
+      done: function (s, o) {
+        var n = (o.name || '').split(' ')[0];
+        s.mournDay = st().day;
+        var gain = s.grief > 0 ? 9 : 5;
+        s.moral = Math.min(100, s.moral + gain);
+        if (s.grief > 0) s.grief = Math.max(0, s.grief - 1);
+        C.Mood.think(s, 'mourn', { n: n });
+        return first(s) + ' s\'est recueilli' + (s.look && s.look.female ? 'e' : '') + ' un moment devant la photo de ' + n + '.';
       }
     },
 
@@ -597,6 +650,7 @@
   };
   C.ACT = ACT;
 
+  function missingOf(cost) { var o = {}; for (var k in cost) if (G().count(k) < cost[k]) o[k] = cost[k] - G().count(k); return o; }
   function findCraft(id) { for (var i = 0; i < C.CRAFTS.length; i++) if (C.CRAFTS[i].id === id) return C.CRAFTS[i]; return null; }
   function findStation(kind, id) {
     var l = C.STATION_RECIPES[kind] || [];
@@ -718,6 +772,7 @@
     if (!a) return s.away ? 'Absent(e)' : 'Attend';
     var def = ACT[a.kind];
     if (a.phase === 'walk' && a.kind !== 'move') return 'Se rend sur place…';
+    if (def.labelFn) return def.labelFn(s, G().obj(a.uid), a.p);
     if (def.label2) return def.label + ' : ' + def.label2(s, G().obj(a.uid), a.p);
     return typeof def.label === 'function' ? def.label(s, G().obj(a.uid), a.p) : def.label;
   };
@@ -989,6 +1044,15 @@
           m.entries.push(E('Ouvrir : ' + C.ITEMS[t].name.toLowerCase(), costSub(null, t === 'passe_partout' ? 45 : 30), G().count(t) ? null : 'Il faut : ' + C.ITEMS[t].name, go('unlock', { tool: t })));
         });
         break;
+      case 'corpse':
+        var cd = st().day - (o.since || st().day);
+        m.desc = 'Le corps de ' + (o.name || '').split(' ')[0] + ', sous un drap. ' + (cd >= 2 ? 'L\'odeur devient insupportable : tout le monde en souffre.' : cd >= 1 ? 'Personne n\'ose le regarder. Il faut l\'enterrer.' : 'Il faudra l\'enterrer, tant que c\'est encore possible.');
+        m.entries.push(E('Enterrer' + (pelle ? ' (pelle)' : ''), costSub(null, pelle ? 90 : 160) + ' · fatigant', null, go('bury')));
+        break;
+      case 'memorial':
+        m.desc = 'Une photo, une bougie, quelques mots écrits à la main. ' + (o.name || '').split(' ')[0] + ' repose dans la cour.';
+        m.entries.push(E('Se recueillir', costSub(null, 20) + ' · moral', s && s.mournDay === st().day ? 'Déjà fait aujourd\'hui' : null, go('mourn')));
+        break;
       case 'note':
         m.desc = o.read ? 'Déjà lu.' : (o.hint || 'Quelques lignes, écrites à la main.');
         m.entries.push(E(o.read ? 'Relire' : 'Lire', costSub(null, 4), null, go('readnote')));
@@ -1042,6 +1106,13 @@
       case 'radio':
         m.entries.push(E('Écouter les informations', costSub(null, 30), null, go('news')));
         m.entries.push(E('Écouter de la musique', 'moral', null, go('music')));
+        break;
+      case 'gunbench':
+        C.STATION_RECIPES.gunbench.forEach(function (r) {
+          var worn = r.maintain ? Object.keys(C.WEAR_MAX).filter(function (k) { return G().count(k) > 0 && G().wearLeft(k) < 1; }) : null;
+          m.entries.push(E(r.name, costSub(r.cost, r.time) + (worn ? ' · ' + (worn.length ? worn.length + ' outil' + (worn.length > 1 ? 's' : '') + ' usé' + (worn.length > 1 ? 's' : '') : 'rien d\'usé') : ''),
+            worn && !worn.length ? 'Tous les outils sont en bon état' : (G().has(r.cost) ? null : 'Il manque : ' + itemsText(missingOf(r.cost))), go('cook', { rid: r.id })));
+        });
         break;
       case 'stove':
       case 'herbshop':
@@ -1108,6 +1179,7 @@
     }
     add('Parler avec ' + first(b), '+ moral pour les deux · 30 min · une fois par jour', 'talk', { sid: b.id, mode: 'talk' });
     if (b.moral < 60) add('Réconforter ' + first(b), '++ moral pour ' + first(b) + ' · 45 min', 'talk', { sid: b.id, mode: 'comfort' });
+    if (b.moral < 70) add('Lire à voix haute pour ' + first(b), '++ moral pour ' + first(b) + ' · 1 h · il faut un livre (' + G().count('livres') + ')', 'talk', { sid: b.id, mode: 'read', item: 'livres' });
     if (b.wound > 0) add('Panser ' + first(b), '1 bandage (' + G().count('bandage') + ')' + (G().hasTrait(s, 'soigneur') ? ' · soins experts' : ''), 'care', { sid: b.id, item: 'bandage' });
     if (b.sick > 0) {
       add('Donner des médicaments à ' + first(b), G().count('medicaments') + ' en réserve', 'care', { sid: b.id, item: 'medicaments' });

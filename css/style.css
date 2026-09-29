@@ -638,6 +638,10 @@ kbd { font-family: var(--f-ui); font-weight: 700; border: 1px solid currentColor
   box-shadow: inset 0 0 0 2px #ffffff10, 0 2px 4px #0004; clip-path: polygon(3% 0, 100% 2%, 97% 100%, 0 97%);
 }
 .inv-art.sm { width: 36px; height: 36px; }
+/* Usure d'un outil : fine barre sous l'illustration */
+.inv-art { position: relative; }
+.inv-wear { position: absolute; left: 4px; bottom: 4px; height: 3px; max-width: calc(100% - 8px); background: #9cae7a; box-shadow: 0 0 0 1px #0008; }
+.inv-wear.low { background: #c0563c; }
 .inv-item { gap: 14px; padding: 8px 12px 8px 8px; }
 .inv-grid { grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); }
 .inv-name { font-size: 17px; }

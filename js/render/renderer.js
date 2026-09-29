@@ -1132,6 +1132,14 @@
     }
     st.objects.forEach(function (o) {
       var y = C.FLOORS[o.f].y;
+      if (o.kind === 'memorial') {
+        // La bougie du souvenir
+        var cf = 0.8 + Math.sin(t * 8 + o.uid) * 0.12 + Math.sin(t * 19.7) * 0.06;
+        var cg = ctx.createRadialGradient(o.x + 12, y - 30, 1, o.x + 12, y - 30, 48 * cf);
+        cg.addColorStop(0, 'rgba(255,200,110,' + (0.3 * cf) + ')'); cg.addColorStop(1, 'rgba(220,150,70,0)');
+        ctx.fillStyle = cg; ctx.fillRect(o.x - 40, y - 80, 104, 100);
+        return;
+      }
       var lit = (o.kind === 'heater' && o.fuel > 0);
       var cooking = o.kind === 'stove' && o.user && (function () { var s = C.Game.surv(o.user); return s && s.act && s.act.phase === 'work' && s.act.kind === 'cook'; })();
       if (!lit && !cooking) return;

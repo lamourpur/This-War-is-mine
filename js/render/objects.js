@@ -159,7 +159,7 @@
     ['can_rusted', 16, 0, ['sucre', 'cafe', 'legumes', 'viande']],
     ['wine_bottles_01', 18, 0, ['alcool']],
     ['medical_box', 13, 1, ['bandage', 'medicaments', 'remede']],
-    ['ammo_box', 16, 1, ['munitions', 'pistolet', 'fusil']],
+    ['ammo_box', 16, 1, ['munitions', 'pistolet', 'pistolet_silencieux', 'fusil', 'pieces_armes']],
     ['cardboard_box_01', 20, 1, ['livres', 'cigarettes', 'tabac', 'herbes', 'engrais', 'bijoux', 'filtre']],
     ['plastic_bottle_gallon', 22, 2, ['eau']],
     ['metal_jerrycan', 24, 2, ['carburant']],
@@ -198,6 +198,44 @@
     });
     return true;
   }
+
+  // Un survivant mort au refuge, sous un drap, en attendant d'être enterré
+  D.corpse = function (ctx, r, o, y) {
+    var days = ((C.Game.st && C.Game.st.day) || 0) - (o.since || 0);
+    ctx.fillStyle = 'rgba(40,18,14,' + (days >= 2 ? 0.45 : 0.3) + ')'; ctx.beginPath(); ctx.ellipse(o.x + 6, y - 1, 50, 5, 0, 0, Math.PI * 2); ctx.fill();
+    // Chaussures qui dépassent
+    F(ctx, r, o.x + 40, y - 12, 9, 12, '#2c2926', 0.2); F(ctx, r, o.x + 46, y - 10, 9, 10, '#252220', 0.2);
+    var sheet = [[o.x - 46, y], [o.x - 45, y - 12], [o.x - 38, y - 20], [o.x - 26, y - 21], [o.x - 16, y - 15], [o.x + 4, y - 17], [o.x + 22, y - 19], [o.x + 36, y - 14], [o.x + 44, y - 12], [o.x + 46, y]];
+    P(ctx, r, sheet, '#c4bcaa', 0.6);
+    if (C.Tex && C.Tex.ready) C.Tex.paint(ctx, sheet, 'hessian', { tile: 60, alpha: 0.35, blend: 'multiply' });
+    SK.hatchPoly(ctx, r, sheet, { gap: 5, alpha: 0.14, angle: 0.3 });
+    // Plis du drap et tache
+    SK.line(ctx, r, o.x - 30, y - 18, o.x - 22, y - 4, { w: 0.7, passes: 1, alpha: 0.5 });
+    SK.line(ctx, r, o.x + 6, y - 16, o.x + 16, y - 3, { w: 0.7, passes: 1, alpha: 0.5 });
+    if (days >= 1) SK.stain(ctx, o.x - 6, y - 8, 10, 0.25, '70,40,30');
+    SK.poly(ctx, r, sheet, true, { w: 1.2 });
+    // Mouches, quand on attend trop
+    if (days >= 2) { ctx.fillStyle = '#141312'; for (var i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(o.x - 20 + r.next() * 50, y - 26 - r.next() * 14, 0.9, 0, Math.PI * 2); ctx.fill(); } }
+  };
+  // Souvenir d'un mort : caisse, photo encadrée, bougie, quelques fleurs séchées
+  D.memorial = function (ctx, r, o, y) {
+    var x = o.x;
+    F(ctx, r, x - 16, y - 16, 32, 16, WOOD, 0.4); SK.rect(ctx, r, x - 16, y - 16, 32, 16, { w: 1.1 });
+    SK.line(ctx, r, x - 16, y - 8, x + 16, y - 8, { w: 0.6, passes: 1, alpha: 0.6 });
+    // Cadre photo
+    var fr = [[x - 11, y - 16], [x - 9, y - 40], [x + 7, y - 40], [x + 7, y - 16]];
+    P(ctx, r, fr, '#3b332b', 0.3); SK.poly(ctx, r, fr, true, { w: 1.1 });
+    F(ctx, r, x - 7, y - 37, 11, 17, '#8f877a', 0.2);
+    ctx.fillStyle = 'rgba(40,34,28,0.7)'; ctx.beginPath(); ctx.arc(x - 1.5, y - 31, 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x - 1.5, y - 22, 5, 4, 0, Math.PI, 0); ctx.fill();
+    SK.line(ctx, r, x - 10, y - 36, x + 6, y - 34, { w: 0.9, passes: 1, color: '#1a1714' });   // ruban noir
+    // Bougie
+    F(ctx, r, x + 10, y - 26, 5, 10, '#d8d0bc', 0.2); SK.rect(ctx, r, x + 10, y - 26, 5, 10, { w: 0.8, passes: 1 });
+    ctx.fillStyle = 'rgba(240,190,90,0.9)'; ctx.beginPath(); ctx.ellipse(x + 12.5, y - 30, 1.8, 3.4, 0, 0, Math.PI * 2); ctx.fill();
+    // Fleurs séchées
+    SK.line(ctx, r, x - 14, y - 16, x - 18, y - 28, { w: 0.8, passes: 1 }); SK.line(ctx, r, x - 13, y - 16, x - 13, y - 30, { w: 0.8, passes: 1 });
+    ctx.fillStyle = '#6e5e4a'; ctx.beginPath(); ctx.arc(x - 18, y - 29, 2, 0, Math.PI * 2); ctx.arc(x - 13, y - 31, 2, 0, Math.PI * 2); ctx.fill();
+  };
 
   D.rubble = function (ctx, r, o, y) {
     var x = o.x - o.w / 2;
@@ -1086,6 +1124,29 @@
     // Seau
     P(ctx, r, [[cx + 28, y], [cx + 26, y - 18], [cx + 48, y - 18], [cx + 46, y]], METAL, 0.4);
     SK.poly(ctx, r, [[cx + 28, y], [cx + 26, y - 18], [cx + 48, y - 18], [cx + 46, y]], true, { w: 1 });
+  };
+
+  // Atelier d'armurier : établi métallique, étau, armes en pièces, râtelier
+  D.gunbench = function (ctx, r, o, y) {
+    var x = o.x - o.w / 2, top = y - 42;
+    // Panneau à outils au mur
+    F(ctx, r, x + 8, top - 58, o.w - 16, 40, '#5a5246', 0.3); SK.rect(ctx, r, x + 8, top - 58, o.w - 16, 40, { w: 1.1 });
+    for (var i = 0; i < 6; i++) { var hx = x + 16 + i * 15; SK.line(ctx, r, hx, top - 52, hx + (i % 2 ? 3 : -2), top - 30, { w: 1.4, passes: 1, color: '#2e2b27' }); }
+    // Pistolet et fusil au râtelier
+    P(ctx, r, [[x + o.w - 44, top - 50], [x + o.w - 14, top - 50], [x + o.w - 14, top - 45], [x + o.w - 36, top - 45], [x + o.w - 38, top - 38], [x + o.w - 44, top - 38]], METAL2, 0.2);
+    // Plateau métallique
+    F(ctx, r, x, top, o.w, 9, METAL, 0.4); SK.rect(ctx, r, x, top, o.w, 9, { w: 1.3 });
+    if (C.Tex && C.Tex.ready) C.Tex.paint(ctx, { x: x, y: top, w: o.w, h: 9 }, 'plate', { tile: 50, alpha: 0.5, blend: 'overlay' });
+    legs(ctx, r, x + 2, top + 9, o.w - 4, 33);
+    // Étau
+    F(ctx, r, x + 6, top - 14, 20, 14, METAL2, 0.3); SK.rect(ctx, r, x + 6, top - 14, 20, 14, { w: 1 });
+    SK.line(ctx, r, x + 26, top - 8, x + 34, top - 8, { w: 1.6, passes: 1 });
+    // Culasse démontée, chiffon, boîte de cartouches
+    F(ctx, r, x + 40, top - 5, 26, 5, '#4a4c4e', 0.2); SK.rect(ctx, r, x + 40, top - 5, 26, 5, { w: 0.8, passes: 1 });
+    P(ctx, r, [[x + 70, top], [x + 74, top - 6], [x + 88, top - 5], [x + 90, top]], '#8a8070', 0.5);
+    F(ctx, r, x + o.w - 20, top - 10, 14, 10, '#6a6a4a', 0.3); SK.rect(ctx, r, x + o.w - 20, top - 10, 14, 10, { w: 0.9, passes: 1 });
+    // Caisse militaire dessous
+    F(ctx, r, x + 12, y - 20, 44, 20, '#50543f', 0.3); SK.rect(ctx, r, x + 12, y - 20, 44, 20, { w: 1 });
   };
 
   D.herbshop = function (ctx, r, o, y) {

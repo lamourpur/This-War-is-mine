@@ -179,7 +179,12 @@
       ]) + sec('moral', 'Le moral', [
         'Chaque survivant a ses <b>pensées</b> : ce qu\'il vit, ce qu\'il pense de ce que fait le groupe.',
         'Confort (lits, fauteuil, radio, guitare, chauffage) et bonnes actions le relèvent ; vols, meurtres et refus d\'aider le minent — sauf chez les cyniques.',
-        '<b>Abattu</b>, on travaille mal. <b>Brisé</b>, on refuse tout ; sans réconfort, on part… ou on ne tient pas.'
+        '<b>Abattu</b>, on travaille mal. <b>Brisé</b>, on refuse tout ; sans réconfort, on part… ou on ne tient pas.',
+        'Cliquez sur un survivant abattu : le <b>réconforter</b>, ou lui <b>lire à voix haute</b> (il faut un livre, qui n\'est pas usé).',
+        'Un mort qu\'on laisse au refuge pèse chaque jour davantage : il faut l\'<b>enterrer</b> (plus vite avec une pelle). Son <b>souvenir</b> reste, on peut s\'y recueillir.'
+      ]) + sec('wrench', 'Outils et armes', [
+        'Les outils <b>s\'usent</b> et finissent par casser (barre sous l\'icône dans la réserve).',
+        'L\'<b>atelier d\'armurier</b> (établi niv. 2) les remet à neuf, recharge des munitions, assemble des armes avec des <b>pièces d\'armes</b> (chez les soldats et les bandits) et monte un <b>silencieux</b> sur un pistolet : on l\'entend à peine.'
       ]);
     }],
     ['La nuit', 'moon', function () {

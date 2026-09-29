@@ -21,7 +21,7 @@
     soldat: {
       name: 'Soldat', look: LOOK_SOLDAT, hp: 100, weapon: 'fusil', tool: 'rifle', ammo: 14,
       dmg: [22, 38], acc: 0.62, range: 520, sight: 330, walk: 46, run: 100,
-      loot: { munitions: 4, conserve: 1, cigarettes: 1 },
+      loot: { munitions: 4, conserve: 1, cigarettes: 1, pieces_armes: 1 },
       // Conversation : réplique du survivant, puis réponse du soldat
       talk: [
         ['Bonsoir. Je ne cherche pas d\'ennuis.', 'Alors restez de votre côté de la ligne rouge, et on s\'entendra.'],
@@ -224,7 +224,7 @@
       // Sous-sol : chaufferie (par le trou) puis armurerie
       { key: 'chaufferie', kind: 'cache', variant: 'boite_outils', label: 'Caisse à outils', f: 1, x: 2070, w: 70, h: 36, loot: { composants: 2, pieces_meca: 1 } },
       { key: 'ferraille', kind: 'rubble', label: 'Ferraille effondrée', f: 1, x: 2150, w: 90, h: 44, work: 60, block: true, loot: { composants: 3, pieces_meca: 1 } },
-      { key: 'caisse_munitions', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de munitions', f: 1, x: 2300, w: 90, h: 50, owner: 'armee', loot: { munitions: 6, pieces_elec: 2 } },
+      { key: 'caisse_munitions', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de munitions', f: 1, x: 2300, w: 90, h: 50, owner: 'armee', loot: { munitions: 6, pieces_elec: 2, pieces_armes: 2 } },
       { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 1, x: 2420, w: 60, h: 48, owner: 'armee', locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil: 1, munitions: 8, gilet: 1, casque: 1 } },
       { key: 'lit_camp', kind: 'bed', f: 1, x: 2530, metal: true, deco: true },
       { key: 'soldat_cave', kind: 'guard', type: 'soldat', f: 1, x: 2530, facing: 1, attitude: 'neutral', group: 'garnison', sleep: true },

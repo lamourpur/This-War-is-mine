@@ -36,7 +36,9 @@
       ids.forEach(function (id) {
         var it = C.ITEMS[id];
         var hot = C.Market && C.Market.mult(id) > 1;
-        html += '<div class="inv-item' + (hot ? ' hot' : '') + '" title="' + U.esc(it.desc) + (hot ? ' — Très recherché en ce moment !' : '') + '"><span class="inv-art">' + C.ItemArt.img(id, 52) + '</span><span class="inv-name">' + it.name + '</span><span class="inv-qty">' + inv[id] + '</span></div>';
+        var wl = C.WEAR_MAX[id] ? G().wearLeft(id) : null;
+        var wtxt = wl != null ? ' — État de l\'exemplaire en service : ' + Math.round(wl * 100) + ' %' + (wl < 0.3 ? ' (va bientôt casser ; l\'atelier d\'armurier peut le remettre en état)' : '') : '';
+        html += '<div class="inv-item' + (hot ? ' hot' : '') + '" title="' + U.esc(it.desc + wtxt) + (hot ? ' — Très recherché en ce moment !' : '') + '"><span class="inv-art">' + C.ItemArt.img(id, 52) + (wl != null ? '<i class="inv-wear' + (wl < 0.3 ? ' low' : '') + '" style="width:' + Math.round(wl * 100) + '%"></i>' : '') + '</span><span class="inv-name">' + it.name + '</span><span class="inv-qty">' + inv[id] + '</span></div>';
       });
       html += '</div></div>';
     });

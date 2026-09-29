@@ -174,6 +174,12 @@
       G().moralAll(cause === 'suicide' ? -25 : -22, { bad: true, key: cause === 'suicide' ? 'suicide' : 'death', vars: { n: n } });
       G().alive().forEach(function (o) { o.grief = 3; o.griefFor = n; });
     }
+    // Mort au refuge : le corps reste là tant qu'on ne l'a pas enterré
+    var here = G().st;
+    if (here.phase !== 'explore' && cause !== 'parti' && cause !== 'pillage' && C.FLOORS[s.f] && !C.FLOORS[s.f].hidden) {
+      G().spawnObject({ kind: 'corpse', sid: s.id, name: s.name, female: !!(s.look && s.look.female), since: here.day,
+        f: s.f, x: C.Nav.clampX(s.f, s.x), w: 96, h: 22 });
+    }
     if (C.Audio.ready) C.Audio.sfx.death();
     if (C.UI) {
       C.UI.buildCards();

@@ -24,8 +24,10 @@
     bois: 5, composants: 10, pieces_meca: 5, pieces_elec: 5, carburant: 3, filtre: 3, engrais: 5, herbes: 10, tabac: 5, livres: 5,
     bandage: 5, medicaments: 5, remede: 5,
     cafe: 5, cigarettes: 10, alcool: 3,
-    munitions: 20, bijoux: 10, montre: 5, diamants: 5
+    munitions: 20, bijoux: 10, montre: 5, diamants: 5, pieces_armes: 5
   };
+  // Usure : nombre d'utilisations avant qu'un outil casse (Game.wear)
+  C.WEAR_MAX = { pied_de_biche: 12, passe_partout: 6, scie: 7, pelle: 16, hachette: 26, couteau: 26 };
   C.stackOf = function (id) {
     if (C.STACK[id]) return C.STACK[id];
     var it = C.ITEMS[id];
@@ -46,6 +48,7 @@
     composants: { name: 'Composants',     cat: 'materiaux', w: 1, v: 3,  ico: '✣', desc: 'Vis, clous, tuyaux, bouts de métal. Base de presque toutes les fabrications.' },
     pieces_meca:{ name: 'Pièces mécaniques', cat: 'materiaux', w: 1, v: 9, ico: '⚙', desc: 'Engrenages, ressorts, roulements. Rares et précieux.' },
     pieces_elec:{ name: 'Pièces électroniques', cat: 'materiaux', w: 1, v: 11, ico: '⌁', desc: 'Circuits, fils, transistors. Nécessaires pour les appareils.' },
+    pieces_armes: { name: 'Pièces d\'armes', cat: 'materiaux', w: 1, v: 10, ico: '⚙', desc: 'Culasses, ressorts, canons, percuteurs… De quoi réparer ou assembler une arme à l\'atelier d\'armurier.' },
     carburant:  { name: 'Carburant',      cat: 'materiaux', w: 1, v: 8,  ico: '▮', desc: 'Brûle longtemps dans le chauffage.' },
     filtre:     { name: 'Filtre',         cat: 'materiaux', w: 1, v: 6,  ico: '◎', desc: 'Filtre à eau. Améliore le collecteur de pluie.' },
     engrais:    { name: 'Engrais',        cat: 'materiaux', w: 1, v: 5,  ico: '⋰', desc: 'Nécessaire pour installer un potager ou un jardin d\'herbes.' },
@@ -76,6 +79,7 @@
     fusil:      { name: 'Fusil de chasse',cat: 'armes', w: 3, v: 55, ico: '═', weapon: 4, ammo: true, desc: 'Arme à feu puissante. Nécessite des munitions.' },
     fusil_pompe: { name: 'Fusil à pompe',  cat: 'armes', w: 3, v: 60, ico: '╤', weapon: 4.5, ammo: true, desc: 'Dévastateur de près, inutile de loin. Très bruyant. Nécessite des munitions.' },
     fusil_assaut: { name: 'Fusil d\'assaut', cat: 'armes', w: 3, v: 90, ico: '╦', weapon: 5, ammo: true, desc: 'Arme militaire : tire vite et loin. Rare. Nécessite des munitions.' },
+    pistolet_silencieux: { name: 'Pistolet silencieux', cat: 'armes', w: 2, v: 48, ico: '⌐', weapon: 3, ammo: true, desc: 'Un pistolet muni d\'un silencieux artisanal : on l\'entend à peine, mais il est un peu moins précis. Nécessite des munitions.' },
     munitions:  { name: 'Munitions',      cat: 'armes', w: 1, v: 3,  ico: '⁞', desc: 'Cartouches et balles.' },
     casque:     { name: 'Casque militaire', cat: 'armes', w: 2, v: 25, ico: '◓', armor: true, desc: 'Protège la tête : un peu moins de blessures au combat. Se porte avec le gilet.' },
     gilet:      { name: 'Gilet pare-balles', cat: 'armes', w: 3, v: 40, ico: '⛨', armor: true, desc: 'Réduit fortement les blessures lors du pillage.' },
@@ -92,13 +96,13 @@
   // Formes au singulier pour les quantités de 1
   var SINGULAR = {
     legumes: 'légume', composants: 'composant', pieces_meca: 'pièce mécanique', pieces_elec: 'pièce électronique',
-    herbes: 'herbe', livres: 'livre', medicaments: 'médicament', cigarettes: 'cigarette', munitions: 'munition',
+    herbes: 'herbe', livres: 'livre', pieces_armes: 'pièce d\'arme', medicaments: 'médicament', cigarettes: 'cigarette', munitions: 'munition',
     bijoux: 'bijou', repas: 'repas chaud', filtre: 'filtre', diamants: 'diamant'
   };
   // Pluriels des noms donnés au singulier
   var PLURAL = {
     conserve: 'conserves', bandage: 'bandages', filtre: 'filtres', montre: 'montres en or', couteau: 'couteaux',
-    pistolet: 'pistolets', fusil: 'fusils de chasse', fusil_pompe: 'fusils à pompe', fusil_assaut: 'fusils d\'assaut', casque: 'casques militaires', pelle: 'pelles', hachette: 'hachettes', scie: 'scies à métaux',
+    pistolet: 'pistolets', pistolet_silencieux: 'pistolets silencieux', fusil: 'fusils de chasse', fusil_pompe: 'fusils à pompe', fusil_assaut: 'fusils d\'assaut', casque: 'casques militaires', pelle: 'pelles', hachette: 'hachettes', scie: 'scies à métaux',
     pied_de_biche: 'pieds-de-biche', gilet: 'gilets pare-balles', remede: 'remèdes aux plantes', repas: 'repas chauds'
   };
   // « 3 bois », « 1 livre », « 2 livres », « 2 conserves »

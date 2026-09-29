@@ -62,7 +62,7 @@
     var d = 0;
     var avail = {};
     for (var k in st.inventory) avail[k] = st.inventory[k] - ((reservedItems && reservedItems[k]) || 0);
-    var weapons = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'hachette', 'couteau'].filter(function (w) { return avail[w] > 0; });
+    var weapons = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux', 'hachette', 'couteau'].filter(function (w) { return avail[w] > 0; });
     var ammo = avail.munitions || 0;
     var pool = [];
     weapons.forEach(function (w) { for (var i = 0; i < avail[w]; i++) pool.push(w); });
@@ -437,6 +437,17 @@
       G().moralAll(-8, { bad: true, key: 'horvat' });
       st.flags.horvat = 0;
     }
+    // Un mort qu'on n'a pas enterré pèse chaque jour davantage
+    st.objects.filter(function (o) { return o.kind === 'corpse'; }).forEach(function (o) {
+      var days = st.day - (o.since || st.day), n = (o.name || '').split(' ')[0];
+      if (days < 1) return;
+      G().moralAll(-(3 + Math.min(days, 4)), { bad: true, key: 'corpse', vars: { n: n } });
+      add('home', days >= 2 ? 'Le corps de ' + n + ' est toujours au refuge. L\'odeur envahit tout, les mouches arrivent. Il faut l\'enterrer.' : 'Le corps de ' + n + ' est toujours là, sous son drap. Personne n\'arrive à dormir.', 'bad');
+      if (days >= 3) {
+        var v = C.R.pick(G().present());
+        if (v) { v.sick = Math.min(100, v.sick + 12); add('home', first(v) + ' est tombé' + (v.look && v.look.female ? 'e' : '') + ' malade : le corps laissé au refuge.', 'bad'); }
+      }
+    });
     // Conséquences différées d'un vol pendant une exploration
     if (st.flags.later && st.flags.later.length) {
       st.flags.later = st.flags.later.filter(function (lt) {

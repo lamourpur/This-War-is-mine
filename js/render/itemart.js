@@ -147,6 +147,18 @@
       // ressort
       for (var k = 0; k < 6; k++) SK.poly(ctx, r, ell(52, 12 + k * 4, 6, 2).slice(0, 14), false, { w: 1.6, passes: 1, color: INK });
     },
+    pieces_armes: function () {
+      // Culasse, canon court et ressort de chargeur
+      rot(30, 30, -0.35, function () {
+        shape(rect(8, 22, 34, 9), '#5c5e60', { from: 0.3, alpha: 0.45 });
+        [14, 19, 24].forEach(function (x) { line(x, 23, x, 30, 0.9, W3); });
+        shape(rect(42, 24, 14, 5), '#4a4c4e', { shade: false, w: 1.5 });
+      });
+      shape([[14, 42], [30, 42], [30, 58], [16, 58]], '#6b5140', { from: 0.5 });
+      shape(rect(34, 44, 8, 14), '#5c5e60', { shade: false, w: 1.4 });
+      for (var k = 0; k < 5; k++) SK.poly(ctx, r, ell(52, 38 + k * 4, 6, 2).slice(0, 14), false, { w: 1.5, passes: 1, color: INK });
+      dot(24, 34, 1.6, INK);
+    },
     pieces_elec: function () {
       var board = rect(10, 18, 44, 32);
       shape(board, '#8e9a74', { from: 0.6, alpha: 0.35 });
@@ -341,6 +353,12 @@
       SK.poly(ctx, r, [[28, 34], [30, 40], [36, 40]], false, { w: 1.6, passes: 1, color: INK });
       [14, 20, 26].forEach(function (x) { line(x, 24, x, 30, 0.9, W3); });
       shape(rect(49, 18, 3, 4), '#5c5e60', { shade: false, w: 1.2 });
+    },
+    pistolet_silencieux: function () {
+      D.pistolet();
+      // Silencieux vissé au bout du canon
+      shape(rect(50, 21, 12, 7), '#3e4042', { shade: false, w: 1.6 });
+      [54, 58].forEach(function (x) { line(x, 21, x, 28, 0.8, W3); });
     },
     fusil: function () {
       rot(32, 32, -0.5, function () {

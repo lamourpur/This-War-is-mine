@@ -40,7 +40,8 @@
     fusil_assaut: { name: 'fusil d\'assaut', tool: 'rifle', dmg: [40, 58], acc: 0.84, range: 680, time: 0.6, loud: 1.2 },
     fusil: { name: 'fusil', tool: 'rifle', dmg: [55, 80], acc: 0.86, range: 620, time: 1.7 },
     fusil_pompe: { name: 'fusil à pompe', tool: 'rifle', dmg: [70, 110], acc: 0.9, range: 300, time: 1.6, loud: 1.3 },
-    pistolet: { name: 'pistolet', tool: 'pistol', dmg: [34, 50], acc: 0.8, range: 500, time: 1.1 }
+    pistolet: { name: 'pistolet', tool: 'pistol', dmg: [34, 50], acc: 0.8, range: 500, time: 1.1 },
+    pistolet_silencieux: { name: 'pistolet silencieux', tool: 'pistol', dmg: [30, 46], acc: 0.72, range: 420, time: 1.2, loud: 0.22 }
   };
   var REACH = 46;
 
@@ -55,6 +56,7 @@
     if (G().count('fusil') > 0) return 'fusil';
     if (G().count('fusil_pompe') > 0) return 'fusil_pompe';
     if (G().count('pistolet') > 0) return 'pistolet';
+    if (G().count('pistolet_silencieux') > 0) return 'pistolet_silencieux';
     return null;
   };
 
@@ -64,7 +66,7 @@
   K.MELEE_ORDER = ['hachette', 'couteau', 'pied_de_biche', 'pelle'];
   K.weapons = function () {
     var out = [];
-    ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet'].forEach(function (id) {
+    ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux'].forEach(function (id) {
       if (G().count(id) > 0) out.push({ id: id, gun: true, name: K.GUNS[id].name, ok: G().count('munitions') > 0, why: G().count('munitions') > 0 ? '' : 'pas de munitions' });
     });
     K.MELEE_ORDER.forEach(function (id) { if (G().count(id) > 0) out.push({ id: id, name: K.MELEE[id].name, ok: true }); });
@@ -725,6 +727,8 @@
       if (a.cd > 0) return;
       a.cd = def.time;
       s.fatigue = Math.min(100, s.fatigue + 0.6);
+      // Chaque coup use l'arme (et elle peut casser en plein combat)
+      if (a.p.weapon && a.p.weapon !== 'poings' && G().wear(a.p.weapon, 1, s) && G().count(a.p.weapon) < 1) { a.p.weapon = K.bestMelee(); def = K.MELEE[a.p.weapon] || K.MELEE.poings; }
       // Attaque furtive : par-derrière, endormi ou depuis une cachette
       if (!a.struck && K.unaware(g, s)) {
         a.struck = true;
@@ -872,12 +876,12 @@
     }
     m.entries.push(entry(lbl, sub, null, confirmNeutral(start('attack', { weapon: mw, tool: md.tool, fromHide: K.isHidden(s) })), mw === 'poings' ? null : mw));
     var gun = K.isGun(held) ? held : K.bestGun();
-    var anyGun = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet'].filter(function (x) { return G().count(x) > 0; })[0];
+    var anyGun = ['fusil_assaut', 'fusil', 'fusil_pompe', 'pistolet', 'pistolet_silencieux'].filter(function (x) { return G().count(x) > 0; })[0];
     if (gun || anyGun) {
       var gd = K.GUNS[gun || anyGun];
       var d = Math.abs(g.x - s.x);
       var why = !gun ? 'Plus de munitions' : g.f !== s.f ? 'Pas au même étage' : d > gd.range ? 'Trop loin' : !C.Nav.clear(s.f, s.x, g.x) ? 'Pas de ligne de mire' : null;
-      m.entries.push(entry('Tirer (' + gd.name + ')', G().count('munitions') + ' munition' + (G().count('munitions') > 1 ? 's' : '') + ' · très bruyant', why, confirmNeutral(start('shoot', { weapon: gun, tool: gd.tool })), gun || 'pistolet'));
+      m.entries.push(entry('Tirer (' + gd.name + ')', G().count('munitions') + ' munition' + (G().count('munitions') > 1 ? 's' : '') + ((gd.loud || 1) < 0.5 ? ' · presque silencieux' : ' · très bruyant'), why, confirmNeutral(start('shoot', { weapon: gun, tool: gd.tool })), gun || 'pistolet'));
     }
     return m;
   };

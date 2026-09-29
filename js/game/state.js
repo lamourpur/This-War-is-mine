@@ -114,6 +114,8 @@
       switch (o.kind) {
         case 'frontdoor': return o.level ? (o.level === 1 ? 'Porte barricadée' : 'Porte blindée') : 'Porte d\'entrée';
         case 'stock': return 'Réserve';
+        case 'corpse': return 'Corps de ' + (o.name || '').split(' ')[0];
+        case 'memorial': return 'Souvenir de ' + (o.name || '').split(' ')[0];
         case 'rubble': return o.block ? 'Éboulis' : 'Gravats';
         case 'door': return o.label ? o.label + (o.open ? ' (ouverte)' : '') : o.open ? 'Porte forcée' : 'Porte verrouillée';
         case 'note': return o.label || 'Papier';
@@ -175,6 +177,30 @@
       }
       Game.invDirty();
       if (!silent && C.UI) C.UI.refreshStockBadge && C.UI.refreshStockBadge();
+    },
+    // Usure des outils (comme dans le jeu d'origine : ils finissent par casser).
+    // st.flags.wear[id] = usure de l'exemplaire en cours ; partagée avec
+    // l'exploration (même objet flags). Renvoie true si l'outil a cassé.
+    wear: function (id, n, s) {
+      var max = C.WEAR_MAX[id];
+      if (!max || Game.count(id) < 1) return false;
+      var w = Game.st.flags.wear = Game.st.flags.wear || {};
+      w[id] = (w[id] || 0) + (n || 1);
+      if (w[id] < max) return false;
+      w[id] = 0;
+      var o = {}; o[id] = 1; Game.removeItems(o);
+      var nm = C.ITEMS[id].name, fem = /^(pelle|scie|hachette)$/.test(id);
+      var txt = nm + ' ' + (fem ? 'cassée' : 'cassé') + ' !';
+      if (s && C.Render && C.Render.pop) C.Render.pop(s, [{ item: id, n: -1 }], txt, 'warn');
+      Game.log((s ? s.name.split(' ')[0] + ' : ' : '') + nm.toLowerCase() + ' ' + (fem ? 's\'est cassée' : 's\'est cassé') + ' à force de servir.', 'bad');
+      if (C.Audio && C.Audio.ready && C.Audio.sfx.deny) C.Audio.sfx.deny();
+      return true;
+    },
+    // État de l'outil en cours (1 = neuf)
+    wearLeft: function (id) {
+      var max = C.WEAR_MAX[id]; if (!max) return 1;
+      var w = (Game.st.flags.wear || {})[id] || 0;
+      return Math.max(0, 1 - w / max);
     },
     removeItems: function (items) {
       var inv = Game.st.inventory;

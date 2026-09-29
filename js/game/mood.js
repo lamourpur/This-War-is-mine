@@ -18,7 +18,7 @@
     if (!pool || !pool.length) return null;
     var txt = pool[Math.floor(Math.random() * pool.length)];
     vars = vars || {};
-    return txt.replace(/\{n\}/g, vars.n || '').replace(/\{s\}/g, vars.s || (s ? first(s) : ''));
+    return txt.replace(/\{n\}/g, vars.n || '').replace(/\{s\}/g, vars.s || (s ? first(s) : '')).replace(/\(e\)/g, s && s.look && s.look.female ? 'e' : '');
   };
 
   // Ajoute une pensée à la fiche du survivant

@@ -37,6 +37,8 @@
       desc: 'Se reposer, lire. Le seul coin de confort du refuge.' },
     radio:     { name: 'Radio', w: 56, h: 66, small: true,
       desc: 'Les nouvelles de la ville, la météo… et un peu de musique.' },
+    gunbench:  { name: 'Atelier d\'armurier', w: 110, h: 74,
+      desc: 'Un établi d\'armurier : remettre les outils en état, fabriquer des munitions, assembler des armes à partir de pièces, monter un silencieux.' },
     guitar:    { name: 'Guitare', w: 40, h: 96, small: true,
       desc: 'Quelqu\'un joue, et pour un moment tout le refuge oublie la guerre. Remonte le moral de ceux qui écoutent.' }
   };
@@ -57,7 +59,6 @@
     { id: 'couteau',       tab: 'outils', lvl: 1, cost: { pieces_meca: 1, composants: 2 }, time: 45, give: { couteau: 1 } },
     { id: 'hachette',      tab: 'outils', lvl: 1, cost: { bois: 2, pieces_meca: 2 }, time: 60, give: { hachette: 1 } },
     { id: 'scie',          tab: 'outils', lvl: 2, cost: { pieces_meca: 3, composants: 2 }, time: 90, give: { scie: 1 } },
-    { id: 'munitions',     tab: 'outils', lvl: 3, cost: { pieces_meca: 1, composants: 3 }, time: 90, give: { munitions: 5 } },
 
     // ---- Mobilier & stations
     { id: 'b_bed',        tab: 'mobilier', lvl: 1, cost: { bois: 6, composants: 3 }, time: 90,  build: 'bed' },
@@ -71,6 +72,7 @@
     { id: 'b_still',      tab: 'mobilier', lvl: 2, cost: { pieces_meca: 4, composants: 5, bois: 3 }, time: 150, build: 'still' },
     { id: 'b_herbshop',   tab: 'mobilier', lvl: 2, cost: { bois: 5, composants: 4 }, time: 120, build: 'herbshop' },
     { id: 'b_radio',      tab: 'mobilier', lvl: 2, cost: { pieces_elec: 3, composants: 3 }, time: 120, build: 'radio' },
+    { id: 'b_gunbench',   tab: 'mobilier', lvl: 2, cost: { pieces_meca: 4, composants: 5, bois: 3 }, time: 150, build: 'gunbench' },
     { id: 'b_guitar',     tab: 'mobilier', lvl: 2, cost: { bois: 4, composants: 5 }, time: 90, build: 'guitar' },
 
     // ---- Divers
@@ -102,6 +104,15 @@
       { id: 'remede',   name: 'Remède aux plantes', cost: { herbes: 3, eau: 1 }, give: { remede: 1 }, time: 60 },
       { id: 'bandage_h',name: 'Bandage aux plantes', cost: { herbes: 2, composants: 1 }, give: { bandage: 1 }, time: 45 },
       { id: 'cigs',     name: 'Rouler des cigarettes', cost: { tabac: 2 }, give: { cigarettes: 3 }, time: 30 }
+    ],
+    // Atelier d'armurier
+    gunbench: [
+      { id: 'entretien', name: 'Entretenir les outils (tout remettre à neuf)', cost: { composants: 2, pieces_meca: 1 }, give: {}, time: 60, maintain: true },
+      { id: 'munitions', name: 'Recharger des munitions', cost: { pieces_meca: 1, composants: 2 }, give: { munitions: 8 }, time: 60 },
+      { id: 'silencieux', name: 'Monter un silencieux sur un pistolet', cost: { pistolet: 1, pieces_armes: 1, composants: 2 }, give: { pistolet_silencieux: 1 }, time: 90 },
+      { id: 'mk_pistolet', name: 'Assembler un pistolet', cost: { pieces_armes: 3, pieces_meca: 2 }, give: { pistolet: 1 }, time: 150 },
+      { id: 'mk_fusil', name: 'Assembler un fusil de chasse', cost: { pieces_armes: 4, pieces_meca: 2, bois: 2 }, give: { fusil: 1 }, time: 180 },
+      { id: 'mk_pompe', name: 'Assembler un fusil à pompe', cost: { pieces_armes: 5, pieces_meca: 3 }, give: { fusil_pompe: 1 }, time: 200 }
     ],
     still: [
       { id: 'gnole', name: 'Distiller de la gnôle (6 h)', cost: { sucre: 2, eau: 2 }, give: { alcool: 1 }, time: 20, brew: 360 }

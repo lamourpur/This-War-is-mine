@@ -18,6 +18,8 @@ window.runBot = function (group, opts) {
       if (G.count('medicaments')) { C.Actions.start(s, null, 'medicate', { item: 'medicaments' }); return; }
       if (G.count('remede')) { C.Actions.start(s, null, 'medicate', { item: 'remede' }); return; }
     }
+    const corpse = st.objects.find(o => o.kind === 'corpse' && C.Nav.objectReachable(o) && !st.survivors.some(x => x.act && x.act.uid === o.uid));
+    if (corpse && s.fatigue < 70) { C.Actions.start(s, corpse, 'bury'); return; }
     const heater = st.objects.find(o => o.kind === 'heater');
     if (heater && st.weather.out < 12 && (heater.fuel || 0) < 300 && !heater.user) {
       if (G.count('bois') >= 3) { C.Actions.start(s, heater, 'fuel', { item: 'bois', n: 3 }); return; }

@@ -508,7 +508,7 @@
       { key: 'ruth', kind: 'npc', npc: 'ruth', f: 2, x: 1100, w: 40, h: 90, facing: -1 },
       { key: 'bureau', kind: 'furniture', variant: 'commode', f: 2, x: 1500, w: 64, h: 60, work: 60, owner: 'hopital', loot: { bois: 3, livres: 2 } },
       // 2e étage : le plafond s'est effondré au milieu du couloir
-      { key: 'paquetage', kind: 'cache', variant: 'valise', f: 3, x: 1600, w: 62, h: 36, loot: { munitions: 4, cigarettes: 2, couteau: 1 } },
+      { key: 'paquetage', kind: 'cache', variant: 'valise', f: 3, x: 1600, w: 62, h: 36, loot: { munitions: 4, cigarettes: 2, couteau: 1, pieces_armes: 1 } },
       { key: 'eboulis', kind: 'rubble', f: 3, x: 1250, w: 104, h: 150, block: true, work: 150, loot: { bois: 3, composants: 3 } },
       { key: 'archives', kind: 'cache', variant: 'etagere', f: 3, x: 800, w: 70, h: 104, loot: { livres: 3, filtre: 1 } },
       // Toit
@@ -712,7 +712,7 @@
       { key: 'recoin_couloir', kind: 'hide', f: 2, x: 1150, w: 46, h: 108 },
       { key: 'porte_12', kind: 'door', label: 'Porte de la chambre 12', f: 2, x: 1200, w: 30, h: 112, tools: ['passe_partout', 'pied_de_biche'] },
       { key: 'lit_12', kind: 'bed', f: 2, x: 1290, metal: true, deco: true },
-      { key: 'chambre_12', kind: 'cache', variant: 'armoire', label: 'Chambre 12', f: 2, x: 1440, w: 58, h: 112, owner: 'armee', loot: { munitions: 8, medicaments: 1, cigarettes: 2 } },
+      { key: 'chambre_12', kind: 'cache', variant: 'armoire', label: 'Chambre 12', f: 2, x: 1440, w: 58, h: 112, owner: 'armee', loot: { munitions: 8, medicaments: 1, cigarettes: 2, pieces_armes: 1 } },
       { key: 'soldat_etage', kind: 'guard', type: 'soldat', f: 2, x: 1700, facing: -1, attitude: 'neutral', group: 'hotel', patrol: [1620, 1840] },
       // Suites
       { key: 'suite_coffre', kind: 'cache', variant: 'coffre', label: 'Coffre de la suite', f: 3, x: 520, w: 60, h: 48, owner: 'armee', locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } },
@@ -809,7 +809,7 @@
       { key: 'bureau', kind: 'cache', variant: 'bureau_metal', label: 'Bureau du gérant', f: 2, x: 2330, w: 110, h: 50, loot: { livres: 2, composants: 2 } },
       { key: 'recoin_bureau', kind: 'hide', f: 2, x: 2440, w: 46, h: 108 },
       { key: 'chef', kind: 'guard', type: 'bandit_arme', f: 2, x: 2300, facing: 1, attitude: 'hostile', group: 'bande', patrol: [2250, 2520] },
-      { key: 'butin_bande', kind: 'cache', variant: 'coffre', label: 'Butin de la bande', f: 2, x: 2535, w: 60, h: 48, owner: 'bande', loot: { alcool: 1, cigarettes: 3, conserve: 2, cafe: 1 } },
+      { key: 'butin_bande', kind: 'cache', variant: 'coffre', label: 'Butin de la bande', f: 2, x: 2535, w: 60, h: 48, owner: 'bande', loot: { alcool: 1, cigarettes: 3, conserve: 2, cafe: 1, pieces_armes: 1 } },
       // Toit : cartons, verrière, guetteur au feu
       { key: 'cartons', kind: 'cache', variant: 'caisse', label: 'Cartons', f: 3, x: 900, w: 78, h: 48, loot: { legumes: 2, eau: 2 } },
       { key: 'eboulis', kind: 'rubble', label: 'Tôles effondrées', f: 3, x: 1800, w: 104, h: 60, block: true, work: 150, loot: { bois: 3, composants: 2 } },
@@ -950,7 +950,7 @@
       { key: 'epave2', kind: 'cache', variant: 'epave', label: 'Camionnette démontée', f: 0, x: 1690, w: 150, h: 60, owner: 'pilleur', loot: { pieces_meca: 3, carburant: 2, pieces_elec: 1 } },
       // Fosse (par l'échelle)
       { key: 'fosse', kind: 'cache', variant: 'caisse', label: 'Fosse de vidange', f: 1, x: 1460, w: 78, h: 48, loot: { carburant: 1, composants: 2 } },
-      { key: 'armoire_meca', kind: 'cache', variant: 'coffre', label: 'Armoire à outils fermée', f: 1, x: 1100, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_meca: 3, munitions: 6, pied_de_biche: 1 } },
+      { key: 'armoire_meca', kind: 'cache', variant: 'coffre', label: 'Armoire à outils fermée', f: 1, x: 1100, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { pieces_meca: 3, munitions: 6, pied_de_biche: 1, pieces_armes: 1 } },
       // Bureau
       { key: 'bureau', kind: 'cache', variant: 'armoire', label: 'Bureau du garage', f: 2, x: 830, w: 58, h: 112, loot: { conserve: 1, bois: 2, pieces_elec: 1 } },
       { key: 'recoin2', kind: 'hide', f: 2, x: 910, w: 46, h: 108 },
@@ -1269,7 +1269,7 @@
       { key: 'abri1', kind: 'hide', variant: 'sacs', label: 'Derrière les sacs de sable', f: 0, x: 1420, w: 90, h: 60 },
       { key: 'epave_ambulance', kind: 'cache', variant: 'epave', label: 'Ambulance abandonnée', f: 0, x: 1570, w: 150, h: 60, loot: { medicaments: 2, bandage: 2, pieces_elec: 1 } },
       { key: 'abri2', kind: 'hide', variant: 'voiture', label: 'Derrière le char', f: 0, x: 1740, w: 90, h: 70 },
-      { key: 'epave_militaire', kind: 'cache', variant: 'epave', label: 'Jeep militaire', f: 0, x: 1880, w: 150, h: 60, loot: { munitions: 8, carburant: 2, pieces_meca: 2 } },
+      { key: 'epave_militaire', kind: 'cache', variant: 'epave', label: 'Jeep militaire', f: 0, x: 1880, w: 150, h: 60, loot: { munitions: 8, carburant: 2, pieces_meca: 2, pieces_armes: 1 } },
       // Passerelle
       { key: 'abri_panneau', kind: 'hide', variant: 'palettes', label: 'Derrière le panneau publicitaire', f: 6, x: 1450, w: 90, h: 92 },
       // Métro : les réfugiés, la rame, le tunnel
@@ -1285,7 +1285,7 @@
       { key: 'balcon', kind: 'cache', variant: 'armoire', label: 'Appartement du coin', f: 2, x: 2580, w: 58, h: 112, loot: { conserve: 1, pieces_meca: 2 } },
       // Le nid du tireur
       { key: 'porte_nid', kind: 'door', label: 'Porte barricadée', f: 3, x: 2300, w: 30, h: 112, tools: ['pied_de_biche', 'passe_partout'] },
-      { key: 'nid', kind: 'cache', variant: 'caisse_mil', label: 'Affaires du tireur', f: 3, x: 2430, w: 90, h: 50, loot: { conserve: 2, cigarettes: 3, munitions: 6 } },
+      { key: 'nid', kind: 'cache', variant: 'caisse_mil', label: 'Affaires du tireur', f: 3, x: 2430, w: 90, h: 50, loot: { conserve: 2, cigarettes: 3, munitions: 6, pieces_armes: 2 } },
       { key: 'tireur', kind: 'guard', type: 'tireur', f: 3, x: 2700, facing: -1, attitude: 'hostile', group: 'tireur' }
     ]
   });
@@ -1360,14 +1360,14 @@
       { key: 'recoin_cave', kind: 'hide', f: 1, x: 1580, w: 46, h: 108 },
       { key: 'armurerie', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'armurerie', f: 1, x: 1200, w: 60, h: 48, locked: true, tools: ['pied_de_biche', 'passe_partout'], loot: { fusil_assaut: 1, munitions: 12, gilet: 1, casque: 1 } },
       // Étage
-      { key: 'caisse_etage', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de munitions', f: 2, x: 1450, w: 90, h: 50, loot: { munitions: 6, conserve: 2 } },
+      { key: 'caisse_etage', kind: 'cache', variant: 'caisse_mil', label: 'Caisse de munitions', f: 2, x: 1450, w: 90, h: 50, loot: { munitions: 6, conserve: 2, pieces_armes: 2 } },
       { key: 'etage', kind: 'guard', type: 'soldat', f: 2, x: 1600, facing: 1, attitude: 'hostile', group: 'poste', patrol: [1350, 1900] },
       { key: 'recoin_etage', kind: 'hide', f: 2, x: 1960, w: 46, h: 108 },
       { key: 'lit_officier', kind: 'bed', f: 2, x: 2100, metal: true, deco: true },
       { key: 'bureau_officier', kind: 'cache', variant: 'coffre', label: 'Coffre de l\'officier', f: 2, x: 2250, w: 60, h: 48, locked: true, tools: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 2, cafe: 2, cigarettes: 3, pistolet: 1 } },
       // Toit
       { key: 'recoin_toit', kind: 'hide', variant: 'sacs', label: 'Derrière les sacs de sable', f: 3, x: 1160, w: 90, h: 60 },
-      { key: 'caisse_toit', kind: 'cache', variant: 'caisse_mil', f: 3, x: 1400, w: 90, h: 50, loot: { carburant: 2, munitions: 4 } },
+      { key: 'caisse_toit', kind: 'cache', variant: 'caisse_mil', f: 3, x: 1400, w: 90, h: 50, loot: { carburant: 2, munitions: 4, pieces_armes: 1 } },
       { key: 'guetteur', kind: 'guard', type: 'soldat', f: 3, x: 1700, facing: -1, attitude: 'hostile', group: 'poste' },
       { key: 'caisse_radio', kind: 'cache', variant: 'caisse_mil', label: 'Caisse du poste radio', f: 3, x: 2050, w: 90, h: 50, loot: { pieces_elec: 3, composants: 3 } }
     ]

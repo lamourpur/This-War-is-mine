@@ -34,7 +34,7 @@
       out.push({ icon: 'help', t: 'Jamais exploré. Vous ne savez pas ce qui vous attend là-bas.', k: 'info' });
       out.push({ icon: l.residents === 'aucun' ? 'pack' : l.residents === 'civils' ? 'user' : 'shield', t: 'On dit : ' + C.RESIDENT_LABELS[l.residents].toLowerCase() + ' · ' + C.DANGER_LABELS[l.danger].toLowerCase() + '.', k: l.danger >= 2 ? 'bad' : 'info' });
       if (l.stash) out.push({ icon: 'alert', t: 'Une réserve y serait fermée à clé (' + toolsText(l.stash.tool) + ').', k: 'info', need: l.stash.tool });
-      if (l.residents === 'militaires' || l.residents === 'bandits') out.push({ icon: 'shield', t: 'Des hommes armés : une arme, des munitions et un gilet peuvent sauver la vie.', k: 'bad', need: ['pistolet', 'fusil', 'fusil_pompe', 'fusil_assaut', 'munitions', 'gilet', 'casque', 'couteau', 'hachette'] });
+      if (l.residents === 'militaires' || l.residents === 'bandits') out.push({ icon: 'shield', t: 'Des hommes armés : une arme, des munitions et un gilet peuvent sauver la vie.', k: 'bad', need: ['pistolet', 'pistolet_silencieux', 'fusil', 'fusil_pompe', 'fusil_assaut', 'munitions', 'gilet', 'casque', 'couteau', 'hachette'] });
       return out;
     }
     out.push({ icon: 'journal', t: 'Déjà exploré ' + ls.visits + ' fois.' + (hostile ? ' Ses occupants vous en veulent.' : ''), k: hostile ? 'bad' : 'info' });
@@ -67,7 +67,7 @@
     if (grates) out.push({ icon: 'wrench', t: 'Une grille soudée barre un passage : il faut une scie à métaux.', k: 'info', need: ['scie'] });
     if (blocks) out.push({ icon: 'hammer', t: 'Un éboulis bloque un passage : une pelle ira deux fois plus vite.', k: 'info', need: ['pelle'] });
     var ak = Object.keys(armed);
-    if (ak.length) out.push({ icon: 'shield', t: 'Présence armée : ' + ak.map(function (k) { return k.indexOf('Un ') === 0 ? k.toLowerCase() : armed[k] + ' ' + k + (armed[k] > 1 ? 's' : ''); }).join(', ') + (hostile ? ', hostiles.' : '.'), k: 'bad', need: ['pistolet', 'fusil', 'fusil_pompe', 'fusil_assaut', 'munitions', 'gilet', 'casque', 'couteau', 'hachette'] });
+    if (ak.length) out.push({ icon: 'shield', t: 'Présence armée : ' + ak.map(function (k) { return k.indexOf('Un ') === 0 ? k.toLowerCase() : armed[k] + ' ' + k + (armed[k] > 1 ? 's' : ''); }).join(', ') + (hostile ? ', hostiles.' : '.'), k: 'bad', need: ['pistolet', 'pistolet_silencieux', 'fusil', 'fusil_pompe', 'fusil_assaut', 'munitions', 'gilet', 'casque', 'couteau', 'hachette'] });
     if (out.length === 1) out.push({ icon: 'pack', t: 'Rien de particulier à prévoir. Gardez de la place pour le butin.', k: 'good' });
     return out;
   };
