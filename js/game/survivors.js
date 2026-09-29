@@ -227,6 +227,7 @@
     else if (s.moral < 55) out.push({ k: 'moral', t: 'Triste', lv: 1 });
 
     if (s.grief > 0) out.push({ k: 'grief', t: 'En deuil', lv: 1 });
+    if (s.remorse > 0) out.push({ k: 'remorse', t: 'Rongé(e) par le remords', lv: 2, tip: 'A tué. Le moral baisse encore chaque matin pendant quelques jours ; parlez-lui, réconfortez-le.' });
     // Ce qui va bien (même quand le reste va mal)
     if (s.hunger < 10) out.push({ k: 'fed', t: 'A bien mangé', lv: 0, good: true });
     if (s.fatigue < 10) out.push({ k: 'rested', t: 'Bien reposé(e)', lv: 0, good: true });

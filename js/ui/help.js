@@ -180,6 +180,7 @@
         'Chaque survivant a ses <b>pensées</b> : ce qu\'il vit, ce qu\'il pense de ce que fait le groupe.',
         'Confort (lits, fauteuil, radio, guitare, chauffage) et bonnes actions le relèvent ; vols, meurtres et refus d\'aider le minent — sauf chez les cyniques.',
         '<b>Abattu</b>, on travaille mal. <b>Brisé</b>, on refuse tout ; sans réconfort, on part… ou on ne tient pas.',
+        '<b>Tuer marque</b> : le tueur perd beaucoup de moral d\'un coup, puis est rongé par le remords pendant des jours (plus si l\'homme dormait, ne menaçait pas ou s\'était rendu). Le groupe le juge aussi. Réconfortez-le.',
         'Cliquez sur un survivant abattu : le <b>réconforter</b>, ou lui <b>lire à voix haute</b> (il faut un livre, qui n\'est pas usé).',
         'Un mort qu\'on laisse au refuge pèse chaque jour davantage : il faut l\'<b>enterrer</b> (plus vite avec une pelle). Son <b>souvenir</b> reste, on peut s\'y recueillir.'
       ]) + sec('wrench', 'Outils et armes', [

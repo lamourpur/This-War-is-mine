@@ -73,6 +73,33 @@
     M.sayKey(s, M.stateKey(s, env), { n: s.griefFor });
   };
 
+  // Le poids d'avoir tué. Coup immédiat (self), puis « remords » : quelques
+  // jours pendant lesquels le moral baisse encore chaque matin, aidé ou non
+  // par le réconfort des autres. Cynique : tout est atténué. Plusieurs morts :
+  // ça s'accumule, et le remords se prolonge.
+  M.remorse = function (s, self, days, kind, nth) {
+    var cyn = G().hasTrait(s, 'cynique'), emp = G().hasTrait(s, 'empathique'), fight = G().hasTrait(s, 'combattant');
+    var k = (cyn ? 0.35 : emp ? 1.25 : fight ? 0.8 : 1) * (1 + 0.3 * Math.min(3, nth || 0));
+    var hit = Math.round(self * k);
+    s.moral = Math.max(0, s.moral - hit);
+    s.remorse = Math.max(s.remorse || 0, Math.round(days * (cyn ? 0.5 : 1)) + (s.remorse ? 2 : 0));
+    s.remorseKind = kind;
+    s.kills = (s.kills || 0) + 1;
+    M.think(s, kind === 'surrender' ? 'killed_self_surr' : 'killed_self');
+    return hit;
+  };
+  // Chaque matin : le remords ronge (plus fort les premiers jours)
+  M.remorseDawn = function (s, report) {
+    if (!(s.remorse > 0)) return;
+    var n = first(s), left = s.remorse;
+    var d = (left >= 5 ? 6 : left >= 3 ? 4 : 3) * (G().hasTrait(s, 'cynique') ? 0.4 : 1);
+    s.moral = Math.max(0, s.moral - d);
+    s.remorse--;
+    M.think(s, 'remorse', { n: n });
+    if (s.remorse === 0) { M.think(s, 'remorse_end'); report.push({ t: n + ' commence à respirer de nouveau. Ce qui s\'est passé ne partira pas, mais ça pèse un peu moins.', k: 'info' }); }
+    else if (left >= 3 && Math.random() < 0.6) report.push({ t: n + ' se réveille en sursaut, en sueur. ' + (s.remorseKind === 'surrender' ? 'Il ou elle revoit l\'homme qui suppliait.' : 'Le visage de celui qu\'' + (s.look && s.look.female ? 'elle' : 'il') + ' a tué revient chaque nuit.'), k: 'bad' });
+  };
+
   // Confort du refuge : de −3 à +3 de moral par jour
   M.comfort = function (st) {
     var score = 0, winter = C.World.isWinter(st);
@@ -143,8 +170,10 @@
     // Plusieurs fautes la même nuit : la pire compte en entier, les autres
     // alourdissent (sans cumul sans fin)
     var bases = sins.map(function (x) { return x.base; }).sort(function (a, b) { return a - b; });
-    total = bases[0] + bases.slice(1).reduce(function (a, b) { return a + b; }, 0) * 0.35;
-    total = Math.max(total, -18);
+    var killed = sins.some(function (x) { return /kill/.test(x.act); });
+    total = bases[0] + bases.slice(1).reduce(function (a, b) { return a + b; }, 0) * (killed ? 0.6 : 0.35);
+    total = Math.max(total, killed ? -38 : -18);
+    var killed2 = sins.some(function (x) { return /kill/.test(x.act); });
     var merc = !!opts.merc, lines = [], fe = function (s) { return s.look && s.look.female ? 'e' : ''; };
     var cat = worst === 'kill_surrender' ? 'kill' : worst;
     st.flags.reactions = [];
@@ -152,7 +181,7 @@
     G().alive().forEach(function (s) {
       if (s.away || s.id === opts.except) return;
       var stance = M.stance(s, worst, st, merc), d;
-      if (stance === 'ok') d = merc ? 2 : 1;                                  // soulagé : on a de quoi tenir
+      if (stance === 'ok') d = killed2 ? Math.round(total * 0.12) : merc ? 2 : 1;   // soulagé… mais un mort reste un mort
       else if (stance === 'meh') d = total * (merc ? 0.45 : 0.8);
       else d = total * (merc ? 1.1 : 1.6);                                     // choqué (et par le mercenaire aussi)
       d = Math.round(d);
@@ -203,6 +232,7 @@
       if (comfort >= 5 && Math.random() < 0.3) M.think(s, 'cozy');
       s.comfortedToday = false;
       s.talkedToday = {};
+      M.remorseDawn(s, report);
       if (s.grief > 0) {
         s.grief--;
         s.moral = Math.max(0, s.moral - 3);

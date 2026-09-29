@@ -963,20 +963,21 @@
   K.consequences = function (s, notes, effects) {
     var ex = E(), n = first(s);
     ex.kills.forEach(function (k) {
-      var txt, self, group, key;
+      var txt, self, group, key, days = 3;
       switch (k.kind) {
-        case 'surrender': txt = n + ' a abattu un ' + k.name.toLowerCase() + ' qui s\'était rendu et suppliait.'; self = 22; group = -12; key = 'killed_surrender'; break;
-        case 'asleep': txt = n + ' a tué un ' + k.name.toLowerCase() + ' dans son sommeil.'; self = 14; group = -6; key = 'killed_group'; break;
-        case 'villain': txt = n + ' a tué le ' + k.name.toLowerCase() + ' qui s\'en prenait à une jeune femme.'; self = 5; group = 0; key = 'killed_villain'; break;
-        case 'unprovoked': txt = n + ' a tué un ' + k.name.toLowerCase() + ' qui ne l\'avait pas menacé(e).'; self = 14; group = -7; key = 'killed_group'; break;
-        default: txt = n + ' a tué un ' + k.name.toLowerCase() + ' pour sauver sa peau.'; self = 8; group = -2; key = 'killed_group';
+        case 'surrender': txt = n + ' a abattu un ' + k.name.toLowerCase() + ' qui s\'était rendu et suppliait.'; self = 45; group = -24; key = 'killed_surrender'; days = 9; break;
+        case 'asleep': txt = n + ' a tué un ' + k.name.toLowerCase() + ' dans son sommeil.'; self = 34; group = -14; key = 'killed_group'; days = 6; break;
+        case 'villain': txt = n + ' a tué le ' + k.name.toLowerCase() + ' qui s\'en prenait à une jeune femme.'; self = 12; group = 0; key = 'killed_villain'; days = 2; break;
+        case 'unprovoked': txt = n + ' a tué un ' + k.name.toLowerCase() + ' qui ne l\'avait pas menacé(e).'; self = 38; group = -16; key = 'killed_group'; days = 7; break;
+        default: txt = n + ' a tué un ' + k.name.toLowerCase() + ' pour sauver sa peau.'; self = 26; group = -7; key = 'killed_group'; days = 4;
       }
       notes.push({ t: txt, k: 'bad' });
       G().st.stats.killed++;
       var who = k.who || ('un ' + k.name.toLowerCase());
       C.Surv.bio(s, { surrender: 'J\'ai tué ' + who + ' qui s\'était rendu. Il suppliait. Je n\'arrive pas à me le pardonner.', asleep: 'J\'ai tué ' + who + ' pendant son sommeil. Il n\'a jamais su ce qui lui arrivait.', villain: 'J\'ai tué ' + who + '. Il le méritait. Je crois.', unprovoked: 'J\'ai tué ' + who + '. Il ne m\'avait rien fait.' }[k.kind] || 'J\'ai tué ' + who + '. C\'était lui ou moi.');
       effects.push(function () {
-        if (!ex.merc) { s.moral = Math.max(0, s.moral - (G().hasTrait(s, 'cynique') ? self * 0.3 : self)); C.Mood.think(s, 'killed_self'); }
+        // Tuer marque : coup immédiat, puis des jours de remords. Chaque mort de plus pèse davantage.
+        if (!ex.merc) C.Mood.remorse(s, self, days, k.kind, ex.kills.indexOf(k));
         if (group) ex.sins.push({ act: k.kind === 'surrender' ? 'kill_surrender' : 'kill', base: group, victim: who });
       });
     });

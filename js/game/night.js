@@ -384,8 +384,7 @@
         if (firearm && hostile && R.chance(0.5)) {
           st.stats.killed++;
           add('scav', n + ' a dû tuer quelqu\'un. Ça ne s\'efface pas.', 'bad');
-          s.moral = Math.max(0, s.moral - (G().hasTrait(s, 'cynique') ? 4 : 12));
-          C.Mood.think(s, 'killed_self');
+          C.Mood.remorse(s, 26, 4, 'defense', 0);
           var bonus = { munitions: R.int(1, 4), conserve: R.int(0, 1) };
           for (var b in bonus) if (bonus[b]) got[b] = (got[b] || 0) + bonus[b];
         }
