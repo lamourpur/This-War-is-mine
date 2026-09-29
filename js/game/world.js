@@ -18,6 +18,43 @@
   World.crimeHigh = function (st) { return st.day >= st.crimeStart && st.day < st.crimeStart + 6; };
   World.now = function (st) { return st.day * 1440 + st.minute; };
 
+  // « Curb on Crime » : après la vague de criminalité, deux jours sans aucune attaque
+  World.crimeCurb = function (st) { return st.day >= st.crimeStart + 6 && st.day < st.crimeStart + 8; };
+  // Accalmie hivernale : quelques jours de plein froid sans attaque, seulement
+  // signalés à la radio (les pillards restent chez eux)
+  World.calmStart = function (st) {
+    if (st.calmStart == null) {
+      var c = st.winterStart + 2 + ((st.seed || 0) % Math.max(1, st.winterLen - 5)), end = st.winterStart + st.winterLen;
+      // Pas pendant la vague de criminalité ni juste après : on décale
+      if (c < st.crimeStart + 8 && c + 3 > st.crimeStart) c = st.crimeStart + 8;
+      if (c + 3 > end) c = Math.max(st.winterStart + 1, Math.min(st.crimeStart - 3, end - 3));
+      st.calmStart = c;
+    }
+    return st.calmStart;
+  };
+  World.winterCalm = function (st) { var c = World.calmStart(st); return st.day >= c && st.day < c + 3 && World.isWinter(st); };
+  World.noRaids = function (st) { return World.winterCalm(st) || World.crimeCurb(st); };
+
+  // Combats en ville : des zones sont bouclées quelques jours (annoncé à la radio)
+  // st.flags.closures = [{ id, from, until }]
+  World.closures = function (st) { return (st.flags && st.flags.closures) || []; };
+  World.closed = function (st, id) { return World.closures(st).some(function (c) { return c.id === id && st.day >= c.from && st.day < c.until; }); };
+  World.closedUntil = function (st, id) { var r = 0; World.closures(st).forEach(function (c) { if (c.id === id && st.day >= c.from && st.day < c.until) r = c.until; }); return r; };
+  // À l'aube : annonces, réouvertures, nouvelle zone de combats
+  World.dawnClosures = function (st, add) {
+    var R = C.R, list = st.flags.closures = (st.flags.closures || []).filter(function (c) { return st.day <= c.until + 1; });
+    list.forEach(function (c) {
+      var nm = C.locationDef(c.id).name;
+      if (st.day === c.from) add('home', 'Les combats ont éclaté autour de « ' + nm + ' ». La zone est bouclée pendant ' + (c.until - c.from) + ' jours.', 'bad');
+      if (st.day === c.until) add('home', 'Les combats se sont éloignés de « ' + nm + ' » : on peut de nouveau s\'y rendre.', 'good');
+    });
+    if (st.day < 6 || list.some(function (c) { return st.day <= c.until; }) || !R.chance(0.3)) return;
+    var cand = C.LOCATIONS.filter(function (l) { return l.unlock <= st.day && !World.closed(st, l.id); });
+    if (cand.length < 6) return;
+    var l = R.pick(cand), from = st.day + R.int(2, 4);
+    list.push({ id: l.id, from: from, until: from + R.int(3, 4) });
+  };
+
   // Météo du jour (tirée à l'aube)
   World.rollWeather = function (st) {
     var R = C.R, w = st.weather;
@@ -235,12 +272,26 @@
       pool.push(left <= 2 ? 'Météo : le redoux est attendu dans les prochains jours.' : 'Météo : le grand froid va durer. Protégez-vous, chauffez vos abris.');
     } else if (toW > 3) pool.push('Météo : temps de saison, ' + (st.weather.type === 'pluie' ? 'averses fréquentes.' : 'nuageux avec des éclaircies.'));
     var toC = st.crimeStart - st.day;
-    if (toC > 0 && toC <= 2) pool.push('Les bandes armées se multiplient en ville. La police conseille de barricader les logements.');
+    if (toC > 0 && toC <= 4) pool.push('Les bandes armées se multiplient en ville. La police conseille de barricader les logements.');
     if (World.crimeHigh(st)) pool.push('Vague de pillages dans les quartiers ouest. Plusieurs abris attaqués cette semaine.');
-    if (st.ceasefireDay - st.day <= 5) pool.push('Des pourparlers de cessez-le-feu auraient débuté. Rien n\'est encore signé.');
+    var toCurb = st.crimeStart + 6 - st.day;
+    if (toCurb > 0 && toCurb <= 3 && World.crimeHigh(st)) pool.push('La milice annonce un renforcement des patrouilles : les bandes commencent à reculer.');
+    if (World.crimeCurb(st)) pool.push('Les patrouilles ont repris le contrôle des rues. Les pillards se font discrets.');
+    var toCalm = World.calmStart(st) - st.day;
+    if (World.isWinter(st) && (World.winterCalm(st) || (toCalm > 0 && toCalm <= 3))) pool.push('Météo : froid mortel sur toute la ville. Les rues se vident, même les bandes armées restent à couvert.');
+    World.closures(st).forEach(function (c) {
+      var nm = C.locationDef(c.id).name, toF = c.from - st.day;
+      if (toF > 0 && toF <= 3) pool.push('Les combats entre l\'armée et les rebelles se rapprochent de « ' + nm + ' ». La zone sera bouclée d\'ici ' + toF + ' jour' + (toF > 1 ? 's' : '') + '.');
+      else if (World.closed(st, c.id)) pool.push('Échanges de tirs autour de « ' + nm + ' ». Les civils sont priés d\'éviter le secteur.');
+    });
+    if (C.Market && C.Market.soonText(st)) pool.push(C.Market.soonText(st));
+    var toCf = st.ceasefireDay - st.day;
+    if (toCf <= 7 && toCf > 5) pool.push('Les Casques bleus ont quitté la capitale : ils se dirigent vers notre région pour imposer le cessez-le-feu. Arrivée prévue d\'ici une semaine.');
+    if (toCf <= 5) pool.push(toCf <= 2 ? 'Des convois de Casques bleus ont été aperçus aux portes de la ville.' : 'Des pourparlers de cessez-le-feu auraient débuté. Rien n\'est encore signé.');
     var sh = C.Market && C.Market.current(st);
     if (sh && R.chance(0.7)) pool.unshift(sh.radio + ' Au marché noir, ' + C.Market.wantedText(st) + ' atteignent des prix jamais vus.');
     if (!pool.length || R.chance(0.25)) pool.push(R.pick(C.NEWS_FILLER));
-    return pool[0];
+    // Une info parmi celles du moment (les annonces à venir sortent en priorité)
+    return pool.length > 1 && R.chance(0.6) ? R.pick(pool) : pool[0];
   };
 })(window.CQR);

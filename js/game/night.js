@@ -90,6 +90,7 @@
 
   Night.raidChance = function (st) {
     if (st.day < 3) return 0;
+    if (C.World.noRaids(st)) return 0;
     var holes = st.objects.filter(function (o) { return o.kind === 'hole' && !o.boarded; }).length;
     var c = 0.1 + st.day * 0.006 + holes * 0.03 + (st.raidBonus || 0);
     if (st.flags && st.flags.guardedUntil && st.day <= st.flags.guardedUntil) c *= 0.3;   // le sergent Hollis fait passer les patrouilles
@@ -429,6 +430,8 @@
     C.World.rollWeather(st);
     if (C.Market) C.Market.dawn(st, add);
     if (C.Merc) C.Merc.dawn(st, add);
+    C.World.dawnClosures(st, add);
+    if (st.day === st.crimeStart + 6) add('home', 'Les patrouilles ont chassé les bandes des quartiers : la criminalité retombe. Pendant deux jours, la rue est calme.', 'good');
     if (C.World.isWinter(st) && !wasWinter) { add('home', 'L\'hiver est arrivé. Le gel s\'installe sur la ville. Il va falloir chauffer le refuge.', 'bad'); G().alive().forEach(function (s) { C.Mood.think(s, 'winter'); }); }
     if (!C.World.isWinter(st) && wasWinter) add('home', 'Le redoux est là. Le pire du froid est passé.', 'good');
     if (st.day === st.crimeStart) add('home', 'Les rumeurs le disent : les bandes de pillards se multiplient dans le quartier.', 'bad');

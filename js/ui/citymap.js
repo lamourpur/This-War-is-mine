@@ -89,7 +89,7 @@
     // Lieux
     C.LOCATIONS.forEach(function (l) {
       var p2 = POS[l.id]; if (!p2) return;
-      var open = l.unlock <= st.day, ls = st.locations[l.id] || {};
+      var closed = C.World.closed(st, l.id), open = l.unlock <= st.day && !closed, ls = st.locations[l.id] || {};
       var on = l.id === sel;
       var icon = l.id === 'carrefour' ? 'alert' : ICON[l.residents] || 'pack';
       var ico = C.Icon(icon).replace('<svg class="ico"', '<svg x="-10" y="-10" width="20" height="20" class="ico"');
@@ -101,7 +101,7 @@
         (open && ls.visits ? '<circle cx="15" cy="-14" r="8" class="cm-visits"/><text x="15" y="-10" text-anchor="middle" class="cm-visits-t">' + ls.visits + '</text>' : '') +
         (hostile ? '<circle cx="-15" cy="-14" r="6" class="cm-hostile"/>' : '') +
         '<text y="36" text-anchor="middle" class="cm-name">' + U.esc(l.name) + '</text>' +
-        (open ? '' : '<text y="52" text-anchor="middle" class="cm-lock">jour ' + l.unlock + '</text>') +
+        (open ? '' : '<text y="52" text-anchor="middle" class="cm-lock">' + (closed ? 'zone de combats' : 'jour ' + l.unlock) + '</text>') +
         '</g>';
     });
     svg += '<rect width="' + W + '" height="' + H + '" fill="url(#cmVig)" pointer-events="none"/>';
@@ -124,7 +124,7 @@
       });
       g.addEventListener('mouseleave', function () { tip.classList.add('hidden'); });
       g.addEventListener('click', function () {
-        if (l.unlock > st.day) { if (C.Audio.ready) C.Audio.sfx.deny(); return; }
+        if (l.unlock > st.day || C.World.closed(st, l.id)) { if (C.Audio.ready) C.Audio.sfx.deny(); return; }
         if (C.Audio.ready) C.Audio.sfx.click();
         onPick(id);
       });

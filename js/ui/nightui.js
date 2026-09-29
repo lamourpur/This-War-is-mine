@@ -179,6 +179,7 @@
         mapBox.innerHTML = '';
         C.CityMap.render(mapBox, st, plan.scav.loc, function (id) { plan.scav.loc = id; if (C.Audio.ready) C.Audio.sfx.click(); renderLoc(); }, function (l) {
           var ls = st.locations[l.id] || {};
+          if (C.World.closed(st, l.id)) return '<b>' + U.esc(l.name) + '</b><span>Des combats font rage : la zone est bouclée jusqu\'au jour ' + C.World.closedUntil(st, l.id) + '.</span>';
           if (l.unlock > st.day) return '<b>' + U.esc(l.name) + '</b><span>On n\'en sait encore rien. (jour ' + l.unlock + ')</span>';
           return '<b>' + U.esc(l.name) + '</b><span class="danger' + l.danger + '">' + C.DANGER_LABELS[l.danger] + '</span> · ' + C.RESIDENT_LABELS[l.residents] + (Object.keys(ls.hostile || {}).length ? ' · <em>hostiles</em>' : '') +
             '<span>' + lootLevel(st, l) + ' · ' + (ls.visits || 0) + ' visite' + ((ls.visits || 0) > 1 ? 's' : '') + '</span>';

@@ -288,6 +288,14 @@
       });
     }
     E.effects.forEach(function (fn) { fn(); });
+    // Ce que chacun a fait cette nuit s'inscrit dans son histoire (épilogue)
+    if (!E.merc && s) {
+      var cnt = function (t) { return E.events.filter(function (e) { return t.test(e.type); }).length; };
+      s.thefts = (s.thefts || 0) + E.sins.filter(function (x) { return x.act === 'steal'; }).length;
+      s.robs = (s.robs || 0) + E.sins.filter(function (x) { return x.act === 'rob'; }).length;
+      s.helps = (s.helps || 0) + cnt(/^(help|donate|rescue)$/);
+      s.spares = (s.spares || 0) + E.spared.length;
+    }
     // Ce que le groupe pense de la nuit : chacun à sa manière
     var verdict = C.Mood.judge(E.sins, { merc: E.merc, mercFemale: !!(E.merc && s.look && s.look.female), except: E.merc || reason === 'dead' ? null : (E.sins.some(function (x) { return /kill/.test(x.act); }) ? s.id : null) });
     verdict.forEach(function (l) { E.notes.push({ sec: 'people', t: l.t, k: l.k }); });

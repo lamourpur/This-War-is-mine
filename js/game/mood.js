@@ -85,6 +85,7 @@
     s.remorse = Math.max(s.remorse || 0, Math.round(days * (cyn ? 0.5 : 1)) + (s.remorse ? 2 : 0));
     s.remorseKind = kind;
     s.kills = (s.kills || 0) + 1;
+    if (kind === 'surrender') s.execs = (s.execs || 0) + 1;
     M.think(s, kind === 'surrender' ? 'killed_self_surr' : 'killed_self');
     return hit;
   };

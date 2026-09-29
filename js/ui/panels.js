@@ -519,12 +519,30 @@
         suicide: n + ' n\'a pas vu la fin de la guerre. Le poids était trop lourd, et personne n\'a su l\'aider à le porter.'
       }[s.cause] || n + ' n\'a pas vu la fin de la guerre.';
     }
-    var lines = [];
-    if (s.moral >= 60) lines.push(n + ' a traversé la guerre sans se perdre. Après, il y aura des nuits difficiles, mais il y aura des matins aussi.');
-    else if (s.moral >= 30) lines.push(n + ' a survécu. Longtemps, le moindre bruit sourd le fera sursauter.');
+    var lines = [], f = !!(s.look && s.look.female), il = f ? 'elle' : 'il', Il = f ? 'Elle' : 'Il', lui = f ? 'elle' : 'lui';
+    var k = s.kills || 0, th = (s.thefts || 0) + (s.robs || 0), hp = s.helps || 0;
+    // Ce qu'on a fait pèse plus que l'humeur du dernier jour
+    if (s.moral >= 60 && !(k >= 2 || s.execs)) lines.push(n + ' a traversé la guerre sans se perdre. Après, il y aura des nuits difficiles, mais il y aura des matins aussi.');
+    else if (s.moral >= 30) lines.push(n + ' a survécu. Longtemps, le moindre bruit sourd ' + (f ? 'la' : 'le') + ' fera sursauter.');
     else lines.push(n + ' a survécu, mais quelque chose s\'est éteint. Il faudra des années pour que ça revienne. Si ça revient.');
-    if (st.stats.stole > 2) lines.push('Il y a des choses qu\'on a faites pour tenir et dont on ne parlera jamais.');
-    else if (st.stats.helped > 3) lines.push('On se souviendra dans le quartier de ceux qui ouvraient leur porte.');
+    // Meurtres
+    if (s.execs) lines.push(n + ' n\'a jamais pu se pardonner d\'avoir tué un homme qui se rendait. ' + Il + ' entend encore ses supplications, chaque nuit.');
+    else if (k >= 3) lines.push(n + ' a tué, encore et encore, pour que les autres tiennent. ' + Il + ' ne parlera jamais de ces nuits-là ; les cauchemars, eux, ne se taisent pas.');
+    else if (k >= 1) lines.push(n + ' a tué ' + (k > 1 ? 'deux fois' : 'un homme') + ' pour survivre. Le visage ' + (k > 1 ? 'de ' + (f ? 'ses' : 'ses') + ' victimes' : 'de cet homme') + ' revient, surtout quand tout est calme.');
+    // Vols et braquages
+    if (th >= 4) lines.push('Ce qu\'' + il + ' a pris aux autres pour nourrir le groupe, ' + il + ' le doit encore ; ' + il + ' n\'ose plus regarder ceux qui n\'avaient déjà presque rien.');
+    else if (th >= 1) lines.push(n + ' repense parfois à ceux à qui ' + il + ' a pris de quoi manger. Ils en avaient besoin, eux aussi.');
+    // Entraide et clémence
+    if (hp >= 4) lines.push('Dans le quartier, beaucoup de gens se souviennent que ' + n + ' leur a tendu la main. Des inconnus ' + (f ? 'la' : 'le') + ' saluent encore dans la rue.');
+    else if (hp >= 1) lines.push('Il y a quelqu\'un, quelque part, qui doit la vie ou un repas à ' + n + '. C\'est peu, et c\'est énorme.');
+    if (s.spares) lines.push(n + ' a épargné des hommes qui se rendaient. ' + Il + ' ne sait pas s\'ils l\'ont mérité ; ' + il + ' sait seulement qu\'' + il + ' pourra se regarder dans un miroir.');
+    // Le groupe et les voisins (visiteurs à la porte)
+    var helpedG = st.stats.helped, refusedG = st.stats.refused || 0;
+    var dark = k >= 2 || s.execs || th >= 4;   // celui qui a beaucoup pris ou tué ne tire pas fierté du groupe
+    if (dark) { /* pas de ligne collective */ }
+    else if (refusedG >= 4 && helpedG < refusedG) lines.push('Trop de portes sont restées fermées. ' + n + ' n\'a pas oublié les pas qui s\'éloignaient dans la rue.');
+    else if (helpedG >= 5 && helpedG >= refusedG) lines.push('Ils ont ouvert leur porte quand personne d\'autre ne le faisait. ' + n + ' en garde une fierté discrète.');
+    if (!k && !th && !hp && st.stats.stole > 2) lines.push('Il y a des choses qu\'on a faites pour tenir et dont on ne parlera jamais.');
     return lines.join(' ');
   }
 })(window.CQR);

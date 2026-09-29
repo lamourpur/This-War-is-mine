@@ -86,7 +86,7 @@ window.runBot = function (group, opts) {
     const cands = pres.filter(s => s.wound < 40 && s.sick < 40).sort((a, b) => a.fatigue - b.fatigue);
     if (cands.length) {
       const sc = cands[0]; plan.roles[sc.id] = 'scav';
-      const locs = C.LOCATIONS.filter(l => l.unlock <= st.day && l.danger <= (opts.maxDanger || 2) && (opts.civils || l.residents !== 'civils'));
+      const locs = C.LOCATIONS.filter(l => l.unlock <= st.day && !C.World.closed(st, l.id) && l.danger <= (opts.maxDanger || 2) && (opts.civils || l.residents !== 'civils'));
       const loc = locs[(li++) % locs.length];
       plan.scav = { loc: loc.id, stance: opts.stance || 'normal', prio: st.day % 2 ? 'vivres' : 'materiaux', equip: ['pied_de_biche', 'couteau', 'scie'].filter(i => G.count(i) > 0).slice(0, 2), ammo: 0 };
     }

@@ -74,6 +74,23 @@
     return M.wanted(st).map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ');
   };
 
+  // Choix de la prochaine pénurie (l'hiver favorise le froid)
+  function pickShortage(st, R) {
+    var m = state(st), winter = C.World.isWinter(st);
+    var pool = C.SHORTAGES.filter(function (s) {
+      return st.day >= s.minDay && s.id !== m.last && (!s.winter || winter) && !(s.noWinter && winter);
+    });
+    return winter && m.last !== 'froid' && pool.some(function (s) { return s.id === 'froid'; }) && R.chance(0.6) ? def('froid') : R.pick(pool);
+  }
+  // Rumeur à la radio : une pénurie est annoncée
+  M.soonText = function (st) {
+    var m = st.market, d = m && m.upcoming && !m.id ? def(m.upcoming) : null;
+    if (!d) return null;
+    var names = Object.keys(d.items).filter(function (k) { return C.ITEMS[k]; }).slice(0, 4).map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ');
+    var left = Math.max(1, m.next - st.day);
+    return 'Marché noir : les stocks de ' + names + ' fondent à vue d\'œil. Une pénurie est à prévoir d\'ici ' + left + ' jour' + (left > 1 ? 's' : '') + '. Faites vos provisions.';
+  };
+
   // Au matin : fin ou début d'une pénurie. add(section, texte, genre)
   M.dawn = function (st, add) {
     var m = state(st), R = C.R;
@@ -84,12 +101,8 @@
       m.next = st.day + R.int(2, 4);
     }
     if (!m.id && st.day >= m.next) {
-      var winter = C.World.isWinter(st);
-      var pool = C.SHORTAGES.filter(function (s) {
-        return st.day >= s.minDay && s.id !== m.last && (!s.winter || winter) && !(s.noWinter && winter);
-      });
-      // En hiver, le froid passe avant le reste
-      var pick = winter && m.last !== 'froid' && pool.some(function (s) { return s.id === 'froid'; }) && R.chance(0.6) ? def('froid') : R.pick(pool);
+      var pick = m.upcoming ? def(m.upcoming) : pickShortage(st, R);
+      m.upcoming = null;
       if (pick) {
         m.id = pick.id;
         m.until = st.day + R.int(3, 5);
@@ -97,6 +110,10 @@
       }
     } else if (m.id) {
       add('market', 'Toujours très recherché : ' + M.wantedText(st) + (m.until - st.day <= 1 ? ' (la pénurie touche à sa fin, dit-on).' : '.'), 'info');
+    } else if (!m.upcoming && st.day >= m.next - 3) {
+      // La radio le dit plusieurs jours avant : on peut s'y préparer
+      var up = pickShortage(st, R);
+      if (up) m.upcoming = up.id;
     }
     // Franko : on sait qu'il repasse bientôt
     if (st.day === m.franko && m.frankoVisits > 0) add('market', 'Franko a fait dire qu\'il repasserait aujourd\'hui avec de la marchandise.', 'info');
