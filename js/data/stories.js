@@ -192,7 +192,7 @@
     canAppear: function (st) { return !Story.started(st, 'sara'); },
     title: 'Une femme enceinte',
     text: function () {
-      return 'Une jeune femme, le ventre rond sous un manteau d\'homme, se tient au mur pour ne pas tomber.<br>« Je m\'appelle Sara. Huit mois. Mon mari, Caleb, est parti au dépôt des tramways il y a une semaine chercher des pièces à vendre. Il n\'est pas revenu. Je n\'ai rien mangé depuis avant-hier… »';
+      return 'Une jeune femme, le ventre rond sous un manteau d\'homme, se tient au mur pour ne pas tomber.<br>« Je m\'appelle Sara. Je suis enceinte de huit mois. Mon mari, Caleb, est parti au dépôt des tramways il y a une semaine chercher des pièces à vendre. Il n\'est pas revenu. Je n\'ai rien mangé depuis avant-hier… »';
     },
     choices: [
       { label: 'Lui donner 2 conserves', req: { conserve: 2 }, run: function (ctx) {
