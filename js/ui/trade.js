@@ -39,114 +39,180 @@
 
   var TradeUI = C.TradeUI = {};
 
-  // opts : { name (du marchand), likes ({objet: multiplicateur}), bag (échange depuis le sac, poids limité) }
+  // Troc à la manière du jeu d'origine : quatre casiers.
+  //   [ vos objets ] [ vous donnez | balance | vous recevez ] [ ses objets ]
+  // On glisse une pile de ses objets vers l'offre (ou on clique : 1 objet,
+  // Maj + clic : toute la pile) ; la balance penche selon la valeur des deux
+  // offres ; « Échanger » quand l'offre lui convient.
+  // opts : { name, likes ({objet: multiplicateur}), bag (échange depuis le sac), face, faceLine }
   TradeUI.open = function (s, stock, onDone, opts) {
     opts = opts || {};
     var nego = G().hasTrait(s, 'negociateur');
     var likes = opts.likes || {};
     var who = opts.name || 'Le marchand';
+    var inBag = !!(opts.bag && C.Explore && C.Explore.active);
     if (C.UI.hint) setTimeout(function () { C.UI.hint('trade'); }, 400);
-    var mine = {}, theirs = {};
-    // Ce que le marchand recherche, il le paie plus cher
-    function buyP(id, n2) { return Math.max(1, Math.round(Trade.buyPrice(id, n2) * (likes[id] || 1))); }
-    function sellP(id, n2) { return Trade.sellPrice(id, n2); }
-    var p = C.UI.panel('Troc' + (opts.name ? ' avec ' + U.esc(opts.name) : ''), U.esc(s.name.split(' ')[0]) + ' négocie' + (nego ? ' — négociateur : bien meilleurs prix' : '') + ' · clic : 1, Maj+clic : 5', { foot: true, noClose: true, wide: true });
+    var give = {}, take = {};
+    // Ce qu'il recherche, il le paie plus cher
+    function buyP(id) { return Math.max(1, Math.round(Trade.buyPrice(id, nego) * (likes[id] || 1))); }
+    function sellP(id) { return Trade.sellPrice(id, nego); }
+    var p = C.UI.panel('Troc' + (opts.name ? ' avec ' + U.esc(opts.name) : ''), U.esc(s.name.split(' ')[0]) + ' négocie' + (nego ? ' — négociateur : bien meilleurs prix' : ''), { foot: true, noClose: true, wide: true });
+    p.classList.add('trade-panel');
+    var head = U.el('div', 'trade-head');
     if (opts.face) {
       var fr = U.el('div', 'trade-face');
       fr.appendChild(C.UI.portrait(opts.face.s, 70, 84));
       fr.appendChild(U.el('div', '', '<b>' + U.esc(who) + '</b><span>' + U.esc(opts.faceLine || 'Voyons ce que vous avez.') + '</span>'));
-      p.body.appendChild(fr);
+      head.appendChild(fr);
     }
+    var notes = U.el('div', 'trade-notes');
     var wantList = Object.keys(likes).filter(function (k) { return likes[k] > 1; });
-    var market = C.Market ? C.Market.wanted(G().st) : [];
-    if (market.length) p.body.appendChild(U.el('p', 'trade-wants market', C.Icon('alert') + '<span>Pénurie en ville : ' + U.esc(C.Market.wantedText(G().st)) + ' valent bien plus cher en ce moment (à l\'achat comme à la vente).</span>'));
-    if (wantList.length) p.body.appendChild(U.el('p', 'trade-wants', C.Icon('star') + '<span>' + U.esc(who) + ' recherche : ' + wantList.map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ') + '</span>'));
-    var wrap = U.el('div', 'trade');
+    if (C.Market && C.Market.wanted(G().st).length) notes.appendChild(U.el('p', 'trade-wants market', C.Icon('alert') + '<span>Pénurie en ville : ' + U.esc(C.Market.wantedText(G().st)) + ' valent bien plus cher.</span>'));
+    if (wantList.length) notes.appendChild(U.el('p', 'trade-wants', C.Icon('star') + '<span>' + U.esc(who) + ' recherche : ' + wantList.map(function (k) { return C.ITEMS[k].name.toLowerCase(); }).join(', ') + '</span>'));
+    head.appendChild(notes);
+    p.body.appendChild(head);
+
+    var wrap = U.el('div', 'trade2');
+    var zMine = zone('mine', inBag ? 'Sac de ' + s.name.split(' ')[0] : 'Votre réserve', inBag ? 'Sac' : 'Réserve');
+    var center = U.el('div', 'trade-center');
+    var zGive = zone('give', 'Vous donnez', 'Offre');
+    var scale = U.el('div', 'trade-scale');
+    var zTake = zone('take', 'Vous recevez', 'Demande');
+    var zStock = zone('stock', who, 'Marchand');
+    center.appendChild(zGive.el); center.appendChild(scale); center.appendChild(zTake.el);
+    // Lâcher sur la balance : l'objet va dans l'offre qui convient
+    center.addEventListener('dragover', function (e) { if (drag.from === 'mine' || drag.from === 'stock') { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } });
+    center.addEventListener('drop', function (e) {
+      e.preventDefault();
+      if (drag.from === 'mine' || drag.from === 'stock') move(drag.from, drag.id, avail(drag.from, drag.id));
+    });
+    wrap.appendChild(zMine.el); wrap.appendChild(center); wrap.appendChild(zStock.el);
     p.body.appendChild(wrap);
+    p.body.appendChild(U.el('p', 'loot-hint', 'Glisser-déposer : toute la pile · Clic : un objet · Maj + clic : toute la pile · Clic sur une offre : la reprendre'));
 
-    function avail(obj, offered, id) { return (obj[id] || 0) - (offered[id] || 0); }
-
-    function list(title, src, offered, priceFn, onPick) {
-      var col = U.el('div', 'trade-col');
-      col.innerHTML = '<h3>' + C.Icon(title === who ? 'trade' : 'stock') + U.esc(title) + '</h3>';
-      var box = U.el('div', 'trade-list');
-      Object.keys(src).filter(function (id) { return avail(src, offered, id) > 0; }).sort(function (a, b) { return C.ITEMS[a].cat.localeCompare(C.ITEMS[b].cat); }).forEach(function (id) {
-        var liked = priceFn === buyP && (likes[id] || 1) > 1;
-        var rare = scarcity(id) > 1.4;
-        var row = U.el('div', 'trade-row' + (liked ? ' liked' : '') + (rare ? ' rare' : ''), '<span class="inv-art sm">' + C.ItemArt.img(id, 30) + '</span><span class="n">' + C.ITEMS[id].name + (liked ? ' <em>recherché</em>' : rare ? ' <em class="rare">pénurie</em>' : '') + '</span><span class="v">' + priceFn(id, nego) + '¤</span><span class="q">' + avail(src, offered, id) + '</span>');
-        row.title = 'Clic : 1 · Maj+clic : 5';
-        row.addEventListener('click', function (e) { onPick(id, e.shiftKey ? 5 : 1); });
-        box.appendChild(row);
-      });
-      if (!box.children.length) box.innerHTML = '<div class="trade-row"><i>Rien</i></div>';
-      col.appendChild(box);
-      return col;
+    // Ce qui reste disponible de chaque côté (hors offre)
+    function mineLeft(id) { return G().count(id) - (give[id] || 0); }
+    function stockLeft(id) { return (stock[id] || 0) - (take[id] || 0); }
+    var PAIR = { mine: 'give', give: 'mine', stock: 'take', take: 'stock' };
+    function avail(from, id) { return from === 'mine' ? mineLeft(id) : from === 'stock' ? stockLeft(id) : from === 'give' ? (give[id] || 0) : (take[id] || 0); }
+    function move(from, id, n) {
+      n = Math.min(n, avail(from, id)); if (n <= 0) return;
+      if (from === 'mine') give[id] = (give[id] || 0) + n;
+      else if (from === 'give') { give[id] -= n; if (give[id] <= 0) delete give[id]; }
+      else if (from === 'stock') take[id] = (take[id] || 0) + n;
+      else { take[id] -= n; if (take[id] <= 0) delete take[id]; }
+      if (C.Audio.ready) C.Audio.sfx.pickup();
+      render();
+    }
+    // Où va une pile lâchée sur une zone ? (on ne peut donner que ses
+    // propres objets, ni prendre les siens sans passer par sa demande)
+    function dest(from, target) {
+      if (from === 'mine') return target === 'mine' || target === 'stock' ? null : 'give';
+      if (from === 'stock') return target === 'stock' || target === 'mine' ? null : 'take';
+      if (from === 'give') return target === 'mine' ? 'mine' : null;
+      if (from === 'take') return target === 'stock' ? 'stock' : null;
     }
 
-    function sum(obj, priceFn) { var t = 0; for (var k in obj) t += obj[k] * priceFn(k, nego); return t; }
-
-    function offerBox(obj, priceFn, onRemove) {
-      var box = U.el('div', 'trade-offer');
-      Object.keys(obj).forEach(function (id) {
-        if (!obj[id]) return;
-        var row = U.el('div', 'trade-row', '<span class="n">' + C.ITEMS[id].name + '</span><span class="q">' + obj[id] + '</span>');
-        row.title = 'Retirer';
-        row.addEventListener('click', function () { onRemove(id); });
-        box.appendChild(row);
+    var drag = { from: null, id: null };
+    function zone(key, title, label) {
+      var el = U.el('div', 'loot-side tz tz-' + key);
+      el.innerHTML = '<div class="loot-title"><span class="tb-k">' + label + '</span><b>' + U.esc(title) + '</b><em class="tz-sum"></em></div>';
+      var grid = U.el('div', 'loot-grid');
+      el.appendChild(grid);
+      el.addEventListener('dragover', function (e) {
+        if (drag.from && dest(drag.from, key)) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.classList.add('drop'); }
       });
-      if (!box.children.length) box.innerHTML = '<i style="font-size:11px;color:#6a6252">—</i>';
-      return box;
+      el.addEventListener('dragleave', function (e) { if (!el.contains(e.relatedTarget)) el.classList.remove('drop'); });
+      el.addEventListener('drop', function (e) {
+        e.preventDefault(); e.stopPropagation(); el.classList.remove('drop');
+        if (drag.from && dest(drag.from, key)) move(drag.from, drag.id, avail(drag.from, drag.id));
+      });
+      return { key: key, el: el, grid: grid, sum: el.querySelector('.tz-sum') };
     }
 
-    function wsum(obj) { var w = 0; for (var k in obj) w += obj[k] * (C.ITEMS[k] ? C.ITEMS[k].w : 1); return w; }
+    function slot(from, id, n, price) {
+      var it = C.ITEMS[id];
+      var liked = (from === 'mine' || from === 'give') && (likes[id] || 1) > 1, rare = scarcity(id) > 1.4;
+      var b = U.el('div', 'loot-slot' + (liked ? ' liked' : '') + (rare ? ' rare' : ''));
+      b.draggable = true;
+      b.innerHTML = C.ItemArt.img(id, 46) + '<span class="q">' + n + '</span><span class="nm">' + U.esc(it.name) + '</span><span class="pr">' + price + '¤</span>';
+      b.title = it.name + ' × ' + n + ' — ' + price + ' ¤ pièce' + (liked ? ' (' + who + ' en recherche : il paie plus)' : rare ? ' (pénurie en ville)' : '') + (it.desc ? ' — ' + it.desc : '');
+      b.addEventListener('dragstart', function (e) {
+        drag.from = from; drag.id = id;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/cqr-trade', from);
+        var img = b.querySelector('img'); if (img && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(img, 23, 23);
+        b.classList.add('dragging');
+        [zMine, zGive, zTake, zStock].forEach(function (z) { if (dest(from, z.key)) z.el.classList.add('can'); });
+      });
+      b.addEventListener('dragend', function () { b.classList.remove('dragging'); drag.from = null; [zMine, zGive, zTake, zStock].forEach(function (z) { z.el.classList.remove('can', 'drop'); }); });
+      b.addEventListener('click', function (e) { move(from, id, e.shiftKey ? n : 1); });
+      return b;
+    }
+    function fill(z, from, src, priceFn, min) {
+      z.grid.innerHTML = '';
+      var ids = Object.keys(src).filter(function (id) { return C.ITEMS[id] && avail(from, id) > 0; })
+        .sort(function (a, b) { return C.ITEMS[a].cat.localeCompare(C.ITEMS[b].cat) || C.ITEMS[b].v - C.ITEMS[a].v; });
+      ids.forEach(function (id) { z.grid.appendChild(slot(from, id, avail(from, id), priceFn(id))); });
+      var cols = 4;
+      var total = Math.max(min, ids.length + (ids.length % cols ? cols - ids.length % cols : 0));
+      for (var i = ids.length; i < total; i++) z.grid.appendChild(U.el('div', 'loot-slot empty'));
+      return ids.length;
+    }
+    function sum(obj, priceFn) { var t = 0; for (var k in obj) t += obj[k] * priceFn(k); return t; }
+
+    var ok = U.el('button', 'btn', 'Échanger');
     function render() {
-      wrap.innerHTML = '';
-      var give = sum(mine, buyP), take = sum(theirs, sellP);
-      wrap.appendChild(list(opts.bag ? 'Votre sac' : 'Votre réserve', G().st.inventory, mine, buyP, function (id, n) {
-        mine[id] = Math.min((mine[id] || 0) + n, G().count(id)); render();
-      }));
-      var mid = U.el('div', 'trade-mid');
-      var diff = give - take;
-      var pct = U.clamp(50 + (diff / Math.max(10, give + take)) * 50, 0, 100);
-      mid.appendChild(U.el('div', '', '<div class="lab">Vous donnez</div><b class="trade-verdict">' + give + ' ¤</b>'));
-      mid.appendChild(offerBox(mine, buyP, function (id) { mine[id]--; if (!mine[id]) delete mine[id]; render(); }));
-      var bal = U.el('div', 'balance'); var sp = U.el('span');
-      sp.style.left = Math.min(50, pct) + '%'; sp.style.right = (100 - Math.max(50, pct)) + '%';
-      sp.style.background = diff >= 0 ? '#3f5a2a' : '#a4472c';
-      bal.appendChild(sp); mid.appendChild(bal);
-      mid.appendChild(offerBox(theirs, sellP, function (id) { theirs[id]--; if (!theirs[id]) delete theirs[id]; render(); }));
-      // Sac : un échange qui alourdit le sac doit tenir dans la place libre ;
-      // un échange qui l'allège passe toujours (même si le sac déborde déjà)
+      fill(zMine, 'mine', G().st.inventory, buyP, 12);
+      fill(zStock, 'stock', stock, sellP, 12);
+      var ng = fill(zGive, 'give', give, buyP, 4), nt = fill(zTake, 'take', take, sellP, 4);
+      if (!ng) zGive.grid.insertAdjacentHTML('afterbegin', '<div class="loot-empty">Glissez vos objets</div>');
+      if (!nt) zTake.grid.insertAdjacentHTML('afterbegin', '<div class="loot-empty">Ce que vous voulez</div>');
+      var gv = sum(give, buyP), tv = sum(take, sellP), diff = gv - tv;
+      zGive.sum.textContent = gv + ' ¤'; zTake.sum.textContent = tv + ' ¤';
+      // Sac : un échange qui l'alourdit doit tenir dans la place libre
       var over = 0;
-      if (opts.bag && C.Explore && C.Explore.active) {
+      if (inBag) {
         var inv0 = G().st.inventory, inv1 = U.copy(inv0), k1;
-        for (k1 in mine) inv1[k1] = (inv1[k1] || 0) - mine[k1];
-        for (k1 in theirs) inv1[k1] = (inv1[k1] || 0) + theirs[k1];
+        for (k1 in give) inv1[k1] = (inv1[k1] || 0) - give[k1];
+        for (k1 in take) inv1[k1] = (inv1[k1] || 0) + take[k1];
         var before = C.Explore.slots(inv0), after = C.Explore.slots(inv1), cap = C.Explore.capacity(s);
         over = after > before ? after - Math.max(cap, before) : 0;
       }
-      var verdict = !give && !take ? 'Choisissez quoi échanger.' : over > 0 ? 'Le sac serait trop plein (' + over + ' case' + (over > 1 ? 's' : '') + ' de trop).' : diff >= 0 ? (diff > take * 0.5 && take > 0 ? '« Marché conclu ! » (il y gagne)' : '« Ça me va. »') : '« Ce n\'est pas assez. »';
-      mid.appendChild(U.el('div', '', '<div class="lab">Vous recevez</div><b class="trade-verdict">' + take + ' ¤</b>'));
-      mid.appendChild(U.el('div', 'trade-say' + (over > 0 ? ' bad' : ''), verdict));
-      wrap.appendChild(mid);
-      wrap.appendChild(list(who, stock, theirs, sellP, function (id, n) {
-        theirs[id] = Math.min((theirs[id] || 0) + n, stock[id]); render();
-      }));
-      ok.disabled = !(take > 0 || give > 0) || diff < 0 || !take || over > 0;
+      if (inBag) {
+        var capB = C.Explore.capacity(s), usedB = C.Explore.slots(G().st.inventory);
+        zMine.el.classList.add('bag');
+        zMine.sum.textContent = usedB + ' / ' + capB + ' cases';
+        zMine.sum.classList.toggle('full', usedB >= capB);
+      }
+      // Balance : penche du côté le plus lourd
+      var tilt = U.clamp(diff / Math.max(10, gv + tv), -1, 1);
+      var verdict = !gv && !tv ? 'Choisissez quoi échanger.' : over > 0 ? 'Le sac serait trop plein (' + over + ' case' + (over > 1 ? 's' : '') + ' de trop).' : !tv ? '« Et vous voulez quoi, en échange ? »' : diff >= 0 ? (diff > tv * 0.5 ? '« Marché conclu ! » (il y gagne largement)' : '« Ça me va. »') : '« Ce n\'est pas assez. Il manque ' + (-diff) + ' ¤. »';
+      scale.innerHTML = '<div class="ts-beam" style="transform:rotate(' + (-tilt * 9).toFixed(1) + 'deg)"><i class="ts-pan l"></i><i class="ts-pan r"></i></div><div class="ts-post"></div>' +
+        '<div class="ts-vals"><b class="' + (diff >= 0 ? 'ok' : 'ko') + '">' + gv + ' ¤</b><span>contre</span><b>' + tv + ' ¤</b></div>' +
+        '<div class="trade-say' + (over > 0 || (tv && diff < 0) ? ' bad' : '') + '">' + U.esc(verdict) + '</div>';
+      ok.disabled = !tv || diff < 0 || over > 0;
+      fitRows(zMine.grid, 3); fitRows(zStock.grid, 3); fitRows(zGive.grid, 2); fitRows(zTake.grid, 2);
+    }
+    function fitRows(grid, rows) {
+      requestAnimationFrame(function () {
+        var sl = grid.querySelector('.loot-slot'); if (!sl) return;
+        var gap = parseFloat(getComputedStyle(grid).rowGap) || 6;
+        grid.style.maxHeight = (sl.offsetHeight * rows + gap * (rows - 1) + 3) + 'px';
+      });
     }
 
-    var ok = U.el('button', 'btn', 'Échanger');
     ok.addEventListener('click', function () {
-      G().removeItems(mine);
-      G().addItems(theirs);
-      for (var k in theirs) { stock[k] -= theirs[k]; if (stock[k] <= 0) delete stock[k]; }
-      for (k in mine) stock[k] = (stock[k] || 0) + mine[k];
-      var txt = 'Troc : donné ' + C.Night.itemsText(mine) + ' — reçu ' + C.Night.itemsText(theirs) + '.';
-      if (C.Explore && C.Explore.active) C.Explore.ev('trade', { name: who, gave: U.copy(mine), got: U.copy(theirs) });
+      G().removeItems(give);
+      G().addItems(take);
+      for (var k in take) { stock[k] -= take[k]; if (stock[k] <= 0) delete stock[k]; }
+      for (k in give) stock[k] = (stock[k] || 0) + give[k];
+      var txt = 'Troc : donné ' + C.Night.itemsText(give) + ' — reçu ' + C.Night.itemsText(take) + '.';
+      if (C.Explore && C.Explore.active) C.Explore.ev('trade', { name: who, gave: U.copy(give), got: U.copy(take) });
       G().log(txt, 'action');
-      C.UI.toast(txt, 'done');
+      if (C.Render.pop) C.Render.pop(s, Object.keys(take).map(function (id) { return { item: id, n: take[id] }; }).concat(Object.keys(give).map(function (id) { return { item: id, n: -give[id] }; })));
       if (C.Audio.ready) C.Audio.sfx.pickup();
-      mine = {}; theirs = {};
+      give = {}; take = {};
       render();
     });
     var close = U.el('button', 'btn ghost', 'Terminer');

@@ -303,11 +303,11 @@
     cook: {
       work: true, excl: true, label: 'Cuisine', sound: 'cook', fatigue: 2,
       labelFn: function (s, o) { return o && o.kind === 'gunbench' ? 'Travaille à l\'atelier' : o && o.kind === 'herbshop' ? 'Prépare des remèdes' : 'Cuisine'; },
-      cost: function (s, o, p) { return findStation(o.kind, p.rid).cost; },
-      dur: function (s, o, p) { return findStation(o.kind, p.rid).time; },
+      cost: function (s, o, p) { return mult(findStation(o.kind, p.rid).cost, p.n); },
+      dur: function (s, o, p) { return findStation(o.kind, p.rid).time * (p.n || 1); },
       done: function (s, o, p) {
         var r = findStation(o.kind, p.rid);
-        var give = U.copy(r.give);
+        var give = mult(r.give, p.n);
         if (o.kind === 'stove') {
           if (o.level >= 2) give.repas += 1;
           if (G().hasTrait(s, 'cuisinier')) give.repas += 1;
@@ -650,6 +650,8 @@
   };
   C.ACT = ACT;
 
+  // Recette fabriquée en plusieurs lots
+  function mult(c, n) { var o = {}; for (var k in c) o[k] = c[k] * (n || 1); return o; }
   function missingOf(cost) { var o = {}; for (var k in cost) if (G().count(k) < cost[k]) o[k] = cost[k] - G().count(k); return o; }
   function findCraft(id) { for (var i = 0; i < C.CRAFTS.length; i++) if (C.CRAFTS[i].id === id) return C.CRAFTS[i]; return null; }
   function findStation(kind, id) {
@@ -1110,8 +1112,9 @@
       case 'gunbench':
         C.STATION_RECIPES.gunbench.forEach(function (r) {
           var worn = r.maintain ? Object.keys(C.WEAR_MAX).filter(function (k) { return G().count(k) > 0 && G().wearLeft(k) < 1; }) : null;
-          m.entries.push(E(r.name, costSub(r.cost, r.time) + (worn ? ' · ' + (worn.length ? worn.length + ' outil' + (worn.length > 1 ? 's' : '') + ' usé' + (worn.length > 1 ? 's' : '') : 'rien d\'usé') : ''),
-            worn && !worn.length ? 'Tous les outils sont en bon état' : (G().has(r.cost) ? null : 'Il manque : ' + itemsText(missingOf(r.cost))), go('cook', { rid: r.id })));
+          m.entries.push(E(r.name + (r.batch ? '…' : ''), r.batch ? 'par ' + r.unit + ' : ' + costSub(r.cost, r.time) : costSub(r.cost, r.time) + (worn ? ' · ' + (worn.length ? worn.length + ' outil' + (worn.length > 1 ? 's' : '') + ' usé' + (worn.length > 1 ? 's' : '') : 'rien d\'usé') : ''),
+            worn && !worn.length ? 'Tous les outils sont en bon état' : (G().has(r.cost) ? null : 'Il manque : ' + itemsText(missingOf(r.cost))),
+            r.batch ? function () { C.UI.openBatch(s, o, r); } : go('cook', { rid: r.id })));
         });
         break;
       case 'stove':

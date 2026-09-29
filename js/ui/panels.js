@@ -528,3 +528,48 @@
     return lines.join(' ');
   }
 })(window.CQR);
+
+// =========================================================
+// Fabrication en série (munitions…) : combien de lots ?
+// =========================================================
+(function (C) {
+  'use strict';
+  var U = C.util, UI = C.UI;
+  function G() { return C.Game; }
+
+  UI.openBatch = function (s, o, r) {
+    var max = r.batch;
+    for (var k in r.cost) max = Math.min(max, Math.floor(G().count(k) / r.cost[k]));
+    var n = Math.min(Math.max(1, Math.floor(max / 2) || 1), Math.max(1, max));
+    var p = UI.panel(r.name, s.name.split(' ')[0] + ' à l\'atelier', { small: true, foot: true });
+    p.classList.add('batch-panel');
+    var body = U.el('div', 'batch');
+    p.body.appendChild(body);
+    function costRow(c) {
+      return Object.keys(c).map(function (id) {
+        var have = G().count(id), ok = have >= c[id];
+        return '<span class="bt-item' + (ok ? '' : ' ko') + '" title="' + U.esc(C.ITEMS[id].name) + ' : ' + have + ' en réserve">' + C.ItemArt.img(id, 34) + '<b>' + c[id] + '</b></span>';
+      }).join('');
+    }
+    function render() {
+      var cost = {}, give = {}; for (var a in r.cost) cost[a] = r.cost[a] * n; for (var b in r.give) give[b] = r.give[b] * n;
+      body.innerHTML =
+        '<div class="bt-row"><button class="btn ghost bt-m">−</button><div class="bt-n"><b>' + n + '</b><span>lot' + (n > 1 ? 's' : '') + '</span></div><button class="btn ghost bt-p">+</button>' +
+        '<input class="bt-range" type="range" min="1" max="' + Math.max(1, max) + '" value="' + n + '"' + (max < 2 ? ' disabled' : '') + '></div>' +
+        '<div class="bt-sec"><span class="tb-k">Il faut</span><div class="bt-items">' + costRow(cost) + '</div></div>' +
+        '<div class="bt-sec"><span class="tb-k">On obtient</span><div class="bt-items">' + costRow(give).replace(/ ko/g, '') + '</div></div>' +
+        '<p class="bt-time">' + C.Icon('clock') + ' Durée : ' + U.fmtDur(r.time * n) + (max < 1 ? ' — <span class="ko">matériaux insuffisants</span>' : ' · au plus ' + max + ' lot' + (max > 1 ? 's' : '') + ' avec la réserve') + '</p>';
+      body.querySelector('.bt-m').addEventListener('click', function () { n = Math.max(1, n - 1); render(); });
+      body.querySelector('.bt-p').addEventListener('click', function () { n = Math.min(Math.max(1, max), n + 1); render(); });
+      body.querySelector('.bt-range').addEventListener('input', function (e) { n = +e.target.value; render(); });
+      ok.disabled = max < 1;
+    }
+    var cancel = U.el('button', 'btn ghost', 'Annuler');
+    cancel.addEventListener('click', function () { UI.closeModal(); });
+    var ok = U.el('button', 'btn', 'Fabriquer');
+    ok.addEventListener('click', function () { UI.closeModal(); C.Actions.start(s, o, 'cook', { rid: r.id, n: n }); });
+    p.foot.appendChild(cancel); p.foot.appendChild(ok);
+    render();
+    UI.modal(p);
+  };
+})(window.CQR);

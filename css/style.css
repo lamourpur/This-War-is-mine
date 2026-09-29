@@ -993,3 +993,58 @@ body.skipping #tb-clock { color: var(--amber); }
 .help-tab .ico { width: 18px; height: 18px; }
 .help-tab:hover { opacity: 1; }
 .help-tab.on { opacity: 1; background: #ffffff14; border-color: currentColor; }
+
+/* ---------- fabrication en série */
+.batch { display: flex; flex-direction: column; gap: 14px; min-width: 380px; }
+.bt-row { display: grid; grid-template-columns: auto auto auto 1fr; align-items: center; gap: 12px; }
+.bt-row .btn { font-size: 26px; padding: 2px 14px; line-height: 1; }
+.bt-n { display: flex; flex-direction: column; align-items: center; min-width: 58px; }
+.bt-n b { font-family: var(--f-display); font-size: 44px; line-height: .9; font-weight: normal; }
+.bt-n span { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-3); }
+.bt-range { width: 100%; accent-color: #8a4a2c; }
+.bt-sec { display: flex; align-items: center; gap: 14px; }
+.bt-sec .tb-k { width: 90px; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-3); }
+.bt-items { display: flex; gap: 10px; flex-wrap: wrap; }
+.bt-item { position: relative; display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; background: #2a2620; border: 1px solid #14120f; color: var(--bone); }
+.bt-item b { font-family: var(--f-display); font-size: 24px; font-weight: normal; }
+.bt-item.ko { box-shadow: inset 0 0 0 2px #b5543f; }
+.bt-time { margin: 0; display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.bt-time svg { width: 18px; height: 18px; }
+.bt-time .ko, .batch .ko { color: #a4472c; }
+
+/* ---------- troc par glisser-déposer */
+.trade-panel { width: min(1320px, 96vw); }
+.trade-head { display: flex; align-items: center; gap: 18px; margin-bottom: 10px; }
+.trade-head .trade-face { margin: 0; }
+.trade-notes { display: flex; flex-direction: column; gap: 4px; }
+.trade-notes .trade-wants { margin: 0; }
+.trade2 { display: grid; grid-template-columns: 1fr 0.9fr 1fr; gap: 12px; align-items: start; }
+.trade-center { display: flex; flex-direction: column; gap: 8px; }
+.trade-center .loot-grid { grid-template-columns: repeat(4, 1fr); }
+.trade-center .loot-side { padding: 8px 10px; }
+.trade-center .loot-title { margin-bottom: 6px; }
+.tz .loot-title { flex-direction: row; align-items: baseline; flex-wrap: wrap; column-gap: 10px; }
+.tz .loot-title .tb-k { width: 100%; }
+.tz .loot-title b { font-size: 22px; }
+.tz-sum { margin-left: auto; font-style: normal; font-family: var(--f-display); font-size: 24px; color: var(--amber); }
+.tz-mine .tz-sum, .tz-stock .tz-sum { display: none; }
+.tz-mine.bag .tz-sum { display: block; font-size: 18px; color: #b8ad95; }
+.tz-mine.bag .tz-sum.full { color: #d0664a; }
+.tz .loot-empty { font-size: 18px; letter-spacing: .08em; text-align: center; padding: 0 10px; }
+.tz-give { background: #252b20; }
+.tz-take { background: #2b2420; }
+.tz.can { box-shadow: inset 0 0 0 1px var(--amber), 0 4px 14px rgba(0,0,0,.35); }
+.loot-slot .pr { position: absolute; left: 4px; bottom: 2px; font-family: var(--f-display); font-size: 15px; color: #cbbd9c; text-shadow: 0 1px 2px #000; }
+.loot-slot.liked { box-shadow: inset 0 0 0 2px #6f8a4a; }
+.loot-slot.liked .pr { color: #b9d28a; }
+.loot-slot.rare .pr { color: #e29a6a; }
+.trade-scale { position: relative; padding-top: 46px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ts-beam { position: absolute; top: 12px; left: 18%; right: 18%; height: 4px; background: #6b5d48; border-radius: 2px; transition: transform .35s cubic-bezier(.3,1.4,.5,1); box-shadow: 0 1px 0 #000; }
+.ts-pan { position: absolute; top: 4px; width: 46px; height: 12px; border: 2px solid #6b5d48; border-top: none; border-radius: 0 0 24px 24px; background: #2a2620; }
+.ts-pan.l { left: -20px; } .ts-pan.r { right: -20px; }
+.ts-post { position: absolute; top: 14px; left: 50%; width: 4px; height: 32px; margin-left: -2px; background: #6b5d48; }
+.ts-vals { display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: var(--ink-3); }
+.ts-vals b { font-family: var(--f-display); font-weight: normal; font-size: 26px; color: var(--ink); }
+.ts-vals b.ok { color: #3f5a2a; } .ts-vals b.ko { color: #a4472c; }
+.trade-panel .trade-say { text-align: center; }
+@media (max-width: 900px) { .trade2 { grid-template-columns: 1fr; } }

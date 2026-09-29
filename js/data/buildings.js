@@ -108,7 +108,7 @@
     // Atelier d'armurier
     gunbench: [
       { id: 'entretien', name: 'Entretenir les outils (tout remettre à neuf)', cost: { composants: 2, pieces_meca: 1 }, give: {}, time: 60, maintain: true },
-      { id: 'munitions', name: 'Recharger des munitions', cost: { pieces_meca: 1, composants: 2 }, give: { munitions: 8 }, time: 60 },
+      { id: 'munitions', name: 'Fabriquer des munitions', cost: { pieces_meca: 1, composants: 2 }, give: { munitions: 5 }, time: 40, batch: 12, unit: 'lot de 5 cartouches' },
       { id: 'silencieux', name: 'Monter un silencieux sur un pistolet', cost: { pistolet: 1, pieces_armes: 1, composants: 2 }, give: { pistolet_silencieux: 1 }, time: 90 },
       { id: 'mk_pistolet', name: 'Assembler un pistolet', cost: { pieces_armes: 3, pieces_meca: 2 }, give: { pistolet: 1 }, time: 150 },
       { id: 'mk_fusil', name: 'Assembler un fusil de chasse', cost: { pieces_armes: 4, pieces_meca: 2, bois: 2 }, give: { fusil: 1 }, time: 180 },
