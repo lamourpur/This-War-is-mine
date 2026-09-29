@@ -35,6 +35,12 @@
   };
   K.ARCH = ARCH;
 
+  // Portraits photo : assets/portraits/merc/h1..h5 (hommes), f1..f5 (femmes)
+  K.photoOf = function (o) {
+    if (!o.photo) o.photo = (o.female ? 'f' : 'h') + (1 + C.util.hashStr(o.name) % 5);
+    return 'm_' + o.photo;
+  };
+
   var NAMES = [
     ['Duke Harlan', 0], ['Rhett Coleman', 0], ['Nash Tully', 0], ['Wade Brennan', 0], ['Boone Kessler', 0],
     ['Mack Doyle', 0], ['Rook Vance', 0], ['Tess Garrity', 1], ['Jolene Price', 1], ['Kit Sorensen', 1], ['Hazel Quinn', 1]
@@ -159,7 +165,7 @@
   K.body = function (o) {
     var a = ARCH[o.arch];
     return {
-      id: 'merc', defId: 'v_' + o.face, merc: true, name: o.name, traits: a.traits.slice(), look: U.copy(o.look),
+      id: 'merc', defId: K.photoOf(o), merc: true, name: o.name, traits: a.traits.slice(), look: U.copy(o.look),
       hunger: 10, fatigue: 5, wound: 0, sick: 0, moral: 70, alive: true, cause: null,
       f: 0, x: 0, y: 0, facing: 1, path: [], act: null, anim: 0, away: null, bandaged: 0,
       thoughts: [], grief: 0, story: [], lastSmoke: 0, lastCoffee: 0, lastBook: -1, brokenDays: 0, readToday: 0, restToday: 0

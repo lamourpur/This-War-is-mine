@@ -1,0 +1,9 @@
+Portraits des mercenaires de Milo
+
+Visages générés par intelligence artificielle (thispersondoesnotexist.com,
+modèle StyleGAN) : ces personnes n'existent pas. Recadrés en buste
+(360 × 420) puis retravaillés « au fusain » comme les autres portraits.
+
+  h1..h5.jpg  hommes        f1..f5.jpg  femmes
+
+Le portrait d'un mercenaire est choisi d'après son nom (C.Merc.photoOf).

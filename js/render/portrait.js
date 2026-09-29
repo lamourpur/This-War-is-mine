@@ -618,6 +618,11 @@
     im.onerror = function () {};
     im.src = 'assets/portraits/pnj/' + id + '.jpg';
   });
+  ['h1', 'h2', 'h3', 'h4', 'h5', 'f1', 'f2', 'f3', 'f4', 'f5'].forEach(function (id) {
+    var im = new Image();
+    im.onload = function () { PHOTOS['m_' + id] = im; };
+    im.src = 'assets/portraits/merc/' + id + '.jpg';
+  });
   (C.NPC_PHOTOS || []).forEach(function (id) {
     var im = new Image();
     im.onload = function () { PHOTOS['p_' + id] = im; };
