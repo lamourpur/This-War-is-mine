@@ -171,7 +171,7 @@
         'De 6 h à 20 h, on ne sort pas : les tireurs embusqués tiennent les rues. On fouille, on déblaie, on fabrique, on cuisine, on dort un peu.',
         'Gravats et portes verrouillées cachent des pièces entières : ressources et place pour construire.',
         'L\'<b>établi</b> fabrique outils et meubles ; une construction terminée doit être <b>installée</b> (bouton à droite).',
-        'Ceux qui n\'ont rien à faire s\'occupent seuls : ils s\'assoient, s\'allongent quand ils n\'en peuvent plus.'
+        'Ceux qui n\'ont rien à faire s\'occupent seuls : le fumeur et l\'accro au café se servent quand ils sont en manque, on lit dans le fauteuil, on écoute la radio, on joue de la guitare, on discute ; à bout de force, on dort.'
       ]) + sec('health', 'Survivre', [
         '<b>Faim</b> : un repas chaque jour, les repas cuisinés nourrissent mieux. Personne ne meurt de faim d\'un coup : cela prend des jours.',
         '<b>Fatigue</b> : dormir, sinon tout ralentit. <b>Santé</b> : bandages (blessures), médicaments (maladie), lit pour guérir.',

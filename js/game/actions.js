@@ -792,30 +792,84 @@
       return !u || !u.alive || !u.act || u.act.uid !== o.uid;
     })[0] || null;
   }
+  // ---------------------------------------------------------------- oisiveté
+  // Quand personne ne leur dit quoi faire, les survivants s'occupent comme dans
+  // le jeu d'origine. Dans l'ordre : le sommeil qui les rattrape, le manque
+  // (cigarette, café), puis le moral (lire, se reposer), puis l'envie (lecture,
+  // radio, guitare, discuter avec un autre), sinon quelques pas ou un coin de mur.
+  var IDLE_SAY = {
+    smoke: ['Une cigarette. Enfin.', 'Juste une, pour tenir.', 'Ça calme les nerfs.', 'Je n\'en pouvais plus.'],
+    coffee: ['Un café… ça fait du bien.', 'Sans mon café, je ne suis rien.', 'Chaud, noir, amer. Parfait.'],
+    read: ['Un chapitre, pour penser à autre chose.', 'Je relis ce livre pour la dixième fois.', 'Ça, au moins, ça ne change pas.'],
+    music: ['Un peu de musique…', 'Ça couvre le bruit des obus.'],
+    guitar: ['Je vais jouer un peu.', 'Écoutez, ça vous fera du bien.']
+  };
+  function pickOf(l) { return l[Math.floor(Math.random() * l.length)]; }
+
   Actions.autoIdle = function (s) {
     if (!s.alive || s.away || s.act || s.path.length) return;
+    var G0 = G(), d = st().day;
+    // Peut-il faire ça sans avertissement (auto : jamais de message d'erreur) ?
+    function can(kind, o, p) {
+      var def = ACT[kind];
+      return !Actions.refusal(s, def) && !(def.check && def.check(s, o, p || {}));
+    }
+    function go(kind, o, p, say) {
+      p = p || {}; p.auto = true;
+      if (!can(kind, o, p)) return false;
+      if (!Actions.start(s, o, kind, p)) return false;
+      if (say && IDLE_SAY[say] && Math.random() < 0.7) C.Mood.say(s, pickOf(IDLE_SAY[say]), 3.5);
+      return true;
+    }
+    // 1. Épuisé : il dort
     if (s.fatigue >= 75) {
       var bed = freeStation('bed');
       if (bed) { Actions.start(s, bed, 'sleep', { auto: true }); return; }
       Actions.start(s, null, 'sleepfloor', { auto: true });
       return;
     }
-    if (s.fatigue >= 45 || s.moral < 45) {
-      var chair = freeStation('armchair');
-      if (chair) { Actions.start(s, chair, 'rest', { auto: true }); return; }
+    // 2. Le manque : le fumeur et l'accro au café se servent (seulement dans ce cas)
+    if (G0.hasTrait(s, 'fumeur') && d - s.lastSmoke >= 1 && G0.count('cigarettes') > 0 && go('smoke', null, {}, 'smoke')) return;
+    if (G0.hasTrait(s, 'cafeinomane') && d - s.lastCoffee >= 1 && G0.count('cafe') > 0 && go('coffee', null, {}, 'coffee')) return;
+    var chair = freeStation('armchair'), books = G0.count('livres') > 0 && (s.readToday || 0) < 2;
+    // 3. Moral bas ou fatigue : le fauteuil, avec un livre si possible
+    if (s.moral < 45 || s.fatigue >= 45) {
+      if (chair) {
+        if (s.moral < 60 && books && Math.random() < 0.6 && go('read', chair, {}, 'read')) return;
+        if (go('rest', chair, {})) return;
+      }
     }
-    var r = Math.random();
-    if (r < 0.3) {
-      // Quelques pas dans la pièce
-      for (var i = 0; i < 6; i++) {
+    // 4. L'envie : tirage pondéré parmi ce qui est possible
+    var others = G0.present().filter(function (b) { return b !== s && b.alive && !b.away && !b.act && !b.path.length; });
+    var cands = [];
+    if (chair && books) cands.push([G0.hasTrait(s, 'lecteur') ? 5 : s.moral < 70 ? 2 : 0.7, function () { return go('read', chair, {}, 'read'); }]);
+    var radio = freeStation('radio');
+    if (radio && s.moral < 80) cands.push([1.5, function () { return go('music', radio, {}, 'music'); }]);
+    var guitar = freeStation('guitar');
+    if (guitar && s.moral >= 40 && others.length) cands.push([G0.hasTrait(s, 'empathique') ? 2.5 : 1, function () { return go('guitar', guitar, {}, 'guitar'); }]);
+    others.forEach(function (b) {
+      var comfort = b.moral < 55 && s.moral >= 50 && !b.comfortedToday;
+      var w = comfort ? (G0.hasTrait(s, 'empathique') ? 5 : 2.5) : 1.2;
+      cands.push([w, function () { return go('talk', null, { sid: b.id, mode: comfort ? 'comfort' : 'talk' }); }]);
+    });
+    // Un tirage : ce qui ne s'est pas déclenché laisse la place au repos ordinaire
+    var tot = 0; cands.forEach(function (c) { tot += c[0]; });
+    if (tot > 0 && Math.random() < Math.min(0.85, 0.3 + tot * 0.12)) {
+      var r = Math.random() * tot;
+      for (var i = 0; i < cands.length; i++) { r -= cands[i][0]; if (r <= 0) { if (cands[i][1]()) return; break; } }
+    }
+    // 5. Sinon : quelques pas, ou un coin de mur
+    var r2 = Math.random();
+    if (r2 < 0.3) {
+      for (var i2 = 0; i2 < 6; i2++) {
         var x = C.Nav.clampX(s.f, s.x + (Math.random() < 0.5 ? -1 : 1) * (80 + Math.random() * 160));
         if (C.Nav.clear(s.f, s.x, x)) {
-          var p = C.Nav.findPath({ f: s.f, x: s.x }, { f: s.f, x: x });
-          if (p) { s.path = p; s.act = { kind: 'move', uid: null, p: { auto: true }, prog: 0, dur: 0, phase: 'walk' }; return; }
+          var pth = C.Nav.findPath({ f: s.f, x: s.x }, { f: s.f, x: x });
+          if (pth) { s.path = pth; s.act = { kind: 'move', uid: null, p: { auto: true }, prog: 0, dur: 0, phase: 'walk' }; return; }
         }
       }
     }
-    Actions.start(s, null, 'idle', { auto: true, pose: r < 0.65 ? 'floor' : 'lean', left: 25 + Math.random() * 35 });
+    Actions.start(s, null, 'idle', { auto: true, pose: r2 < 0.65 ? 'floor' : 'lean', left: 25 + Math.random() * 35 });
   };
 
   // Avance l'action du survivant de gm minutes de jeu
