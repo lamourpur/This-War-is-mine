@@ -19,19 +19,37 @@
 
   // Visiteurs qui ont une photo dans assets/portraits/pnj/<id>.jpg
   // (ajouter l'identifiant ici après avoir déposé le fichier)
-  C.VISITOR_PHOTOS = ['marchand', 'voisin_aide', 'enfants', 'blesse', 'milice', 'vieille_dame', 'troc_voisin', 'emma_1', 'emma_2', 'deserteur_1', 'deserteur_2', 'deserteur_3'];
+  C.VISITOR_PHOTOS = ['marchand', 'voisin_aide', 'enfants', 'blesse', 'milice', 'vieille_dame', 'troc_voisin', 'emma_1', 'emma_2', 'deserteur_1', 'deserteur_2', 'deserteur_3',
+    'sara_1', 'sara_2', 'sara_3', 'soldat_1', 'soldat_2', 'soldat_3', 'voisin_outil', 'voisin_outil_retour', 'mere_bebe', 'pere_medic', 'colporteur', 'gamin_troc', 'vieux_froid'];
 
   // Personnages rencontrés la nuit : photo assets/portraits/pnj/<id>.jpg
-  C.NPC_PHOTOS = ['hank', 'arthur', 'edith', 'sal', 'daniel', 'rosa', 'lili', 'ruth', 'benny', 'dale', 'carol', 'hal', 'tim', 'mila', 'maddox', 'holt', 'soldat', 'rick', 'kurt', 'ray'];
+  C.NPC_PHOTOS = ['hank', 'arthur', 'edith', 'sal', 'daniel', 'rosa', 'lili', 'ruth', 'benny', 'dale', 'carol', 'hal', 'tim', 'mila', 'maddox', 'holt', 'soldat', 'rick', 'kurt', 'ray',
+    'ed', 'nina', 'irene', 'viktor', 'gabriel', 'grisha', 'squat_inconnu', 'lukas', 'zora', 'vesna', 'petra', 'nico',
+    'bandit1', 'bandit2', 'bandit3', 'bandit4', 'gus', 'marv', 'lou', 'geolier', 'tireur', 'kerr', 'soldat2', 'soldat3'];
   // Soldats et pilleurs : clé de l'objet (ou type) → portrait
-  var GUARD_FACE = { maddox: 'maddox', brute: 'holt', rick: 'rick', kurt: 'kurt', ray: 'ray' };
+  var GUARD_FACE = { maddox: 'maddox', brute: 'holt', rick: 'rick', kurt: 'kurt', ray: 'ray', officier: 'kerr' };
+  var GUARD_NAME = { Gus: 'gus', Marv: 'marv', Lou: 'lou' };
+  // Visage d'un garde : par clé ou par nom, sinon par type (plusieurs visages par type, choisis d'après la clé)
+  function guardFace(o) {
+    if (GUARD_FACE[o.key]) return GUARD_FACE[o.key];
+    if (o.name && GUARD_NAME[o.name]) return GUARD_NAME[o.name];
+    var h = C.util.hashStr(String(o.key || o.uid || 'x'));
+    switch (o.type) {
+      case 'bandit': case 'bandit_arme': return 'bandit' + (1 + h % 4);
+      case 'geolier': return 'geolier';
+      case 'tireur_elite': return 'tireur';
+      case 'intendant': return 'soldat2';
+      case 'soldat': return ['soldat', 'soldat2', 'soldat3'][h % 3];
+    }
+    return null;
+  }
   // Portrait d'un personnage de la scène (PNJ ou soldat), ou null
   C.npcPortrait = function (o) {
     if (!o) return null;
     var id = null, st = {}, name = '';
     if (o.kind === 'npc' && C.NPCS[o.npc]) { id = o.npc; st = C.Explore && C.Explore.active && C.Explore.cured(o) ? {} : (C.NPCS[o.npc].cond || {}); name = C.NPCS[o.npc].name; }
     else if (o.kind === 'guard') {
-      id = GUARD_FACE[o.key] || (o.type === 'soldat' ? 'soldat' : null);
+      id = guardFace(o);
       name = o.name || (C.GUARD_TYPES[o.type] || {}).name;
       if (o.hp != null && o.maxHp && o.hp < o.maxHp * 0.6) st = { wound: 45 };
     }

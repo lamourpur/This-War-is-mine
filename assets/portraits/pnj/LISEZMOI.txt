@@ -45,3 +45,11 @@ En jeu, l'état du visiteur s'ajoute par-dessus (blessure, fatigue…).
 Ajouts : valter_1.jpg (Warren, le voisin de l'aide larguée) ; milice_1.jpg,
 milice_2.jpg, milice_enquete.jpg (Carl et son lieutenant : même visage que
 milice.jpg, copié sous les identifiants des visites de la milice).
+
+Tous les autres personnages ont aussi une photo (même traitement) :
+visiteurs : sara_1..3, soldat_1..3 (Hollis), voisin_outil / voisin_outil_retour (Nate),
+mere_bebe, pere_medic, colporteur, gamin_troc, vieux_froid ;
+habitants : ed, nina, irene, viktor (Vic), gabriel, grisha (Otis), squat_inconnu,
+lukas (Luke), zora (Dora), vesna (Mme Hart), petra (Penny), nico ;
+gardes (choisis par clé, nom ou type dans visitor_faces.js) : bandit1..4, gus, marv,
+lou, geolier, tireur, kerr, soldat2, soldat3.

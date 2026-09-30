@@ -43,7 +43,7 @@
 
   var NAMES = [
     ['Duke Harlan', 0], ['Rhett Coleman', 0], ['Nash Tully', 0], ['Wade Brennan', 0], ['Boone Kessler', 0],
-    ['Mack Doyle', 0], ['Rook Vance', 0], ['Tess Garrity', 1], ['Jolene Price', 1], ['Kit Sorensen', 1], ['Hazel Quinn', 1]
+    ['Mack Doyle', 0], ['Rook Vance', 0], ['Tess Garrity', 1], ['Jolene Price', 1], ['Kit Sullivan', 1], ['Hazel Quinn', 1]
   ];
   var FACES = { m: ['milice', 'pere_medic', 'colporteur', 'voisin_outil', 'blesse'], f: ['mere_bebe'] };
   var COATS = ['#2f2e2b', '#3a3833', '#3d4035', '#34302c', '#403a33', '#2c3033'];

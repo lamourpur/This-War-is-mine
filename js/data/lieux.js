@@ -1456,12 +1456,12 @@
   var EXTRA = {
     maison_abandonnee: [
       NOTE({ key: 'lettre_famille', label: 'Lettre sur la table de nuit', f: 2, x: 1010, title: 'Lettre inachevée',
-        text: 'Chère maman,\nNous partons demain à l\'aube, par la route du sud, avec les Turner. Papa ne voulait pas laisser la maison, mais les obus tombent maintenant jusqu\'au marché.\nJ\'ai rangé la valise de grand-mère au grenier, derrière les planches. Si tu reviens avant nous, prends-la.\nNous t\'embrassons fort. Ana.',
+        text: 'Chère maman,\nNous partons demain à l\'aube, par la route du sud, avec les Turner. Papa ne voulait pas laisser la maison, mais les obus tombent maintenant jusqu\'au marché.\nJ\'ai rangé la valise de grand-mère au grenier, derrière les planches. Si tu reviens avant nous, prends-la.\nNous t\'embrassons fort. Amy.',
         journal: 'Une lettre d\'une famille partie vers le sud. Ils comptaient revenir.' })
     ],
     villa: [
       NOTE({ key: 'journal_industriel', label: 'Journal relié de cuir', book: true, f: 2, x: 1180, title: 'Journal de M. Whitmore',
-        text: '12 octobre. J\'ai mis l\'argenterie et le fusil de chasse dans le coffre de la cave. Combinaison : la date de naissance d\'Elsa. 0 – 7 – 1 – 4.\n3 novembre. Les voisins sont partis. Les coups de feu se rapprochent chaque nuit.\n9 novembre. Si quelqu\'un lit ceci, c\'est que je ne suis pas revenu. Prenez soin de la maison.',
+        text: '12 octobre. J\'ai mis l\'argenterie et le fusil de chasse dans le coffre de la cave. Combinaison : la date de naissance d\'Ellen. 0 – 7 – 1 – 4.\n3 novembre. Les voisins sont partis. Les coups de feu se rapprochent chaque nuit.\n9 novembre. Si quelqu\'un lit ceci, c\'est que je ne suis pas revenu. Prenez soin de la maison.',
         opens: ['coffre_fort'], say: '0-7-1-4… La combinaison du coffre de la cave !', journal: 'Dans le journal de l\'industriel, la combinaison de son coffre-fort.' })
     ],
     hopital: [
@@ -1515,7 +1515,7 @@
     ],
     boulangerie: [
       NOTE({ key: 'recette', label: 'Recette épinglée près du four', wall: true, dy: 110, f: 0, x: 1230, title: 'Recette',
-        text: 'Pain de seigle de papa Petrović : un kilo de farine, vingt grammes de sel, le levain de la veille. Et de la patience, beaucoup de patience.' }),
+        text: 'Pain de seigle de papa Parker : un kilo de farine, vingt grammes de sel, le levain de la veille. Et de la patience, beaucoup de patience.' }),
       { key: 'petra', kind: 'npc', npc: 'petra', f: 2, x: 900, w: 40, h: 90, facing: 1 }
     ],
     garage: [
