@@ -213,7 +213,7 @@
     if (!E.bellRung && st.minute >= BELL) {
       E.bellRung = true;
       if (C.Audio.ready) { C.Audio.sfx.alert(); }
-      if (C.UI) C.UI.toast('Il est 4 h. Le jour se lève dans une heure : il faut rentrer.', 'alert');
+      if (C.UI) C.UI.toast('Il est 4 h|Le jour se lève dans une heure. Il faut rentrer.', 'alert', 'URGENT');
       E.ev('bell');
       E.say(s, 'Il faut que je rentre avant le jour.');
     }

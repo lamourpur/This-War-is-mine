@@ -321,6 +321,6 @@
       st.log.push({ d: st.day, t: Math.floor(st.minute), text: text, kind: kind || 'info' });
       if (st.log.length > 400) st.log.splice(0, st.log.length - 400);
     },
-    toast: function (text, kind) { if (C.UI) C.UI.toast(text, kind); }
+    toast: function (text, kind, tag) { if (C.UI) C.UI.toast(text, kind, tag); }
   };
 })(window.CQR);

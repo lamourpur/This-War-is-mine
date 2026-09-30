@@ -265,10 +265,18 @@
   UI.refreshStockBadge = function () {};
 
   // ------------------------------------------------ notifications
-  var TOAST_ICON = { warn: 'alert', alert: 'alert', done: 'star', info: 'speech' };
-  UI.toast = function (text, kind) {
-    var box = $('toasts');
-    var t = U.el('div', 'toast ' + (kind || ''), I(TOAST_ICON[kind] || 'speech') + '<span>' + U.esc(text) + '</span>');
+  // Notification : un feuillet de papier scotché, tapé à la machine.
+  // texte = « Titre|détail » (sinon coupé au premier « — » ou « . »), tag = tampon
+  var TOAST_TAG = { warn: 'ATTENTION', alert: 'URGENT', done: 'FAIT', info: 'NOTE' };
+  UI.toast = function (text, kind, tag) {
+    var box = $('toasts'), title = String(text), detail = '';
+    var cut = title.indexOf('|');
+    if (cut < 0) { var m = /^(.{6,60}?)(?: — |\. )(.+)$/.exec(title); if (m) { title = m[1]; detail = m[2]; } }
+    else { detail = title.slice(cut + 1); title = title.slice(0, cut); }
+    var t = U.el('div', 'toast ' + (kind || ''), '<span class="tp">' + U.esc(tag || TOAST_TAG[kind] || 'NOTE') + '</span><b>' + U.esc(title) + '</b>' + (detail ? '<span class="td">' + U.esc(detail) + '</span>' : ''));
+    t.style.setProperty('--rot', (Math.random() * 3 - 1.5).toFixed(2) + 'deg');
+    t.style.setProperty('--tape', (Math.random() * 8 - 2).toFixed(1) + 'deg');
+    t.style.setProperty('--tapex', Math.round(Math.random() * 120 - 60) + 'px');
     box.appendChild(t);
     while (box.children.length > 4) box.removeChild(box.firstChild);
     setTimeout(function () { t.classList.add('out'); }, kind === 'alert' ? 6500 : 4500);
@@ -473,7 +481,7 @@
     if (!st.pending.length) return;
     if (!type || st.pending.indexOf(type) < 0) type = st.pending[0];
     if (!UI.freeSlots(type).length) {
-      UI.toast('Aucun emplacement libre pour : ' + C.BUILDINGS[type].name + '. Dégagez de la place (gravats, meubles, pièces fermées).', 'warn');
+      UI.toast('Pas de place|Aucun emplacement libre pour : ' + C.BUILDINGS[type].name + '. Dégagez gravats, meubles ou pièces fermées.', 'warn', 'CONSTRUCTION');
       return;
     }
     C.Render.placing = type;

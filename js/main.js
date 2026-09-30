@@ -98,7 +98,7 @@
     if (st.phase === 'over') { C.UI.showEnding(); return; }
     if (st.phase === 'night' || st.phase === 'dusk') { st.phase = 'night'; C.UI.openNight(); return; }
     Main.setSpeed(0);
-    C.UI.toast('Partie chargée — jour ' + st.day + '. Appuyez sur Espace pour reprendre.', 'done');
+    C.UI.toast('Partie chargée — jour ' + st.day + '|Le groupe est là. Espace pour reprendre.', 'done', 'SAUVEGARDE');
   };
 
   function enterGame() {
@@ -380,7 +380,7 @@
         if (st.phase === 'dusk' && hit.obj.kind !== 'stock') {
           var who = C.UI.selectedSurv();
           if (who) C.Render.pop(who, [], 'Trop tard, il fait nuit.', 'warn');
-          else C.UI.toast('Il fait nuit : seules les actions personnelles sont possibles.', 'info');
+          else C.UI.toast('Il fait nuit|Seules les actions personnelles sont possibles.', 'info', 'NUIT');
           return;
         }
         C.UI.openContext(hit.obj, e.clientX, e.clientY);

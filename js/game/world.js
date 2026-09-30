@@ -114,11 +114,11 @@
     st.objects.forEach(function (o) {
       if (o.kind === 'heater' && o.fuel > 0) {
         o.fuel = Math.max(0, o.fuel - gm);
-        if (o.fuel === 0) { G().toast('Le chauffage s\'est éteint.', 'warn'); G().markDirty(); }
+        if (o.fuel === 0) { G().toast('Le chauffage s\'est éteint|Il faut remettre du carburant.', 'warn', 'REFUGE'); G().markDirty(); }
       }
       if (o.kind === 'still' && o.brewUntil && World.now(st) >= o.brewUntil) {
         o.ready = (o.ready || 0) + o.brewGive; o.brewUntil = 0;
-        G().toast('La gnôle est prête à la distillerie.', 'done'); G().markDirty();
+        G().toast('La gnôle est prête|La distillerie a fini de tourner.', 'done', 'REFUGE'); G().markDirty();
       }
       if (o.kind === 'collector' && !o.broken && (st.weather.type === 'pluie' || st.weather.type === 'neige')) {
         var cap = o.level >= 2 ? 8 : 4;
@@ -141,7 +141,7 @@
       st.visitor = { id: st.visitorPlan.id, until: st.minute + 240, data: st.visitorPlan.data };
       st.visitorPlan = null;
       if (C.Audio.ready) C.Audio.sfx.knock();
-      G().toast('On frappe à la porte d\'entrée !', 'alert');
+      G().toast('On frappe à la porte|Quelqu\'un attend devant l\'entrée.', 'alert', 'URGENT');
       G().log('Quelqu\'un a frappé à la porte.', 'info');
       if (C.UI) C.UI.refreshDoor();
     }
@@ -149,7 +149,7 @@
       var gone = C.VISITORS[st.visitor.id], parti = st.visitor.done;
       if (!parti && gone && gone.onMissed) gone.onMissed(st, st.visitor.data || {});
       st.visitor = null;
-      if (!parti) G().toast('Personne n\'a ouvert. Le visiteur est reparti.', 'info');
+      if (!parti) G().toast('Personne n\'a ouvert|Le visiteur est reparti.', 'info', 'PORTE');
       if (C.UI) C.UI.refreshDoor();
     }
 
@@ -239,7 +239,7 @@
       if (!res) return;
       G().log(def.title + ' — ' + res.text, res.major ? 'bad' : 'info');
       if (res.major && C.UI) C.UI.eventDialog(def, res.text);
-      else G().toast(res.text, 'info');
+      else G().toast(def.title + '|' + res.text, 'info', 'ÉVÉNEMENT');
       if (C.UI) C.UI.buildCards();
       return;
     }

@@ -239,7 +239,7 @@
     feed.addEventListener('click', function () {
       UI.closeModal();
       st.phase = 'dusk';
-      UI.toast('Le temps est figé à 20 h. Nourrissez, soignez, parlez aux autres (clic sur un survivant), puis « Passer à la nuit ».', 'info');
+      UI.toast('Le temps est figé à 20 h|Nourrissez, soignez, parlez aux autres, puis « Passer la nuit ».', 'info', 'NUIT');
       C.Main.showDuskButton(true);
     });
     var go = U.el('button', 'btn', 'Passer la nuit');

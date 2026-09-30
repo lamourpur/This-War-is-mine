@@ -191,7 +191,7 @@
 
   // mode : 'save' | 'load'
   UI.openSaves = function (mode, fromMenu) {
-    if (mode === 'save' && C.Explore && C.Explore.active) { UI.toast('Impossible de sauvegarder pendant l\'exploration : rentrez d\'abord au refuge.', 'warn'); return; }
+    if (mode === 'save' && C.Explore && C.Explore.active) { UI.toast('Sauvegarde impossible|Rentrez d\'abord au refuge.', 'warn', 'SAUVEGARDE'); return; }
     var p = UI.panel(mode === 'save' ? 'Sauvegarder' : 'Charger', mode === 'save' ? 'Choisissez un emplacement' : 'Emplacements du navigateur et fichiers .sav', { dark: true, foot: true });
     var box = U.el('div', 'slots');
     var slots = mode === 'save' ? [1, 2, 3] : [0, 1, 2, 3];
@@ -207,7 +207,7 @@
         var b = U.el('button', 'btn', I('save') + (d ? 'Écraser' : 'Sauvegarder'));
         b.addEventListener('click', function () {
           var ok = C.Save.write(slot, G().st);
-          UI.toast(ok ? 'Partie sauvegardée (' + slotLabel(slot).toLowerCase() + ').' : 'Impossible d\'écrire la sauvegarde dans le navigateur. Utilisez « Exporter ».', ok ? 'done' : 'alert');
+          UI.toast(ok ? 'Partie sauvegardée|Emplacement : ' + slotLabel(slot).toLowerCase() + '.' : 'Écriture impossible|Le navigateur refuse. Utilisez « Exporter ».', ok ? 'done' : 'alert', 'SAUVEGARDE');
           UI.closeModal(); UI.openSaves('save');
         });
         row.appendChild(b);
@@ -233,7 +233,7 @@
 
     if (mode === 'save') {
       var ex = U.el('button', 'btn ghost', I('save') + 'Exporter en .sav');
-      ex.addEventListener('click', function () { C.Save.exportFile(G().st); UI.toast('Fichier de sauvegarde exporté.', 'done'); });
+      ex.addEventListener('click', function () { C.Save.exportFile(G().st); UI.toast('Fichier exporté|La sauvegarde est sur votre disque.', 'done', 'SAUVEGARDE'); });
       p.foot.appendChild(ex);
     }
     var imp = U.el('button', 'btn ghost', I('load') + 'Importer un .sav');
@@ -242,10 +242,10 @@
     input.addEventListener('change', function () {
       if (!input.files[0]) return;
       C.Save.importFile(input.files[0], function (err, data) {
-        if (err) { UI.toast(err, 'alert'); return; }
+        if (err) { UI.toast('Import impossible|' + err, 'alert', 'SAUVEGARDE'); return; }
         UI.closeAllModals();
         C.Main.loadState(data.state);
-        UI.toast('Partie importée : jour ' + data.meta.day + '.', 'done');
+        UI.toast('Partie importée|Jour ' + data.meta.day + '. Le groupe est là.', 'done', 'SAUVEGARDE');
       });
     });
     imp.addEventListener('click', function () { input.click(); });
@@ -294,7 +294,7 @@
   UI.openVisitor = function (s) {
     var st = G().st;
     var v = st.visitor;
-    if (!v) { UI.toast('Il n\'y a plus personne.', 'info'); return; }
+    if (!v) { UI.toast('Plus personne|Il n\'y a plus personne à la porte.', 'info', 'PORTE'); return; }
     var def = C.VISITORS[v.id];
     v.talking = true;
     var ctx = { st: st, v: v, s: s };
