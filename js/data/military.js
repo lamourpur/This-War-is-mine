@@ -98,7 +98,7 @@
     // Délivrée : d'abord les remerciements, puis elle donne ce qu'elle a
     thanks: 'Il ne reviendra pas ? Vraiment ? … Merci. Merci, merci…',
     giveLine: 'Tenez. C\'est tout ce que j\'ai. Prenez-le, je vous en prie.',
-    rescued: ['Je vais rejoindre ma tante, à l\'église Sainte-Anne.', 'Je n\'oublierai jamais ce que vous avez fait cette nuit.'],
+    rescued: ['Je vais rejoindre ma tante, à l\'église St. Mark.', 'Je n\'oublierai jamais ce que vous avez fait cette nuit.'],
     reward: { bijoux: 1, medicaments: 1 }
   };
 

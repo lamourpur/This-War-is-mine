@@ -351,7 +351,7 @@
     ]
   });
 
-  // ============================================================ Église Sainte-Marie
+  // ============================================================ Église St. Mark
   // Parvis, clocher-porche (tribune puis échelle jusqu'aux cloches), nef
   // haute et voûtée aux vitraux soufflés, crypte sous le chœur, sacristie
   // et salle paroissiale où dorment les réfugiés du père Daniel.
@@ -606,7 +606,7 @@
     ]
   });
 
-  // ============================================================ Hôtel Europa
+  // ============================================================ Hôtel Lincoln
   // En bas, le hall : des civils y campent au milieu des gravats, autour d'un
   // bidon où brûle du bois. En haut, l'armée : étages propres, lampes du
   // groupe électrogène, sacs de sable aux fenêtres. Des chambres fermées
@@ -645,7 +645,7 @@
       R(1580, 1900, 848, 985, 'concrete', { tone: '#66625a', tubes: [1740] })
     ],
     shells: [
-      { x0: 420, x1: 1900, top: 260, bottom: 985, wall: 'brickPlaster', roof: 'flat', sign: { t: 'HÔTEL EUROPA', x: 1160, y: 180, missing: [3] },
+      { x0: 420, x1: 1900, top: 260, bottom: 985, wall: 'brickPlaster', roof: 'flat', sign: { t: 'HÔTEL LINCOLN', x: 1160, y: 180, missing: [3] },
         gaps: { left: [{ y0: 680, y1: G }], right: [{ y0: 690, y1: G }] } }
     ],
     things: [
@@ -923,7 +923,7 @@
       R(1000, 1600, 848, 985, 'concrete', { tone: '#605d57', border: true })
     ],
     shells: [
-      { x0: 700, x1: 1800, top: 500, bottom: 985, wall: 'brick', roof: 'flat', sign: { t: 'GARAGE DU CENTRE', x: 1250, y: 410, missing: [11] },
+      { x0: 700, x1: 1800, top: 500, bottom: 985, wall: 'brick', roof: 'flat', sign: { t: 'MAIN STREET GARAGE', x: 1250, y: 410, missing: [11] },
         gaps: { left: [{ y0: 640, y1: G, shutter: 50 }], right: [{ y0: 700, y1: G }] } }
     ],
     fences: [{ f: 0, x0: 1820, x1: 2530, h: 100 }],
@@ -1238,7 +1238,7 @@
       R(2300, 2940, 296, 460, 'wallpaper', { tone: '#5f5a50', paper: 12, posters: [{ x: 2860, y: 360, t: 'TOUS LES\nTRAÎTRES', rot: 0.06 }] }),
       // Métro
       R(500, 2600, 848, 985, 'tiles', { tone: '#7a7870', wainscot: { h: 137, tone: '#86847c', grid: 14 }, tubes: [800, 1250, 1700, 2150], border: true,
-        signs: [{ t: 'MÉTRO — LIGNE 2 — PLACE DE LA LIBERTÉ', x: 640, y: 880, size: 22 }], posters: [{ x: 2350, y: 900, t: 'PLAN DU\nRÉSEAU' }] })
+        signs: [{ t: 'MÉTRO — LIGNE 2 — LIBERTY SQUARE', x: 640, y: 880, size: 22 }], posters: [{ x: 2350, y: 900, t: 'PLAN DU\nRÉSEAU' }] })
     ],
     shells: [
       { x0: 200, x1: 900, top: 296, bottom: G, wall: 'brickPlaster', roof: 'ruin', gaps: { left: [{ y0: 690, y1: G }], right: [{ y0: 690, y1: G }, { y0: 300, y1: 460 }] } },
@@ -1506,7 +1506,7 @@
       { key: 'vesna', kind: 'npc', npc: 'vesna', f: 2, x: 555, w: 50, h: 70, facing: 1 }
     ],
     hotel: [
-      NOTE({ key: 'livre_or', label: 'Livre d\'or', book: true, f: 0, x: 860, title: 'Livre d\'or de l\'Hôtel Europa',
+      NOTE({ key: 'livre_or', label: 'Livre d\'or', book: true, f: 0, x: 860, title: 'Livre d\'or de l\'Hôtel Lincoln',
         text: 'Dernière page : « Merci pour ce séjour merveilleux. La chambre donnait sur le fleuve. Nous reviendrons au printemps. — Famille Sanders, 2 mars. »' })
     ],
     maison_mitoyenne: [

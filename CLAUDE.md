@@ -5,7 +5,7 @@ Clone français de *This War of Mine*, en HTML + Canvas, JS vanilla. Pas de buil
 ## Conventions
 - Chaque fichier est une IIFE ES5 `(function (C) { 'use strict'; … })(window.CQR);`. Tout vit sous `C.*` (`C.Game`, `C.Render`, `C.UI`, `C.Explore`…). Pas de modules, pas de classes, pas de syntaxe ES6+ lourde.
 - Nouveau fichier JS → l'ajouter dans `index.html` au bon endroit (data avant game, game avant ui, `maps.js` après `dayevents.js`, `explore.js` après `night.js`).
-- Textes du jeu en français ; noms des personnages **toujours américains** (jamais slaves ni d'autres origines, même pour un lieu ou une bande ; le marchand s'appelle Sonny, pas Franko) (ids internes : vera, tomas, ilija, nada, goran, lena, emir, mira).
+- Textes du jeu en français ; noms des personnages **toujours américains** (jamais slaves ni d'autres origines, même pour un lieu, une rue, une église, un hôtel ou une bande : Tanner Street, Liberty Square, église St. Mark, hôtel Lincoln ; le marchand s'appelle Sonny, pas Franko) (ids internes : vera, tomas, ilija, nada, goran, lena, emir, mira).
 - Retours d'action **dans la scène** (`C.Render.pop(s, gains|tag, …, 'warn')`, bulles), jamais de message en bas de l'écran.
 - Aide (`js/ui/help.js`) : tout `title` devient une info-bulle thémée (« Titre — détail ») ; `UI.hint(clé)` = note de première fois (`HINTS`, vues dans localStorage `cqr-hints`, option `hints`), déclenchées dans `UI.hintTick` ; manuel `UI.openHelp(page)` en onglets (`PAGES`).
 - UI « dossier de survie » : polices Bebas Neue / Barlow Semi Condensed / Special Elite, papier vieilli, icônes SVG (`js/ui/icons.js`), barres de défilement thémées.

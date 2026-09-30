@@ -109,7 +109,7 @@
   def('radio_appel', {
     minDay: 4, icon: 'radio', title: 'Une voix sur la radio',
     cond: function () { return G().countBuilt('radio') > 0; },
-    text: function () { return 'Entre deux grésillements, une voix d\'homme, très basse : « Quelqu\'un m\'entend ? Je suis coincé dans une cave, rue des Tanneurs… j\'ai de quoi payer. »'; },
+    text: function () { return 'Entre deux grésillements, une voix d\'homme, très basse : « Quelqu\'un m\'entend ? Je suis coincé dans une cave, Tanner Street… j\'ai de quoi payer. »'; },
     choices: [
       { label: 'Répondre et lui dire de tenir', run: function (ctx) {
           G().moralAll(3, { good: true, key: 'helped' });

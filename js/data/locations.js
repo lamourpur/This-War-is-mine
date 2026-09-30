@@ -58,7 +58,7 @@
       residentsLoot: { medicaments: 4, bandage: 4, remede: 2 },
       stash: { tool: ['pied_de_biche', 'passe_partout'], loot: { medicaments: 2, pieces_elec: 1 } } },
 
-    { id: 'eglise', name: 'Église Sainte-Anne', danger: 0, residents: 'civils', unlock: 7, dist: 1,
+    { id: 'eglise', name: 'Église St. Mark', danger: 0, residents: 'civils', unlock: 7, dist: 1,
       desc: 'Le prêtre y héberge des réfugiés. On peut y troquer, ou y voler.',
       loot: { bois: 6, livres: 4, eau: 2, herbes: 3, engrais: 2, legumes: 4 },
       residentsLoot: { conserve: 3, eau: 4, bijoux: 2, alcool: 1 } },
@@ -84,7 +84,7 @@
       loot: { bois: 7, composants: 5, pieces_meca: 1, viande: 2 },
       residentsLoot: { conserve: 4, medicaments: 1, munitions: 4, cigarettes: 1 } },
 
-    { id: 'hotel', name: 'Hôtel Continental', danger: 2, residents: 'militaires', unlock: 11, dist: 2,
+    { id: 'hotel', name: 'Hôtel Lincoln', danger: 2, residents: 'militaires', unlock: 11, dist: 2,
       desc: 'Des soldats occupent les étages du vieil hôtel. En bas, quelques civils s\'abritent. Les cuisines et les suites regorgent de tout.',
       loot: { alcool: 3, cafe: 2, cigarettes: 3, conserve: 4, viande: 2, livres: 2, bijoux: 2 },
       stash: { tool: ['passe_partout', 'pied_de_biche'], loot: { bijoux: 3, montre: 1, medicaments: 2 } } },
