@@ -203,7 +203,7 @@
         var ax = ac.getContext('2d');
         ax.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
         C.Layout.drawStatic(ax, LAY());
-        R.arch = { key: key, cv: ac };
+        R.arch = { key: key, cv: ac }; R.archRebuilt = true;
       }
       ctx.drawImage(R.arch.cv, 0, 0);
       ctx.setTransform(R.sScale, 0, 0, R.sScale, 0, 0);
@@ -224,7 +224,7 @@
         drawOutside(hx, SK.rng(11));
         drawHouse(hx, SK.rng(23));
         drawDecor(hx, st);
-        R.arch = { key: hkey, cv: hc };
+        R.arch = { key: hkey, cv: hc }; R.archRebuilt = true;
       }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(R.arch.cv, 0, 0);
@@ -1379,7 +1379,7 @@
     if (!st) return;
     R.time = t;
     camStep(dt, st);
-    if (R.dirty) { buildStatic(); R.dirty = false; R.staticVersion = (R.staticVersion || 0) + 1; }
+    if (R.dirty) { var pb = C.Perf ? performance.now() : 0; buildStatic(); R.dirty = false; R.staticVersion = (R.staticVersion || 0) + 1; if (C.Perf) C.Perf.built(performance.now() - pb, R.archRebuilt ? 'décor complet' : 'objets'); R.archRebuilt = false; }
     var ctx = R.ctx, s = R.scale;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#0d0c0b';
@@ -1394,7 +1394,9 @@
     ctx.drawImage(R.staticCanvas, R.ox + sx * s, R.oy + sy * s, R.staticCanvas.width * s / R.sScale, R.staticCanvas.height * s / R.sScale);
     ctx.setTransform(s, 0, 0, s, R.ox + sx * s, R.oy + sy * s);
 
+    var PF = C.Perf; if (PF) PF.s('particules (maj)');
     updateParticles(dt, st);
+    if (PF) PF.e();
 
     // Emplacements de construction (mode placement)
     if (R.placing) {
@@ -1444,12 +1446,14 @@
 
     holeFx(ctx, st, t, dt);
 
+    if (PF) PF.s('objets dynamiques et soldats');
     // Visiteurs devant la porte d'entrée
     if (st.visitor && (st.phase === 'day' || st.phase === 'dusk')) drawVisitors(ctx, st, t);
 
     // Soldats, zones gardées, bruit et tirs (exploration)
     if (st.phase === 'explore' && C.Combat) C.Combat.draw(ctx, t);
 
+    if (PF) { PF.e(); PF.s('survivants'); }
     // Survivants
     var sel = C.UI ? C.UI.selected : null;
     var list = st.survivors.filter(function (x) { return x.alive && !x.away; });
@@ -1472,8 +1476,10 @@
       });
     }
 
+    if (PF) { PF.e(); PF.s('particules et neige'); }
     drawParticles(ctx);
     drawSnowCover(ctx, st);
+    if (PF) { PF.e(); PF.s('obscurité et lumières'); }
 
     // Obscurité, puis lumières chaudes par-dessus
     var dk = darkness(st);
@@ -1490,6 +1496,7 @@
 
     // Lumière froide de l'hiver
     if (C.World.isWinter(st)) { ctx.fillStyle = 'rgba(120,140,170,0.07)'; ctx.fillRect(vx, vx, vw, vh - vx); }
+    if (PF) { PF.e(); PF.s('interface dans la scène'); }
     drawPops(ctx, dt);
     if (R.flashT > 0) { R.flashT -= dt; ctx.fillStyle = 'rgba(255,230,190,' + (R.flashT * 0.5) + ')'; ctx.fillRect(0, 0, W, H); }
 
@@ -1502,6 +1509,7 @@
     // Vignette + grain (espace écran)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     offscreenMarker(ctx, st, t);
+    if (PF) { PF.e(); PF.s('vignette et grain'); }
     var cw = R.canvas.width, ch = R.canvas.height;
     var vg = ctx.createRadialGradient(cw / 2, ch / 2, Math.min(cw, ch) * 0.35, cw / 2, ch / 2, Math.max(cw, ch) * 0.75);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
@@ -1516,6 +1524,7 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalAlpha = 1;
     }
+    if (PF) PF.e();
   };
 
   // Pilleur hors du champ (vue déplacée à la main) : flèche au bord de l'écran

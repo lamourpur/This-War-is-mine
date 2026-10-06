@@ -206,6 +206,7 @@
   }
 
   function loop(ts) {
+    var PF = C.Perf, p0 = PF ? performance.now() : 0, pL = 0;
     var t = ts / 1000;
     var dt = Math.min(0.1, lastT ? t - lastT : 0.016);
     lastT = t;
@@ -244,6 +245,7 @@
       st.survivors.forEach(function (s) { s.anim += dt; });
     }
 
+    if (PF) { pL = performance.now(); PF.logic(pL - p0); }
     var inGame = Main.mode === 'game' && st;
     if (inGame) camScroll(dt);
     // Guitare : on la prend (ou la repose) → le décor change
@@ -255,7 +257,9 @@
       fire: inGame && st.objects.some(function (o) { return o.kind === 'heater' && o.fuel > 0; }),
       radio: inGame && st.survivors.some(function (s) { return s.alive && s.act && (s.act.kind === 'news' || s.act.kind === 'music') && s.act.phase === 'work'; }),
       war: true, onShell: function () { if (C.Render.shellGlow) C.Render.shellGlow(); if (Math.random() < 0.6) C.Render.shake(2 + Math.random() * 4); } });
+    var pR = PF ? performance.now() : 0;
     C.Render.frame(dt, t);
+    if (PF) { var pE = performance.now(); PF.render(pE - pR); PF.frame(pE - p0, dt); }
     requestAnimationFrame(loop);
   }
 

@@ -146,7 +146,7 @@
       if (o.kind === 'grate') return true;
       return false;
     },
-    markDirty: function () { if (C.Render) C.Render.dirty = true; },
+    markDirty: function () { if (C.Perf && C.Perf.on) C.Perf.dirty(); if (C.Render) C.Render.dirty = true; },
 
     // ------------------------------------------------ inventaire
     count: function (id) { return Game.st.inventory[id] || 0; },
